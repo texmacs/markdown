@@ -84,15 +84,10 @@
        `(document ,@(map transform (cdr doc)))))))
 
 (define (md-quotation x)
-  (let ((add-prefix
-         (lambda (a)
-           `(concat "> " ,a)))
-        (insert-line-before
-         (lambda (a)
-           `(concat "\n" ,a)))
+  (let ((add-prefix (lambda (a) `(concat "> " ,a)))
+        (insert-line-before (lambda (a) `(concat "\n" ,a)))
         (doc (cAr x)))
-    (with prefixed-children
-        (map add-prefix (cdr doc))
+    (with prefixed-children (map add-prefix (cdr doc))
       (serialize-markdown
        `(document 
           ,(car prefixed-children) 
