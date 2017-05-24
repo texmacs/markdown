@@ -14,7 +14,8 @@
 (define (md-document x)
     (apply string-append
            (map line-break-after
-                (map serialize-markdown (cdr x)))))
+                (map line-break-after
+                     (map serialize-markdown (cdr x))))))
 
 (define (md-concat x)
   (apply string-append 
