@@ -206,7 +206,7 @@
   (postlude-add (cdr x))
   (string-append "[^" (number->string footnote-nr) "]"))
 
-(define (md-title x)
+(define (md-doc-title x)
   (set! doc-title (serialize-markdown (cdr x)))
   (if (not (hugo-extensions?))
       ((md-header 1) (cdr x))))
@@ -239,6 +239,7 @@
            (list 'h2 (md-header 2))
            (list 'h3 (md-header 3))
            (list 'h4 (md-header 4))
+           (list 'doc-title md-doc-title)
            (list 'author-name author-add)
            (list 'cite md-cite)
            (list 'cite-detail md-cite-detail)
