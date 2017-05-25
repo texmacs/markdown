@@ -208,7 +208,7 @@
 
 (define (md-doc-title x)
   (set! doc-title (serialize-markdown (cdr x)))
-  (if (not (hugo-extensions?))
+  (if (hugo-extensions?) ""
       ((md-header 1) (cdr x))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
