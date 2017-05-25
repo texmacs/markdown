@@ -12,6 +12,7 @@
 
 ;(lazy-define (convert markdown markdowntm) parse-markdown)
 (lazy-define (convert markdown markdownout) serialize-markdown)
+(lazy-define (convert markdown markdownout) serialize-markdown-document)
 (lazy-define (convert markdown tmmarkdown) texmacs->markdown)
 ;(lazy-define (convert markdown markdowntm) markdown->texmacs)
 
@@ -19,7 +20,7 @@
 ;  (:function parse-markdown))
 
 (converter markdown-stree markdown-document
-  (:function serialize-markdown))
+  (:function serialize-markdown-document))
 
 ;(converter markdown-snippet markdown-stree
 ;  (:function parse-markdown))

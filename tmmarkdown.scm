@@ -91,6 +91,7 @@
            (list 'cite-detail keep)
            (list 'hlink keep)
            (list 'big-figure parse-big-figure)
+           (list 'footnote keep)
            (list 'bibliography skip-fully)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

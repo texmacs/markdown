@@ -5,8 +5,30 @@
 (texmacs-module (convert markdown markdownout)
   (:use (convert tools output)))
 
+; "Global" state for document serialization.
+; Usage is wrapped within a "with-global" in serialize-markdown-document
+(define footnote-nr 0)
+(define label-nr 0)
+(define postlude "")
+
 (define (hugo-extensions?)
   (== (get-preference "texmacs->markdown:hugo-extensions") "#t"))
+
+(define (postlude-add x)
+  (cond ((list? x) 
+         (set! postlude 
+               (string-concatenate `(,postlude
+                                     "\n[^" ,(number->string footnote-nr) "] "
+                                     ,@(map serialize-markdown x)))))
+        ((string? x)
+         (set! postlude (string-append postlude "\n" x)))
+        (else 
+          (display* "postlude-add: bogus input " x "\n")
+          (noop))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; markdown to string serializations
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define (keep x)
   (cons (car x) (map serialize-markdown (cdr x))))
@@ -127,7 +149,16 @@
            "\" title=\"" ,@(map serialize-markdown (cdr payload)) "\" >}}")))
       ""))
 
-; TODO: option for exporting or not cites
+(define (md-footnote x)
+  ; Input: (footnote (document [stuff here]))
+  (set! footnote-nr (+ 1 footnote-nr))
+  (postlude-add (cdr x))
+  (string-append "[^" (number->string footnote-nr) "]"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; dispatch
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (define serialize-hash (make-ahash-table))
 (map (lambda (l) (apply (cut ahash-set! serialize-hash <> <>) l)) 
      (list (list 'strong md-style)
@@ -153,6 +184,7 @@
            (list 'h4 (md-header 4))
            (list 'cite md-cite)
            (list 'cite-detail md-cite-detail)
+           (list 'footnote md-footnote)
            (list 'figure md-figure)
            (list 'hlink md-hlink)))
 
@@ -175,3 +207,10 @@
          (apply string-append 
                 (cons (serialize-markdown (car x))
                       (map serialize-markdown (cdr x)))))))
+
+(tm-define (serialize-markdown-document x)
+  (with-global footnote-nr 0
+    (with-global label-nr 0
+      (with-global postlude ""
+        (string-append (serialize-markdown x)
+                       postlude)))))
