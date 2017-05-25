@@ -15,14 +15,10 @@
     (cons func (map texmacs->markdown (cdr x)))))
 
 (define (skip x)
-  "Process only the last element. Useful for with tags."
-  (texmacs->markdown (cAr x)))
+  (map texmacs->markdown (cdr x)))
 
 (define (skip-fully x)
   '())
-
-(define (add-doc-data x)
-  (skip x))
 
 (define (parse-big-figure x)
   ; Example input:
@@ -58,7 +54,8 @@
            (list 'cpp (change-to 'tt))
            (list 'scheme (change-to 'tt))
            (list 'verbatim (change-to 'tt))
-           (list 'doc-data add-doc-data)
+           (list 'author-name identity)
+           (list 'author-email skip-fully)
            (list 'document keep)
            (list 'quotation keep)
            (list 'theorem keep)
