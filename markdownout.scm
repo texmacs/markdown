@@ -114,6 +114,10 @@
   (with detail (cAr x)
       (string-append (md-cite (cDr x)) " (" detail ")")))
 
+(define (md-hlink x)
+  (with payload (cdr x)
+    (string-append "[" (car payload) "]" "(" (cadr payload) ")")))    
+
 ; TODO: option for exporting or not cites
 (define serialize-hash (make-ahash-table))
 (map (lambda (l) (apply (cut ahash-set! serialize-hash <> <>) l)) 
@@ -139,7 +143,8 @@
            (list 'h3 (md-header 3))
            (list 'h4 (md-header 4))
            (list 'cite md-cite)
-           (list 'cite-detail md-cite-detail)))
+           (list 'cite-detail md-cite-detail)
+           (list 'hlink md-hlink)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public interface

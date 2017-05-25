@@ -66,6 +66,7 @@
            (list 'item keep)
            (list 'cite keep)
            (list 'cite-detail keep)
+           (list 'hlink keep)
            (list 'bibliography skip-fully)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
