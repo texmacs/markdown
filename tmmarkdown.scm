@@ -49,6 +49,7 @@
      (list (list 'strong keep)
            (list 'dfn (change-to 'strong))
            (list 'em keep)
+           (list 'strike-through (change-to 'strike)) ; non-standard extension
            (list 'samp (change-to 'tt))
            (list 'python (change-to 'tt))
            (list 'cpp (change-to 'tt))
