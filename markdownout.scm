@@ -10,6 +10,7 @@
 (define footnote-nr 0)
 (define label-nr 0)
 (define authors '())
+(define doc-title "")
 (define postlude "")
 
 (define (hugo-extensions?)
@@ -22,10 +23,13 @@
 
 (define (prelude)
   (if (not (hugo-extensions?)) ""
-      (with authors* (string-join
+      (let ((authors* (string-join
                       (map (lambda (x) (string-append "\"" x "\"")) authors)
-                      ", ")
+                      ", "))
+            (date (strftime "%Y-%m-%d"(localtime (current-time)))))
         (string-append "---\n\n"
+                       "title: \"" doc-title "\"\n"
+                       "date: \"" date "\"\n"
                        "authors: [" authors* "]\n"
                        "tags: [\"\"]\n"
                        "paper_authors: [\"\", \"\"]\n"
@@ -201,6 +205,11 @@
   (set! footnote-nr (+ 1 footnote-nr))
   (postlude-add (cdr x))
   (string-append "[^" (number->string footnote-nr) "]"))
+
+(define (md-title x)
+  (set! doc-title (serialize-markdown (cdr x)))
+  (if (not (hugo-extensions?))
+      ((md-header 1) (cdr x))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; dispatch

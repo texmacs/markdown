@@ -68,7 +68,7 @@
            (list 'equation identity)
            (list 'equation* identity)
            (list 'concat keep)
-           (list 'doc-title (change-to 'h1))
+           (list 'doc-title (change-to 'title))
            (list 'section (change-to 'h2))
            (list 'subsection (change-to 'h3))
            (list 'subsubsection (change-to 'h4))
