@@ -8,7 +8,7 @@
 ; "Global" state for document serialization.
 ; Usage is wrapped within a "with-global" in serialize-markdown-document
 (define footnote-nr 0)
-(define label-nr 0)
+(define equation-nr 0)  ; global counter for equations
 (define num-line-breaks 2)
 (define authors '())
 (define doc-title "")
@@ -131,9 +131,12 @@
   (replace-fun-list t
    `((mathbbm . mathbb)
      ((_) . "\\_")
-     (,(cut func? <> 'ensuremath) . ,cadr)
-     (,(cut func? <> '!sub) . ,(lambda (x) 
-                                 (cons "\\_" (cdr x)))))))
+     (,(cut func? <> '!sub) . 
+       ,(lambda (x) (cons "\\_" (cdr x))))
+     (,(cut func? <> 'label) .   ; append tags to labels
+       ,(lambda (x) 
+          (set! equation-nr (+ 1 equation-nr))
+          (list '!concat x `(tag ,(number->string equation-nr))))))))
 
 (define (md-math t)
  "Takes a tree @t, and returns a valid MathJax-compatible LaTeX string"
@@ -273,9 +276,10 @@
 
 (tm-define (serialize-markdown-document x)
   (with-global footnote-nr 0
-    (with-global authors '()
-      (with-global postlude ""
-        (with body (serialize-markdown x)
-          (string-append (prelude)
-                         body
-                         postlude))))))
+    (with-global equation-nr 0
+      (with-global authors '()
+        (with-global postlude ""
+          (with body (serialize-markdown x)
+            (string-append (prelude)
+                           body
+                           postlude)))))))
