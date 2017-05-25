@@ -29,14 +29,11 @@
   ; (big-figure (image "path-to.jpeg" "251px" "251px" "" "") 
   ;             (document "caption"))
   (let* ((img (cadr x))
-         (caption (cAr x))
+         (caption (texmacs->markdown (cAr x)))
          (src (if (func? img 'image)
                   (cadr img)
-                  '(document "Wrong image src")))
-         (text (if (and (func? caption 'document) (string? (cadr caption)))
-                   (cadr caption)
-                   '(document "Wrong caption"))))
-    (list 'figure src text)))
+                  '(document "Wrong image src"))))
+    (list 'figure src caption)))
 
 ;TODO: session, code blocks, hlink, href, bibliograpy
 (define conversion-hash (make-ahash-table))

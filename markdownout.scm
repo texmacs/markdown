@@ -125,8 +125,9 @@
   "Hugo {{< figure >}} shortcode"
   (if (hugo-extensions?)
       (with payload (cdr x)
-        (string-append "{{< figure src=\"" (car payload) 
-                       "\" title=\"" (cadr payload) "\" >}}"))
+        (string-concatenate 
+         `("{{< figure src=\"" ,(car payload) 
+           "\" title=\"" ,@(map serialize-markdown (cdr payload)) "\" >}}")))
       ""))
 
 ; TODO: option for exporting or not cites
