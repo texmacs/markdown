@@ -119,6 +119,7 @@
  (cond ((== style 'strong) "**")
        ((== style 'em) "*")
        ((== style 'tt) "`")
+       ((== style 'strike) "~~")
        (else "")))
 
 (define (md-style x)
@@ -166,6 +167,7 @@
      (list (list 'strong md-style)
            (list 'em md-style)
            (list 'tt md-style)
+           (list 'strike md-style)
            (list 'document md-document)
            (list 'quotation md-quotation)
            (list 'theorem md-environment)
