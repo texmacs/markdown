@@ -18,7 +18,7 @@
   (cond ((list? x) 
          (set! postlude 
                (string-concatenate `(,postlude
-                                     "\n[^" ,(number->string footnote-nr) "] "
+                                     "\n[^" ,(number->string footnote-nr) "]: "
                                      ,@(map serialize-markdown x)))))
         ((string? x)
          (set! postlude (string-append postlude "\n" x)))
