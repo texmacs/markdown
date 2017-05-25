@@ -19,7 +19,7 @@
          (set! postlude 
                (string-concatenate `(,postlude
                                      "\n[^" ,(number->string footnote-nr) "] "
-                                     ,@(map serialize-markdown* x)))))
+                                     ,@(map serialize-markdown x)))))
         ((string? x)
          (set! postlude (string-append postlude "\n" x)))
         (else 
@@ -31,20 +31,20 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define (keep x)
-  (cons (car x) (map serialize-markdown* (cdr x))))
+  (cons (car x) (map serialize-markdown (cdr x))))
 
 (define (skip x)
-  (string-concatenate (map serialize-markdown* (cdr x))))
+  (string-concatenate (map serialize-markdown (cdr x))))
 
 (define (md-document x)
   (apply string-append
          (map line-break-after
               (map line-break-after
-                   (map serialize-markdown* (cdr x))))))
+                   (map serialize-markdown (cdr x))))))
 
 (define (md-concat x)
   (apply string-append 
-         (map serialize-markdown* (cdr x))))
+         (map serialize-markdown (cdr x))))
 
 (define (prefix-header n)
   (if (== 1 n)
@@ -59,7 +59,7 @@
     (with res (apply string-append 
                      `(,(prefix-header n)
                          " "
-                         ,@(map serialize-markdown* (cdr x))))
+                         ,@(map serialize-markdown (cdr x))))
       (if (<= n 4)
           (line-break-after res)
           (string-append res " ")))))
@@ -81,7 +81,7 @@
       ,(translate 
         (string-capitalize (symbol->string (car x))))))
    ": "
-   (string-concatenate (map serialize-markdown* (cdr x)))))
+   (string-concatenate (map serialize-markdown (cdr x)))))
 
 (define (md-math* t)
   ; TODO
@@ -105,14 +105,14 @@
                 `(concat ,c ,@(cddr a))
                 `(concat "  " ,a)))))
     (with doc (cAr x)
-      (serialize-markdown* 
+      (serialize-markdown 
        `(document ,@(map transform (cdr doc)))))))
 
 (define (md-quotation x)
   (let ((add-prefix (lambda (a) `(concat "> " ,a)))
         (doc (cAr x)))
     (with prefixed-children (map add-prefix (cdr doc))
-      (serialize-markdown*
+      (serialize-markdown
        `(document ,@prefixed-children)))))
         
 (define (style-text style)
@@ -124,7 +124,7 @@
 (define (md-style x)
   (with st (style-text (car x))
     (string-concatenate 
-     `(,st ,@(map serialize-markdown* (cdr x)) ,st))))
+     `(,st ,@(map serialize-markdown (cdr x)) ,st))))
 
 (define (md-cite x)
   "Convert to hugo-cites.
@@ -138,7 +138,8 @@
 
 (define (md-hlink x)
   (with payload (cdr x)
-    (string-append "[" (car payload) "]" "(" (cadr payload) ")")))    
+    (string-append "[" (serialize-markdown payload) "]"
+                   "(" (cadr payload) ")")))    
 
 (define (md-figure x)
   "Hugo {{< figure >}} shortcode"
@@ -146,7 +147,7 @@
       (with payload (cdr x)
         (string-concatenate 
          `("{{< figure src=\"" ,(car payload) 
-           "\" title=\"" ,@(map serialize-markdown* (cdr payload)) "\" >}}")))
+           "\" title=\"" ,@(map serialize-markdown (cdr payload)) "\" >}}")))
       ""))
 
 (define (md-footnote x)
@@ -188,9 +189,9 @@
            (list 'figure md-figure)
            (list 'hlink md-hlink)))
 
-(define (serialize-markdown* x)
+(define (serialize-markdown x)
   (cond ((null? x) "")
-        ((string? x) x)
+        ((string? x) (cork->utf8 x))
         ((symbol? x) 
          (display* "Ignoring symbol " x "\n")
          "")
@@ -204,15 +205,12 @@
                   (skip x)))))
         (else
          (apply string-append 
-                (cons (serialize-markdown* (car x))
-                      (map serialize-markdown* (cdr x)))))))
+                (cons (serialize-markdown (car x))
+                      (map serialize-markdown (cdr x)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public interface
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(tm-define (serialize-markdown x)
-  (cork->utf8 (serialize-markdown* x)))
 
 (tm-define (serialize-markdown-document x)
   (with-global footnote-nr 0
