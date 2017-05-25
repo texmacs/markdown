@@ -190,7 +190,11 @@
            (list 'figure md-figure)
            (list 'hlink md-hlink)))
 
-(define (serialize-markdown x)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Public interface
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(tm-define (serialize-markdown x)
   (cond ((null? x) "")
         ((string? x) (cork->utf8 x))
         ((symbol? x) 
@@ -208,10 +212,6 @@
          (apply string-append 
                 (cons (serialize-markdown (car x))
                       (map serialize-markdown (cdr x)))))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Public interface
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (tm-define (serialize-markdown-document x)
   (with-global footnote-nr 0
