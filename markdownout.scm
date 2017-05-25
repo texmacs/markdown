@@ -6,7 +6,7 @@
   (:use (convert tools output)))
 
 (define (hugo-extensions?)
-  (== (get-preference "texmacs->markdown:hugo-extensions") "#t")
+  (== (get-preference "texmacs->markdown:hugo-extensions") "#t"))
 
 (define (keep x)
   (cons (car x) (map serialize-markdown (cdr x))))
