@@ -8,14 +8,14 @@
         ))
 
 (define (keep x)
-  (cons (car x) (map texmacs->markdown (cdr x))))
+  (cons (car x) (map texmacs->markdown* (cdr x))))
 
 (define (change-to func)
   (lambda (x)
-    (cons func (map texmacs->markdown (cdr x)))))
+    (cons func (map texmacs->markdown* (cdr x)))))
 
 (define (skip x)
-  (map texmacs->markdown (cdr x)))
+  (map texmacs->markdown* (cdr x)))
 
 (define (skip-fully x)
   '())
@@ -25,7 +25,7 @@
   ; (big-figure (image "path-to.jpeg" "251px" "251px" "" "") 
   ;             (document "caption"))
   (let* ((img (tm-ref x 0))
-         (caption (texmacs->markdown (tm-ref x 1)))
+         (caption (texmacs->markdown* (tm-ref x 1)))
          (src (if (tm-is? img 'image) 
                   (tm-ref img 0)
                   '(document "Wrong image src"))))
@@ -34,7 +34,7 @@
 (define (parse-with x)
   ; HACK: we end up calling ourselves with (with "stuff"), which
   ; actually is a malformed 'with tag but it's handy
-  (cond ((== 1 (tm-length x)) (texmacs->markdown (tm-ref x 0)))
+  (cond ((== 1 (tm-length x)) (texmacs->markdown* (tm-ref x 0)))
         ((and (== "font-series" (tm-ref x 0))
               (== "bold" (tm-ref x 1)))
          `(strong ,(parse-with (cons 'with (cdddr x)))))
@@ -92,11 +92,7 @@
            (list 'footnote keep)
            (list 'bibliography skip-fully)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Public interface
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(tm-define (texmacs->markdown x)
+(define (texmacs->markdown* x)
   (cond ((not (list>0? x)) x)
         ((symbol? (car x))
          (with fun 
@@ -107,4 +103,13 @@
                   (display* "Skipped " (car x) "\n")
                   (skip x)))))
         (else
-         (cons (texmacs->markdown (car x)) (texmacs->markdown (cdr x))))))
+         (cons (texmacs->markdown* (car x)) (texmacs->markdown* (cdr x))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Public interface
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(tm-define (texmacs->markdown x)
+  (if (!= (tmfile? x) #f)
+      (texmacs->markdown* (tmfile? x))
+      (texmacs->markdown* x)))
