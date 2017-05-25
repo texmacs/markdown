@@ -127,10 +127,11 @@
      `(,st ,@(map serialize-markdown (cdr x)) ,st))))
 
 (define (md-cite x)
-  "Convert to hugo-cites.
-   Multiple cites are not supported"
-  (with cite-key (cadr x)
-    (string-append "{{< cite " cite-key " >}}")))
+  (if (not (hugo-extensions?)) ""
+      (string-concatenate
+       (list-intersperse
+        (map (cut string-append "{{< cite " <> " >}}") (cdr x))
+        ", "))))
 
 (define (md-cite-detail x)
   (with detail (cAr x)
