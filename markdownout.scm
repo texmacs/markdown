@@ -26,6 +26,28 @@
           (display* "postlude-add: bogus input " x "\n")
           (noop))))
 
+; There are probably a dozen functions in TeXmacs doing the 
+; very same thing as these two...
+(define (replace-fun-sub where what? by)
+  (if (npair? where) (if (what? where) (by where) where)
+      (cons (if (what? (car where)) (by (car where))
+                (replace-fun-sub (car where) what? by))
+            (replace-fun-sub (cdr where) what? by))))
+
+; This looks familiar... :/
+(define (replace-fun where what by)
+ (cond ((not (procedure? what))
+        (replace-fun where (cut == <> what) by))
+       ((not (procedure? by))
+        (replace-fun where what (lambda (x) by)))
+       (else (replace-fun-sub where what by))))
+
+(define (replace-fun-list where rules)
+  (if (and (list>0? rules) (pair? (car rules)))
+      (replace-fun (replace-fun-list where (cdr rules))
+                   (caar rules) (cdar rules))
+      where))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; markdown to string serializations
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -84,8 +106,12 @@
    (string-concatenate (map serialize-markdown (cdr x)))))
 
 (define (md-math* t)
-  ; TODO
-  t)
+  (replace-fun-list t
+   `((mathbbm . mathbb)
+     ((_) . "\\_")
+     (,(cut func? <> 'ensuremath) . ,cadr)
+     (,(cut func? <> '!sub) . ,(lambda (x) 
+                                 (cons "\\_" (cdr x)))))))
 
 (define (md-math t)
  "Takes a tree @t, and returns a valid MathJax-compatible LaTeX string"
