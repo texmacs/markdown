@@ -9,6 +9,7 @@
 ; Usage is wrapped within a "with-global" in serialize-markdown-document
 (define footnote-nr 0)
 (define label-nr 0)
+(define num-line-breaks 2)
 (define authors '())
 (define doc-title "")
 (define postlude "")
@@ -81,10 +82,9 @@
   (string-concatenate (map serialize-markdown (cdr x))))
 
 (define (md-document x)
-  (apply string-append
-         (map line-break-after
-              (map line-break-after
-                   (map serialize-markdown (cdr x))))))
+  (string-concatenate
+   (map line-breaks-after
+        (map serialize-markdown (cdr x)))))
 
 (define (md-concat x)
   (apply string-append 
@@ -95,8 +95,8 @@
       "#"
       (string-append "#" (prefix-header (- n 1)))))
 
-(define (line-break-after s)
-  (string-append s "\n"))
+(define (line-breaks-after s)
+  (string-concatenate `(,s ,@(make-list num-line-breaks "\n"))))
 
 (define (md-header n)
   (lambda (x)
@@ -105,7 +105,7 @@
                          " "
                          ,@(map serialize-markdown (cdr x))))
       (if (<= n 4)
-          (line-break-after res)
+          (line-breaks-after res)
           (string-append res " ")))))
 
 (define (math->latex t)
@@ -159,10 +159,10 @@
 (define (md-quotation x)
   (let ((add-prefix (lambda (a) `(concat "> " ,a)))
         (doc (cAr x)))
-    (with prefixed-children (map add-prefix (cdr doc))
+    (with-global num-line-breaks 0
       (serialize-markdown
-       `(document ,@prefixed-children)))))
-        
+        `(document ,@(map add-prefix (cdr doc)))))))
+
 (define (style-text style)
  (cond ((== style 'strong) "**")
        ((== style 'em) "*")
@@ -195,9 +195,10 @@
   "Hugo {{< figure >}} shortcode"
   (if (hugo-extensions?)
       (with payload (cdr x)
-        (string-concatenate 
-         `("{{< figure src=\"" ,(car payload) 
-           "\" title=\"" ,@(map serialize-markdown (cdr payload)) "\" >}}")))
+        (with-global num-line-breaks 0
+          (string-concatenate 
+           `("{{< figure src=\"" ,(car payload) 
+             "\" title=\"" ,@(map serialize-markdown (cdr payload)) "\" >}}"))))
       ""))
 
 (define (md-footnote x)
