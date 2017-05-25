@@ -9,10 +9,28 @@
 ; Usage is wrapped within a "with-global" in serialize-markdown-document
 (define footnote-nr 0)
 (define label-nr 0)
+(define authors '())
 (define postlude "")
 
 (define (hugo-extensions?)
   (== (get-preference "texmacs->markdown:hugo-extensions") "#t"))
+
+(define (author-add x)
+  (set! authors (append authors (cdr x)))
+  (display* authors)
+  "")
+
+(define (prelude)
+  (if (not (hugo-extensions?)) ""
+      (with authors* (string-join
+                      (map (lambda (x) (string-append "\"" x "\"")) authors)
+                      ", ")
+        (string-append "---\n\n"
+                       "authors: [" authors* "]\n"
+                       "tags: [\"\"]\n"
+                       "paper_authors: [\"\", \"\"]\n"
+                       "paper_key: \"\"\n\n"
+                       "---\n\n"))))
 
 (define (postlude-add x)
   (cond ((list? x) 
@@ -184,6 +202,7 @@
            (list 'h2 (md-header 2))
            (list 'h3 (md-header 3))
            (list 'h4 (md-header 4))
+           (list 'author-name author-add)
            (list 'cite md-cite)
            (list 'cite-detail md-cite-detail)
            (list 'footnote md-footnote)
@@ -215,7 +234,9 @@
 
 (tm-define (serialize-markdown-document x)
   (with-global footnote-nr 0
-    (with-global label-nr 0
+    (with-global authors '()
       (with-global postlude ""
-        (string-append (serialize-markdown x)
-                       postlude)))))
+        (with body (serialize-markdown x)
+          (string-append (prelude)
+                         body
+                         postlude))))))
