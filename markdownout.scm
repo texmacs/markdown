@@ -5,6 +5,9 @@
 (texmacs-module (convert markdown markdownout)
   (:use (convert tools output)))
 
+(define (hugo-extensions?)
+  (== (get-preference "texmacs->markdown:hugo-extensions") "#t")
+
 (define (keep x)
   (cons (car x) (map serialize-markdown (cdr x))))
 
@@ -118,6 +121,14 @@
   (with payload (cdr x)
     (string-append "[" (car payload) "]" "(" (cadr payload) ")")))    
 
+(define (md-figure x)
+  "Hugo {{< figure >}} shortcode"
+  (if (hugo-extensions?)
+      (with payload (cdr x)
+        (string-append "{{< figure src=\"" (car payload) 
+                       "\" title=\"" (cadr payload) "\" >}}"))
+      ""))
+
 ; TODO: option for exporting or not cites
 (define serialize-hash (make-ahash-table))
 (map (lambda (l) (apply (cut ahash-set! serialize-hash <> <>) l)) 
@@ -144,6 +155,7 @@
            (list 'h4 (md-header 4))
            (list 'cite md-cite)
            (list 'cite-detail md-cite-detail)
+           (list 'figure md-figure)
            (list 'hlink md-hlink)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
