@@ -162,7 +162,7 @@
 (define (md-quotation x)
   (let ((add-prefix (lambda (a) `(concat "> " ,a)))
         (doc (cAr x)))
-    (with-global num-line-breaks 0
+    (with-global num-line-breaks 1
       (serialize-markdown
         `(document ,@(map add-prefix (cdr doc)))))))
 
@@ -217,8 +217,8 @@
 
 (define (md-block x)
   (with-global num-line-breaks 1
-  (with syntax (tm-ref x 0)
-    (string-concatenate 
+    (with syntax (tm-ref x 0)
+      (string-concatenate 
        `("```" ,syntax "\n" ,@(map serialize-markdown (cdr x)) "```\n")))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
