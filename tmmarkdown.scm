@@ -41,6 +41,9 @@
         ((and (== "font-shape" (tm-ref x 0))
               (== "italic" (tm-ref x 1)))
          `(em ,(parse-with (cons 'with (cdddr x)))))
+        ((and (== "mode" (tm-ref x 0))
+              (== "prog" (tm-ref x 1)))
+         `(tt ,(parse-with (cons 'with (cdddr x)))))
         (else (skip x))))
 
 ;TODO: session, code blocks, hlink, href, bibliograpy
