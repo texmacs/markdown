@@ -216,9 +216,10 @@
       ((md-header 1) (cdr x))))
 
 (define (md-block x)
+  (with-global num-line-breaks 1
   (with syntax (tm-ref x 0)
     (string-concatenate 
-     `("```" ,st "\n" ,@(map serialize-markdown (cdr x)) "```\n"))))
+       `("```" ,syntax "\n" ,@(map serialize-markdown (cdr x)) "```\n")))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; dispatch
