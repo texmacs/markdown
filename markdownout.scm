@@ -215,6 +215,11 @@
   (if (hugo-extensions?) ""
       ((md-header 1) (cdr x))))
 
+(define (md-block x)
+  (with syntax (tm-ref x 0)
+    (string-concatenate 
+     `("```" ,st "\n" ,@(map serialize-markdown (cdr x)) "```\n"))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; dispatch
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -225,6 +230,7 @@
            (list 'em md-style)
            (list 'tt md-style)
            (list 'strike md-style)
+           (list 'block md-block)
            (list 'document md-document)
            (list 'quotation md-quotation)
            (list 'theorem md-environment)

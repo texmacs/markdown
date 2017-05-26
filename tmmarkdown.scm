@@ -68,6 +68,10 @@
   ;   (doc (bib-list "n" (doc (concat 1...) (concat 2... ) ... (concat n...)))))
   '())
 
+(define (code-block syntax)
+  (lambda (x)
+    `(block ,syntax ,@(cdr x))))
+
 ;TODO: session, code blocks, bibliography
 (define conversion-hash (make-ahash-table))
 (map (lambda (l) (apply (cut ahash-set! conversion-hash <> <>) l)) 
@@ -83,6 +87,13 @@
            (list 'scilab (change-to 'tt))
            (list 'shell (change-to 'tt))
            (list 'verbatim (change-to 'tt))
+           (list 'verbatim-code (code-block ""))
+           (list 'scm-code (code-block "scheme"))
+           (list 'cpp-code (code-block "c++"))
+           (list 'mmx-code (code-block "mmx"))
+           (list 'python-code (code-block "python"))
+           (list 'scilab-code (code-block "scilab"))
+           (list 'shell-code (code-block "shell"))
            (list 'author-name identity)
            (list 'author-email drop)
            (list 'document keep)
