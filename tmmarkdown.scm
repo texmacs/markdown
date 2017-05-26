@@ -133,11 +133,18 @@
         (else
          (cons (texmacs->markdown* (car x)) (texmacs->markdown* (cdr x))))))
 
+; For some reason we always receive an stree, so we cannot use tm-file?
+; because it expects its argument to be a tree and at some point queries a
+; string for its tree-label and obviously fails... duh.
+(define (is-file? x)
+  (and (func? x 'document)
+       (== 1 (length (select x '(body))))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public interface
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (tm-define (texmacs->markdown x)
-  (if (!= (tmfile? x) #f)
-      (texmacs->markdown* (tmfile? x))
+  (if (is-file? x)
+      (texmacs->markdown* (car (select x '(body))))
       (texmacs->markdown* x)))
