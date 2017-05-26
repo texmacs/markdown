@@ -24,6 +24,7 @@
 (define authors '())
 (define doc-title "")
 (define postlude "")
+(define labels '())
 
 (define (hugo-extensions?)
   (== (get-preference "texmacs->markdown:hugo-extensions") "#t"))
@@ -38,6 +39,7 @@
   "")
 
 (define (prelude)
+  "Output Hugo frontmatter"
   (if (not (hugo-extensions?)) ""
       (let ((authors* (string-join
                       (map (lambda (x) (string-append "\"" x "\"")) authors)
@@ -149,14 +151,22 @@
      (,(cut func? <> '!sub) . 
        ,(lambda (x) (cons "\\_" (cdr x))))
      (,(cut func? <> 'label) .   ; append tags to labels
-       ,(lambda (x) 
+       ,(lambda (x)
           (set! equation-nr (+ 1 equation-nr))
-          (list '!concat x `(tag ,(number->string equation-nr))))))))
+          (with label-name (number->string equation-nr)
+            (ahash-set! labels (cadr x) label-name)
+            (list '!concat x `(tag ,label-name))))))))
 
 (define (md-math t)
  "Takes a tree @t, and returns a valid MathJax-compatible LaTeX string"
  (with ltx (math->latex t)
    (serialize-latex (md-math* ltx))))
+
+(define (md-eqref x)
+  (let* ((label (cadr x))
+         (err-msg (string-append "undefined label " label))
+         (label-name (ahash-ref labels label err-msg)))
+    (string-append "(" label-name ")")))
 
 (define (md-list x)
   (let* ((c (cond ((== (car x) 'itemize) "* ")
@@ -269,6 +279,7 @@
            (list 'author-name author-add)
            (list 'cite md-cite)
            (list 'cite-detail md-cite-detail)
+           (list 'eqref md-eqref)
            (list 'footnote md-footnote)
            (list 'figure md-figure)
            (list 'hlink md-hlink)))
@@ -297,11 +308,12 @@
                       (map serialize-markdown (cdr x)))))))
 
 (tm-define (serialize-markdown-document x)
-  (with-global footnote-nr 0
-    (with-global equation-nr 0
-      (with-global authors '()
-        (with-global postlude ""
-          (with body (serialize-markdown x)
-            (string-append (prelude)
-                           body
-                           postlude)))))))
+  (with-global labels (make-ahash-table)
+    (with-global footnote-nr 0
+      (with-global equation-nr 0
+        (with-global authors '()
+          (with-global postlude ""
+            (with body (serialize-markdown x)
+              (string-append (prelude)
+                             body
+                             postlude))))))))

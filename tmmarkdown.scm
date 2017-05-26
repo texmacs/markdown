@@ -13,7 +13,6 @@
 (texmacs-module (convert markdown tmmarkdown)
   (:use (convert markdown markdownout)))
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Helper functions for the transformation of strees and dispatcher
 ;; TODO: use TeXmacs' logic-dispatch
@@ -127,6 +126,7 @@
            (list 'cite keep)
            (list 'cite-detail keep)
            (list 'hlink keep)
+           (list 'eqref keep)
            (list 'big-figure parse-big-figure)
            (list 'footnote keep)
            (list 'bibliography process-bibliography)))
