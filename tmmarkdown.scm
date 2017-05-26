@@ -61,7 +61,14 @@
          `(tt ,(parse-with (cons 'with (cdddr x)))))
         (else (skip x))))
 
-;TODO: session, code blocks, hlink, href, bibliograpy
+; TO-DO
+(define (process-bibliography x)
+  ; Input:
+  ; (bibliography "bib-name" "bib-type" "bib-file" 
+  ;   (doc (bib-list "n" (doc (concat 1...) (concat 2... ) ... (concat n...)))))
+  '())
+
+;TODO: session, code blocks, bibliography
 (define conversion-hash (make-ahash-table))
 (map (lambda (l) (apply (cut ahash-set! conversion-hash <> <>) l)) 
      (list (list 'strong keep)
@@ -111,7 +118,7 @@
            (list 'hlink keep)
            (list 'big-figure parse-big-figure)
            (list 'footnote keep)
-           (list 'bibliography drop)))
+           (list 'bibliography process-bibliography)))
 
 (define (texmacs->markdown* x)
   (cond ((not (list>0? x)) x)
