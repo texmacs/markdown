@@ -1,12 +1,23 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Markdown-stree to markdown-document or markdown-snippet converter
+;;
+;; MODULE      : tmmarkdown.scm
+;; DESCRIPTION : markdown-stree to markdown-document or markdown-snippet
+;; COPYRIGHT   : (C) 2017 Ana Cañizares García and Miguel de Benito Delgado
+;;
+;; This software falls under the GNU general public license version 3 or later.
+;; It comes WITHOUT ANY WARRANTY WHATSOEVER. For details, see the file LICENSE
+;; in the root directory or <http://www.gnu.org/licenses/gpl-3.0.html>.
+;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (texmacs-module (convert markdown markdownout)
   (:use (convert tools output)))
 
-; "Global" state for document serialization.
-; Usage is wrapped within a "with-global" in serialize-markdown-document
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; "Global" state for document serialization and config options
+;; Usage is wrapped within a "with-global" in serialize-markdown-document
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (define footnote-nr 0)
 (define equation-nr 0)  ; global counter for equations
 (define num-line-breaks 2)
@@ -16,6 +27,10 @@
 
 (define (hugo-extensions?)
   (== (get-preference "texmacs->markdown:hugo-extensions") "#t"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Helper routines
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define (author-add x)
   (set! authors (append authors (cdr x)))
