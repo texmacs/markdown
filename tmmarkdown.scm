@@ -17,7 +17,7 @@
 (define (skip x)
   (map texmacs->markdown* (cdr x)))
 
-(define (skip-fully x)
+(define (drop x)
   '())
 
 (define (parse-big-figure x)
@@ -59,7 +59,7 @@
            (list 'scheme (change-to 'tt))
            (list 'verbatim (change-to 'tt))
            (list 'author-name identity)
-           (list 'author-email skip-fully)
+           (list 'author-email drop)
            (list 'document keep)
            (list 'quotation keep)
            (list 'theorem keep)
@@ -93,7 +93,7 @@
            (list 'hlink keep)
            (list 'big-figure parse-big-figure)
            (list 'footnote keep)
-           (list 'bibliography skip-fully)))
+           (list 'bibliography drop)))
 
 (define (texmacs->markdown* x)
   (cond ((not (list>0? x)) x)
