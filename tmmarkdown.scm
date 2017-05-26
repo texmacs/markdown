@@ -1,20 +1,35 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; TeXmacs-stree to markdown-stree converter
+;;
+;; MODULE      : tmmarkdown.scm
+;; DESCRIPTION : TeXmacs-stree to markdown-stree converter
+;; COPYRIGHT   : (C) 2017 Ana Cañizares García and Miguel de Benito Delgado
+;;
+;; This software falls under the GNU general public license version 3 or later.
+;; It comes WITHOUT ANY WARRANTY WHATSOEVER. For details, see the file LICENSE
+;; in the root directory or <http://www.gnu.org/licenses/gpl-3.0.html>.
+;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (texmacs-module (convert markdown tmmarkdown)
-  (:use (convert markdown markdownout)
-        ;(convert markdown markdowntm)
-        ))
+  (:use (convert markdown markdownout)))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Helper functions for the transformation of strees and dispatcher
+;; TODO: use TeXmacs' logic-dispatch
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define (keep x)
+  "Recursively processes @x while leaving its func untouched."
   (cons (car x) (map texmacs->markdown* (cdr x))))
 
 (define (change-to func)
+  ; (a . b) -> (func . b)
   (lambda (x)
     (cons func (map texmacs->markdown* (cdr x)))))
 
 (define (skip x)
+  "Recursively processes @x and drops its func."
   (map texmacs->markdown* (cdr x)))
 
 (define (drop x)
