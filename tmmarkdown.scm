@@ -15,8 +15,15 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Helper functions for the transformation of strees and dispatcher
-;; TODO: use TeXmacs' logic-dispatch
+;; TODO: use TeXmacs' logic-dispatch, export sessions, bibliography
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+; For some reason we always receive an stree, so we cannot use tm-file?
+; because it expects its argument to be a tree and at some point queries a
+; string for its tree-label and obviously fails... duh.
+(define (is-file? x)
+  (and (func? x 'document)
+       (== 1 (length (select x '(body))))))
 
 (define (keep x)
   "Recursively processes @x while leaving its func untouched."
@@ -71,7 +78,11 @@
   (lambda (x)
     `(block ,syntax ,@(cdr x))))
 
-;TODO: session, code blocks, bibliography
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Dispatch
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 (define conversion-hash (make-ahash-table))
 (map (lambda (l) (apply (cut ahash-set! conversion-hash <> <>) l)) 
      (list (list 'strong keep)
@@ -143,13 +154,6 @@
                   (skip x)))))
         (else
          (cons (texmacs->markdown* (car x)) (texmacs->markdown* (cdr x))))))
-
-; For some reason we always receive an stree, so we cannot use tm-file?
-; because it expects its argument to be a tree and at some point queries a
-; string for its tree-label and obviously fails... duh.
-(define (is-file? x)
-  (and (func? x 'document)
-       (== 1 (length (select x '(body))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public interface
