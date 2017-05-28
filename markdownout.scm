@@ -25,6 +25,7 @@
 (define doc-title "")
 (define postlude "")
 (define labels '())
+(define indent "")
 
 (define (hugo-extensions?)
   (== (get-preference "texmacs->markdown:hugo-extensions") "#t"))
@@ -32,6 +33,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Helper routines
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define (indent-increment s)
+  (string-append indent s))
 
 (define (author-add x)
   (set! authors (append authors (cdr x)))
@@ -98,10 +102,30 @@
 (define (skip x)
   (string-concatenate (map serialize-markdown (cdr x))))
 
+(define (justify s cols pref)
+  (let* ((l (string-split s #\ ))
+         (c (string-length pref))
+         (line-len 0)
+         (proc (lambda (w acc)
+                 (set! line-len (+ line-len (string-length w) 1))
+                 (if (> line-len cols)
+                     (begin
+                       (set! line-len (+ c (string-length w)))
+                       (string-append acc "\n" pref w))
+                     (string-append acc " " w)))))
+      ; HACK: trim prefix to avoid double space
+      (list-fold proc (string-trim-right pref) l)))
+
+(define (md-paragraph p)
+  (if (string? p)
+      ; FIXME: some strings in Hugo shouldn't be splitted
+      ; TODO: cork->utf8
+      (justify p 80 indent)
+      (serialize-markdown p)))
+
 (define (md-document x)
   (string-concatenate
-   (map line-breaks-after
-        (map serialize-markdown (cdr x)))))
+   (map (compose line-breaks-after md-paragraph (cdr x)))))
 
 (define (md-concat x)
   (apply string-append 
@@ -185,11 +209,13 @@
        `(document ,@(map transform (cdr doc)))))))
 
 (define (md-quotation x)
-  (let ((add-prefix (lambda (a) `(concat "> " ,a)))
-        (doc (cAr x)))
-    (with-global num-line-breaks 1
-      (serialize-markdown
-        `(document ,@(map add-prefix (cdr doc)))))))
+  ;(let ((add-prefix (lambda (a) `(concat "> " ,a)))
+   ;     (doc (cAr x))) 
+  (with-global num-line-breaks 1
+    (with-global indent (indent-increment "> ")
+      (serialize-markdown (cAr x)))))
+    ;  (serialize-markdown
+     ;   `(document ,@(map add-prefix (cdr doc)))))))
 
 (define (style-text style)
  (cond ((== style 'strong) "**")
