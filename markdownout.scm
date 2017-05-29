@@ -274,7 +274,7 @@
 
 (define (md-hlink x)
   (with payload (cdr x)
-    (string-append "[" (serialize-markdown payload) "]"
+    (string-append "[" (serialize-markdown (car payload)) "]"
                    "(" (cadr payload) ")")))    
 
 (define (md-figure x)
