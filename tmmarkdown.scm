@@ -68,7 +68,7 @@
         (else (skip x))))
 
 ; TO-DO
-(define (process-bibliography x)
+(define (parse-bibliography x)
   ; Input:
   ; (bibliography "bib-name" "bib-type" "bib-file" 
   ;   (doc (bib-list "n" (doc (concat 1...) (concat 2... ) ... (concat n...)))))
@@ -142,7 +142,8 @@
            (list 'eqref keep)
            (list 'big-figure parse-big-figure)
            (list 'footnote keep)
-           (list 'bibliography process-bibliography)
+           (list 'bibliography drop)
+           (list 'hide-preamble drop)
            ))
 
 (define (texmacs->markdown* x)
