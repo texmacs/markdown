@@ -212,7 +212,7 @@
          (transform
           (lambda (a)
             (display* "   item?" (md-item? a) "\n")
-            (if (md-item? a) `(concat ,c ,@(cddr a)) ,a))))
+            (if (md-item? a) `(concat ,c ,@(cddr a)) a))))
     (with doc (cAr x)
       (with-global indent (indent-increment 
                            (string-concatenate (make-list (string-length c) 
