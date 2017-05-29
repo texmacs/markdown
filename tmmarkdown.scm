@@ -163,5 +163,5 @@
 
 (tm-define (texmacs->markdown x)
   (if (is-file? x)
-      (texmacs->markdown* (car (select x '(body))))
+      (texmacs->markdown* (car (select x '(body document))))
       (texmacs->markdown* x)))
