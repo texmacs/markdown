@@ -28,7 +28,7 @@
 (define indent "")
 
 (define (hugo-extensions?)
-  (== (get-preference "texmacs->markdown:hugo-extensions") "#t"))
+  (== (get-preference "texmacs->markdown:hugo-extensions") "on"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Helper routines
