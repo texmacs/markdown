@@ -26,8 +26,7 @@
 (define postlude "")
 (define labels '())
 (define indent "")
-; HACK: trim prefix to avoid double space
-(define (first-indent) (string-trim-right indent))
+(define (first-indent) indent)
 
 (define (hugo-extensions?)
   (== (get-preference "texmacs->markdown:hugo-extensions") "on"))
