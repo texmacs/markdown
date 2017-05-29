@@ -129,7 +129,7 @@
 (define (md-paragraph p)
   (with pw (get-preference "texmacs->markdown:paragraph-width")
     (line-breaks-after
-  (if (string? p)
+     (if (string? p)
          ; FIXME: arguments of Hugo shortcodes shouldn't be split
          (adjust-width p pw indent (first-indent))
          (serialize-markdown p)))))
@@ -156,13 +156,14 @@
 
 (define (md-header n)
   (lambda (x)
-    (with res (string-concatenate
-               `(,@(make-list n "#")
-                         " "
-                         ,@(map serialize-markdown (cdr x))))
-      (if (<= n 4)
-          (line-breaks-after res)
-          (string-append res " ")))))
+    (with-global num-line-breaks 1
+      (with res (string-concatenate
+                 `(,@(make-list n "#")
+                   " "
+                   ,@(map serialize-markdown (cdr x))))
+            (if (<= n 4)  ; Special handling of TeXmacs <paragraph>
+                (line-breaks-after res)
+                (string-append res " "))))))
 
 (define (math->latex t)
  "Converts the TeXmacs tree @t into internal LaTeX representation"
@@ -221,8 +222,8 @@
             (if (md-item? a) `(concat ,c ,@(cddr a)) a))))
     (with doc (cAr x)
       (with-global num-line-breaks 1
-      (with-global indent (indent-increment cs)
-        (with-global first-indent (indent-decrement (string-length c))
+        (with-global indent (indent-increment cs)
+          (with-global first-indent (indent-decrement (string-length c))
             (serialize-markdown `(document ,@(map transform (cdr doc))))))))))
 
 (define (md-quotation x)
