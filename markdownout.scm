@@ -21,6 +21,7 @@
 (define footnote-nr 0)
 (define label-nr 0)  ; global counter for equations
 (define num-line-breaks 2)
+(define paragraph-width #f)
 (define authors '())
 (define doc-title "")
 (define postlude "")
@@ -113,36 +114,30 @@
   (cork->utf8 s))
 
 (define (adjust-width s cols prefix first-prefix)
-  (let* ((l (map md-string (string-split s #\ )))
-         (c (string-length prefix))
-         (line-len 0)
-         (proc (lambda (w acc)
-                 (set! line-len (+ line-len (string-length w) 1))
-                 (if (> line-len cols)
-                     (begin
-                       (set! line-len (+ c (string-length w)))
-                       (string-append acc "\n" prefix w " "))
-                     (string-append acc w " ")))))
-    (string-trim-right (list-fold proc first-prefix l))))
+  (if (not paragraph-width)  ; set paragraph-width to #f to disable adjustment
+      (md-string (string-append prefix s))
+      (let* ((l (map md-string (string-split s #\ )))
+             (c (string-length prefix))
+             (line-len 0)
+             (proc (lambda (w acc)
+                     (set! line-len (+ line-len (string-length w) 1))
+                     (if (> line-len cols)
+                         (begin
+                           (set! line-len (+ c (string-length w)))
+                           (string-append acc "\n" prefix w " "))
+                         (string-append acc w " ")))))
+        (string-trim-right (list-fold proc first-prefix l)))))
 
 (define (md-paragraph p)
-  (with pw (get-preference "texmacs->markdown:paragraph-width")
-    (line-breaks-after
-     (if (string? p)
-         ; FIXME: arguments of Hugo shortcodes shouldn't be split
-         (adjust-width p pw indent (first-indent))
-         (serialize-markdown p)))))
-
- (define (md-paragraph p)
-   (with pw (get-preference "texmacs->markdown:paragraph-width")
-     (line-breaks-after     
-      (cond ((string? p)
+  (line-breaks-after     
+   (cond ((string? p)
              ; FIXME: arguments of Hugo shortcodes shouldn't be split
-             (adjust-width p pw indent (first-indent)))
-            ((func? p 'concat)
-             (adjust-width (serialize-markdown p) pw indent (first-indent)))
-           (else 
-            (serialize-markdown p))))))
+          (adjust-width p paragraph-width indent (first-indent)))
+         ((func? p 'concat)
+          (adjust-width (serialize-markdown p) paragraph-width indent
+                        (first-indent)))
+         (else 
+          (serialize-markdown p)))))
 
 (define (md-document x)
   (string-concatenate (map md-paragraph (cdr x))))
@@ -286,8 +281,10 @@
 (define (md-footnote x)
   ; Input: (footnote (document [stuff here]))
   (set! footnote-nr (+ 1 footnote-nr))
-  (postlude-add (cdr x))
-  (string-append "[^" (number->string footnote-nr) "]"))
+  (with-global num-line-breaks 1
+    (with-global paragraph-width #f
+      (postlude-add (cdr x))
+      (string-append "[^" (number->string footnote-nr) "]"))))
 
 (define (md-doc-title x)
   (set! doc-title (serialize-markdown (cdr x)))
@@ -369,8 +366,10 @@
       (with-global label-nr 0
         (with-global authors '()
           (with-global postlude ""
-            (with body (serialize-markdown x)
-              (string-append (prelude)
-                             body
-                             postlude))))))))
+            (with-global paragraph-width
+                         (get-preference "texmacs->markdown:paragraph-width")
+              (with body (serialize-markdown x)
+                    (string-append (prelude)
+                                   body
+                                   postlude)))))))))
   
