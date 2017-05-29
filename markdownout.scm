@@ -26,6 +26,8 @@
 (define postlude "")
 (define labels '())
 (define indent "")
+; HACK: trim prefix to avoid double space
+(define (first-indent) (string-trim-right indent))
 
 (define (hugo-extensions?)
   (== (get-preference "texmacs->markdown:hugo-extensions") "on"))
@@ -102,47 +104,45 @@
 (define (skip x)
   (string-concatenate (map serialize-markdown (cdr x))))
 
-(define (justify s cols pref)
-  (let* ((l (string-split s #\ ))
-         (c (string-length pref))
+(define (md-string s)
+  (cork->utf8 s))
+
+(define (adjust-width s cols prefix first-prefix)
+  (display* "adjust: s= " s "\n      pref= " prefix 
+            "\n     first= " first-prefix "\n")
+  (let* ((l (map md-string (string-split s #\ )))
+         (c (string-length prefix))
          (line-len 0)
          (proc (lambda (w acc)
                  (set! line-len (+ line-len (string-length w) 1))
                  (if (> line-len cols)
                      (begin
                        (set! line-len (+ c (string-length w)))
-                       (string-append acc "\n" pref w))
+                       (string-append acc "\n" prefix w))
                      (string-append acc " " w)))))
-      ; HACK: trim prefix to avoid double space
-      (list-fold proc (string-trim-right pref) l)))
+      (list-fold proc first-prefix l)))
 
 (define (md-paragraph p)
+  (with pw (get-preference "texmacs->markdown:paragraph-width")
+    (line-breaks-after
   (if (string? p)
-      ; FIXME: some strings in Hugo shouldn't be splitted
-      ; TODO: cork->utf8
-      (justify p 80 indent)
-      (serialize-markdown p)))
+         ; FIXME: arguments of Hugo shortcodes shouldn't be split
+         (adjust-width p pw indent (first-indent))
+         (serialize-markdown p)))))
 
 (define (md-document x)
-  (string-concatenate
-   (map (compose line-breaks-after md-paragraph (cdr x)))))
+  (string-concatenate (map md-paragraph (cdr x))))
 
 (define (md-concat x)
-  (apply string-append 
-         (map serialize-markdown (cdr x))))
-
-(define (prefix-header n)
-  (if (== 1 n)
-      "#"
-      (string-append "#" (prefix-header (- n 1)))))
+  (string-concatenate (map serialize-markdown (cdr x))))
 
 (define (line-breaks-after s)
   (string-concatenate `(,s ,@(make-list num-line-breaks "\n"))))
 
 (define (md-header n)
   (lambda (x)
-    (with res (apply string-append 
-                     `(,(prefix-header n)
+    (with res (string-concatenate
+               `(,@(make-list n "#")
                          " "
                          ,@(map serialize-markdown (cdr x))))
       (if (<= n 4)
@@ -209,13 +209,9 @@
        `(document ,@(map transform (cdr doc)))))))
 
 (define (md-quotation x)
-  ;(let ((add-prefix (lambda (a) `(concat "> " ,a)))
-   ;     (doc (cAr x))) 
   (with-global num-line-breaks 1
     (with-global indent (indent-increment "> ")
       (serialize-markdown (cAr x)))))
-    ;  (serialize-markdown
-     ;   `(document ,@(map add-prefix (cdr doc)))))))
 
 (define (style-text style)
  (cond ((== style 'strong) "**")
@@ -316,7 +312,7 @@
 
 (tm-define (serialize-markdown x)
   (cond ((null? x) "")
-        ((string? x) (cork->utf8 x))
+        ((string? x) (md-string x))
         ((symbol? x) 
          (display* "Ignoring symbol " x "\n")
          "")
@@ -343,3 +339,4 @@
               (string-append (prelude)
                              body
                              postlude))))))))
+  
