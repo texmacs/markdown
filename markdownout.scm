@@ -57,7 +57,7 @@
   (if (not (hugo-extensions?)) ""
       (let ((authors* (string-join
                        (map (cut string-append "\"" <> "\"") authors)
-                      ", "))
+                       ", "))
             (first-author (if (list>0? authors) (car authors) ""))
             (date (strftime "%Y-%m-%d"(localtime (current-time)))))
         (string-append "---\n\n"
@@ -292,7 +292,7 @@
 (define (md-footnote x)
   ; Input: (footnote (document [stuff here]))
   (set! footnote-nr (+ 1 footnote-nr))
-  (with-global num-line-breaks 1
+  (with-global num-line-breaks 0
     (with-global paragraph-width #f
       (postlude-add (cdr x))
       (string-append "[^" (number->string footnote-nr) "]"))))
