@@ -142,6 +142,8 @@
            (list 'cite-detail keep)
            (list 'hlink keep)
            (list 'eqref keep)
+           (list 'label keep)
+           (list 'reference keep)
            (list 'big-figure parse-big-figure)
            (list 'footnote keep)
            (list 'bibliography drop)

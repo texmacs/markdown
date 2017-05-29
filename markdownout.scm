@@ -19,7 +19,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define footnote-nr 0)
-(define equation-nr 0)  ; global counter for equations
+(define label-nr 0)  ; global counter for equations
 (define num-line-breaks 2)
 (define authors '())
 (define doc-title "")
@@ -191,8 +191,8 @@
        ,(lambda (x) (cons "\\_" (cdr x))))
      (,(cut func? <> 'label) .   ; append tags to labels
        ,(lambda (x)
-          (set! equation-nr (+ 1 equation-nr))
-          (with label-name (number->string equation-nr)
+          (set! label-nr (+ 1 label-nr))
+          (with label-name (number->string label-nr)
             (ahash-set! labels (cadr x) label-name)
             (list '!concat x `(tag ,label-name))))))))
 
@@ -206,6 +206,20 @@
          (err-msg (string-append "undefined label " label))
          (label-name (ahash-ref labels label err-msg)))
     (string-append "(" label-name ")")))
+
+(define (md-label x)
+  (set! label-nr (+ 1 label-nr))
+  (let ((label-name (number->string label-nr))
+        (label (cadr x)))
+    (if (not (ahash-ref labels label))
+        (begin (ahash-set! labels label label-name) "")
+        (begin (string-append "Duplicate label: '" label "'")))))
+
+(define (md-reference x)
+  (let* ((label (cadr x))
+         (err-msg (string-append "undefined label " label))
+         (label-name (ahash-ref labels label err-msg)))
+    label-name))
 
 (define (md-item? x)
   (and (list>0? x) (func? x 'concat) (== (cadr x) '(item))))
@@ -319,6 +333,8 @@
            (list 'cite md-cite)
            (list 'cite-detail md-cite-detail)
            (list 'eqref md-eqref)
+           (list 'label md-label)
+           (list 'reference md-reference)
            (list 'footnote md-footnote)
            (list 'figure md-figure)
            (list 'hlink md-hlink)))
@@ -349,7 +365,7 @@
 (tm-define (serialize-markdown-document x)
   (with-global labels (make-ahash-table)
     (with-global footnote-nr 0
-      (with-global equation-nr 0
+      (with-global label-nr 0
         (with-global authors '()
           (with-global postlude ""
             (with body (serialize-markdown x)
