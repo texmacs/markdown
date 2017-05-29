@@ -192,10 +192,17 @@
             (ahash-set! labels (cadr x) label-name)
             (list '!concat x `(tag ,label-name))))))))
 
-(define (md-math t)
- "Takes a tree @t, and returns a valid MathJax-compatible LaTeX string"
- (with ltx (math->latex t)
+(define (md-math x)
+ "Takes an stree @x, and returns a valid MathJax-compatible LaTeX string"
+ (with ltx (math->latex x)
    (serialize-latex (md-math* ltx))))
+
+(define (md-equation x)
+  ; HACK
+  (let*  ((s (md-math x))
+          (left (string-replace s "\\[" "\\\\["))
+          (right (string-replace left "\\]" "\\\\]")))
+    right))
 
 (define (md-eqref x)
   (let* ((label (cadr x))
@@ -316,8 +323,8 @@
            (list 'lemma md-environment)
            (list 'proof md-environment)
            (list 'math md-math)
-           (list 'equation md-math)
-           (list 'equation* md-math)
+           (list 'equation md-equation)
+           (list 'equation* md-equation)
            (list 'concat md-concat)
            (list 'itemize md-list)
            (list 'enumerate md-list)
