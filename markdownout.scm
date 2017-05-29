@@ -187,6 +187,7 @@
   (replace-fun-list t
    `((mathbbm . mathbb)
      ((_) . "\\_")
+     (,(cut func? <> 'ensuremath) . ,cadr)
      (,(cut func? <> '!sub) . 
        ,(lambda (x) (cons "\\_" (cdr x))))
      (,(cut func? <> 'label) .   ; append tags to labels
