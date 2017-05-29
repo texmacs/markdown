@@ -122,7 +122,7 @@
                  (if (> line-len cols)
                      (begin
                        (set! line-len (+ c (string-length w)))
-                       (string-append acc "\n" prefix w))
+                       (string-append acc "\n" prefix w " "))
                      (string-append acc w " ")))))
     (string-trim-right (list-fold proc first-prefix l))))
 
