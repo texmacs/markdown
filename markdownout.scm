@@ -114,8 +114,6 @@
   (cork->utf8 s))
 
 (define (adjust-width s cols prefix first-prefix)
-  (display* "adjust: s= " s "\n      pref= " prefix 
-            "\n     first= " first-prefix "\n")
   (let* ((l (map md-string (string-split s #\ )))
          (c (string-length prefix))
          (line-len 0)
@@ -125,8 +123,8 @@
                      (begin
                        (set! line-len (+ c (string-length w)))
                        (string-append acc "\n" prefix w))
-                     (string-append acc " " w)))))
-      (list-fold proc first-prefix l)))
+                     (string-append acc w " ")))))
+    (string-trim-right (list-fold proc first-prefix l))))
 
 (define (md-paragraph p)
   (with pw (get-preference "texmacs->markdown:paragraph-width")
