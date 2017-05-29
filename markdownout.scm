@@ -352,7 +352,7 @@
 
 (tm-define (serialize-markdown x)
   (cond ((null? x) "")
-        ((string? x) (md-string x))
+        ((string? x) x)
         ((symbol? x) 
          (display* "Ignoring symbol " x "\n")
          "")
