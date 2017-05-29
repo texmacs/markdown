@@ -36,9 +36,11 @@
 
 (define (skip x)
   "Recursively processes @x and drops its func."
+  (display* "Skipped " (car x) "\n")
   (map texmacs->markdown* (cdr x)))
 
 (define (drop x)
+  (display* "Dropped " (car x) " !\n")
   '())
 
 (define (parse-big-figure x)
@@ -152,11 +154,9 @@
          (with fun (ahash-ref conversion-hash (car x))
            (if (!= fun #f)
                (fun x)
-               (begin
-                 (display* "Skipped " (car x) "\n")
-                 (skip x)))))
-        (else
-          (cons (texmacs->markdown* (car x)) (texmacs->markdown* (cdr x))))))
+               (skip x))))
+        (else (cons (texmacs->markdown* (car x))
+                    (texmacs->markdown* (cdr x))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public interface
