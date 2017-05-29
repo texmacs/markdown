@@ -44,6 +44,12 @@
   (display* authors)
   "")
 
+(define (indent-decrement n)
+  (lambda () 
+    (if (> (string-length indent) n)
+        (string-drop-right indent n)
+        "")))
+
 (define (prelude)
   "Output Hugo frontmatter"
   (if (not (hugo-extensions?)) ""
@@ -130,6 +136,17 @@
          (adjust-width p pw indent (first-indent))
          (serialize-markdown p)))))
 
+ (define (md-paragraph p)
+   (with pw (get-preference "texmacs->markdown:paragraph-width")
+     (line-breaks-after     
+      (cond ((string? p)
+             ; FIXME: arguments of Hugo shortcodes shouldn't be split
+             (adjust-width p pw indent (first-indent)))
+            ((func? p 'concat)
+             (adjust-width (serialize-markdown p) pw indent (first-indent)))
+           (else 
+            (serialize-markdown p))))))
+
 (define (md-document x)
   (string-concatenate (map md-paragraph (cdr x))))
 
@@ -192,21 +209,22 @@
          (label-name (ahash-ref labels label err-msg)))
     (string-append "(" label-name ")")))
 
+(define (md-item? x)
+  (and (list>0? x) (func? x 'concat) (== (cadr x) '(item))))
+
 (define (md-list x)
   (let* ((c (cond ((== (car x) 'itemize) "* ")
-                ((== (car x) 'enumerate) "1. ")
-                ((== (car x) 'enumerate-alpha) "a. ")
-                (else "* ")))
+                  ((== (car x) 'enumerate) "1. ")
+                  ((== (car x) 'enumerate-alpha) "a. ")
+                  (else "* ")))
+         (cs (string-concatenate (make-list (string-length c) " ")))
          (transform
           (lambda (a)
-            (if (and (list>0? a)
-                     (== (car a) 'concat)
-                     (== (cadr a) '(item)))
-                `(concat ,c ,@(cddr a))
-                `(concat "  " ,a)))))
+            (if (md-item? a) `(concat ,c ,@(cddr a)) `(concat "" ,a)))))
     (with doc (cAr x)
-      (serialize-markdown 
-       `(document ,@(map transform (cdr doc)))))))
+      (with-global indent (indent-increment cs)
+        (with-global first-indent (indent-decrement (string-length c))
+          (serialize-markdown `(document ,@(map transform (cdr doc)))))))))
 
 (define (md-quotation x)
   (with-global num-line-breaks 1
