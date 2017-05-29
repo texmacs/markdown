@@ -82,7 +82,6 @@
 ;; Dispatch
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
 (define conversion-hash (make-ahash-table))
 (map (lambda (l) (apply (cut ahash-set! conversion-hash <> <>) l)) 
      (list (list 'strong keep)
@@ -119,8 +118,11 @@
            (list 'concat keep)
            (list 'doc-title keep)
            (list 'section (change-to 'h2))
+           (list 'section* (change-to 'h2))           
            (list 'subsection (change-to 'h3))
+           (list 'subsection* (change-to 'h3))
            (list 'subsubsection (change-to 'h4))
+           (list 'subsubsection* (change-to 'h4))
            (list 'paragraph (change-to 'strong))
            (list 'subparagraph (change-to 'strong))
            (list 'with parse-with)
@@ -140,20 +142,20 @@
            (list 'eqref keep)
            (list 'big-figure parse-big-figure)
            (list 'footnote keep)
-           (list 'bibliography process-bibliography)))
+           (list 'bibliography process-bibliography)
+           ))
 
 (define (texmacs->markdown* x)
   (cond ((not (list>0? x)) x)
         ((symbol? (car x))
-         (with fun 
-              (ahash-ref conversion-hash (car x))
-            (if (!= fun #f)
-                (fun x)
-                (begin
-                  (display* "Skipped " (car x) "\n")
-                  (skip x)))))
+         (with fun (ahash-ref conversion-hash (car x))
+           (if (!= fun #f)
+               (fun x)
+               (begin
+                 (display* "Skipped " (car x) "\n")
+                 (skip x)))))
         (else
-         (cons (texmacs->markdown* (car x)) (texmacs->markdown* (cdr x))))))
+          (cons (texmacs->markdown* (car x)) (texmacs->markdown* (cdr x))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public interface
