@@ -40,7 +40,10 @@
   (string-append indent s))
 
 (define (indent-decrement n)
-  (lambda () (string-drop-right indent n)))
+  (lambda ()
+    (if (>= (string-length indent) n)
+        (string-drop-right indent n)
+        "")))
 
 (define (author-add x)
   (set! authors (append authors (cdr x)))
