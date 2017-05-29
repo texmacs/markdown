@@ -220,9 +220,10 @@
           (lambda (a)
             (if (md-item? a) `(concat ,c ,@(cddr a)) a))))
     (with doc (cAr x)
+      (with-global num-line-breaks 1
       (with-global indent (indent-increment cs)
         (with-global first-indent (indent-decrement (string-length c))
-          (serialize-markdown `(document ,@(map transform (cdr doc)))))))))
+            (serialize-markdown `(document ,@(map transform (cdr doc))))))))))
 
 (define (md-quotation x)
   (with-global num-line-breaks 1
