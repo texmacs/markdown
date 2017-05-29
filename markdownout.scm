@@ -218,7 +218,7 @@
          (cs (string-concatenate (make-list (string-length c) " ")))
          (transform
           (lambda (a)
-            (if (md-item? a) `(concat ,c ,@(cddr a)) `(concat "" ,a)))))
+            (if (md-item? a) `(concat ,c ,@(cddr a)) a))))
     (with doc (cAr x)
       (with-global indent (indent-increment cs)
         (with-global first-indent (indent-decrement (string-length c))
