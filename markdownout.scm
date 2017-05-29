@@ -56,13 +56,15 @@
   "Output Hugo frontmatter"
   (if (not (hugo-extensions?)) ""
       (let ((authors* (string-join
-                      (map (lambda (x) (string-append "\"" x "\"")) authors)
+                       (map (cut string-append "\"" <> "\"") authors)
                       ", "))
+            (first-author (if (list>0? authors) (car authors) ""))
             (date (strftime "%Y-%m-%d"(localtime (current-time)))))
         (string-append "---\n\n"
                        "title: \"" doc-title "\"\n"
-                       "date: \"" date "\"\n"
+                       "author: \"" first-author "\"\n"
                        "authors: [" authors* "]\n"
+                       "date: \"" date "\"\n"
                        "tags: [\"\"]\n"
                        "paper_authors: [\"\", \"\"]\n"
                        "paper_key: \"\"\n\n"
@@ -296,7 +298,7 @@
       (string-append "[^" (number->string footnote-nr) "]"))))
 
 (define (md-doc-title x)
-  (set! doc-title (serialize-markdown (cdr x)))
+  (set! doc-title (md-string (serialize-markdown (cdr x))))
   (if (hugo-extensions?) ""
       ((md-header 1) (cdr x))))
 
