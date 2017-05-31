@@ -381,17 +381,18 @@
                 (map serialize-markdown x)))))
 
 (tm-define (serialize-markdown-document x)
-  (with-global labels (make-ahash-table)
-    (with-global footnote-nr 0
-      (with-global label-nr 0
-        (with-global environment-nr 0                             
-          (with-global equation-nr 0
-            (with-global authors '()
-              (with-global postlude ""
-                (with-global paragraph-width
-                             (get-preference
-                              "texmacs->markdown:paragraph-width")
-                  (with body (serialize-markdown x)
-                    (string-append (prelude)
-                                 body
-                                 postlude)))))))))))
+  (with-global file? #t
+    (with-global labels (make-ahash-table)
+      (with-global footnote-nr 0
+        (with-global label-nr 0
+          (with-global environment-nr 0                             
+            (with-global equation-nr 0
+              (with-global authors '()
+                           (with-global postlude ""
+                             (with-global paragraph-width
+                                 (get-preference
+                                  "texmacs->markdown:paragraph-width")
+                               (with body (serialize-markdown x)
+                                 (string-append (prelude)
+                                                body
+                                                postlude))))))))))))
