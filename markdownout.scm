@@ -30,6 +30,7 @@
 (define labels '())
 (define indent "")
 (define (first-indent) indent)
+(define file? #f)
 
 (define (hugo-extensions?)
   (== (get-preference "texmacs->markdown:hugo-extensions") "on"))
@@ -37,6 +38,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Helper routines
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define tm-encoding->md-encoding
+  (if file? cork->utf8 identity))
+
+(define md-encoding->tm-encoding
+  (if file? utf8->cork identity))
 
 (define (indent-increment s)
   (string-append indent s))
@@ -114,7 +121,7 @@
   (string-concatenate (map serialize-markdown (cdr x))))
 
 (define (md-string s)
-  (cork->utf8 s))
+  (tm-encoding->md-encoding s))
 
 (define (adjust-width s cols prefix first-prefix)
   (if (not paragraph-width)  ; set paragraph-width to #f to disable adjustment
@@ -253,7 +260,7 @@
 (define (style-text style)
  (cond ((== style 'strong) "**")
        ((== style 'em) "*")
-       ((== style 'tt) (utf8->cork "`"))
+       ((== style 'tt) (md-encoding->tm-encoding "`"))
        ((== style 'strike) "~~")
        (else "")))
 
