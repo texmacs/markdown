@@ -253,7 +253,7 @@
 (define (style-text style)
  (cond ((== style 'strong) "**")
        ((== style 'em) "*")
-       ((== style 'tt) "`")
+       ((== style 'tt) (utf8->cork "`"))
        ((== style 'strike) "~~")
        (else "")))
 
