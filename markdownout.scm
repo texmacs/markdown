@@ -43,7 +43,6 @@
 
 (define (author-add x)
   (set! authors (append authors (cdr x)))
-  (display* authors)
   "")
 
 (define (indent-decrement n)
@@ -368,12 +367,11 @@
             (if (!= fun #f)
                 (fun x)
                 (begin
-                  (display* "Skipped " (car x) "\n")
+                  (display* "Serialize skipped " (car x) "\n")
                   (skip x)))))
         (else
-         (apply string-append 
-                (cons (serialize-markdown (car x))
-                      (map serialize-markdown (cdr x)))))))
+         (string-concatenate
+                (map serialize-markdown x)))))
 
 (tm-define (serialize-markdown-document x)
   (with-global labels (make-ahash-table)
