@@ -39,6 +39,11 @@
   (display* "Skipped " (car x) "\n")
   (map texmacs->markdown* (cdr x)))
 
+(define (skip-but-last x)
+  "Process only the last child of @x."
+  (display* "Skipped all but last " (cDr x) "\n")
+  (list (texmacs->markdown* (cAr x))))
+
 (define (drop x)
   (display* "Dropped " (car x) " !\n")
   '())
@@ -67,7 +72,7 @@
         ((and (== "mode" (tm-ref x 0))
               (== "prog" (tm-ref x 1)))
          `(tt ,(parse-with (cons 'with (cdddr x)))))
-        (else (skip x))))
+        (else (skip-but-last x))))
 
 ; TO-DO
 (define (parse-bibliography x)
