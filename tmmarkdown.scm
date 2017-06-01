@@ -56,8 +56,14 @@
   ; Example input:
   ; (big-figure (image "path-to.jpeg" "251px" "251px" "" "") 
   ;             (document "caption"))
-  (let* ((img (tm-ref x 0))
-         (caption (texmacs->markdown* (tm-ref x 1)))
+  ; Or, when the "Figure num." in the figure is removed:
+  ; (render-big-figure "" "Figure text" (image ...) (document "caption"))
+  ;
+  ; FIXME: We need to ignore the text until we write a Hugo shortcode
+  ; implementing Figure text as TeXmacs.
+  (let* ((offset (if (func? x 'big-figure) 0 2))
+         (img (tm-ref x offset))
+         (caption (texmacs->markdown* (tm-ref x (+ 1 offset))))
          (src (if (tm-is? img 'image) 
                   (tm-ref img 0)
                   '(document "Wrong image src"))))
@@ -160,6 +166,7 @@
            (list 'label keep)
            (list 'reference keep)
            (list 'big-figure parse-big-figure)
+           (list 'render-big-figure parse-big-figure)
            (list 'footnote keep)
            (list 'bibliography drop)
            (list 'hide-preamble drop)
