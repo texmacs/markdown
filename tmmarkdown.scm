@@ -34,6 +34,10 @@
   (lambda (x)
     (cons func (map texmacs->markdown* (cdr x)))))
 
+(define (hrule-hack x)
+  ; FIXME: this breaks inside quotations and whatnot. And it's ugly.
+  '(document "" "---" ""))
+
 (define (skip x)
   "Recursively processes @x and drops its func."
   (display* "Skipped " (car x) "\n")
@@ -95,6 +99,7 @@
            (list 'dfn (change-to 'strong))
            (list 'em keep)
            (list 'strike-through (change-to 'strike)) ; non-standard extension
+           (list 'hrule hrule-hack)
            (list 'samp (change-to 'tt))
            (list 'python (change-to 'tt))
            (list 'cpp (change-to 'tt))
