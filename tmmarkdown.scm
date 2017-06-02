@@ -140,6 +140,7 @@
            (list 'equation* identity)
            (list 'concat keep)
            (list 'doc-title keep)
+           (list 'doc-running-author keep)
            (list 'section (change-to 'h2))
            (list 'section* (change-to 'h2))           
            (list 'subsection (change-to 'h3))
@@ -170,6 +171,7 @@
            (list 'footnote keep)
            (list 'bibliography drop)
            (list 'hide-preamble drop)
+           (list 'tags keep)  ; extension in paperwhy.ts for Hugo tags
            ))
 
 (define (texmacs->markdown* x)
