@@ -321,10 +321,16 @@
       (string-concatenate 
        `("```" ,syntax "\n" ,@(map serialize-markdown (cdr x)) "```\n")))))
 
-(define (md-tags x)
+(define (md-hugo-tags x)
   (if (hugo-extensions?)
       (begin (set! post-tags (cdr x)) "")
       (string-append "Tags: " (list->csv (cdr x)))))
+
+(define (md-hugo-shortcode x)
+  (if (hugo-extensions?)
+      (string-concatenate 
+       `("{{< " ,(cadr x) " " ,@(list-intersperse (cddr x) " ") " >}}"))
+      ""))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; dispatch
@@ -370,7 +376,8 @@
            (list 'footnote md-footnote)
            (list 'figure md-figure)
            (list 'hlink md-hlink)
-           (list 'tags md-tags)  ; Hugo extension
+           (list 'tags md-hugo-tags)  ; Hugo extension
+           (list 'hugo md-hugo-shortcode)  ; Hugo extension
            ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

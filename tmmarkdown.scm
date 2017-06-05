@@ -172,6 +172,7 @@
            (list 'bibliography drop)
            (list 'hide-preamble drop)
            (list 'tags keep)  ; extension in paperwhy.ts for Hugo tags
+           (list 'hugo keep)  ; extension in paperwhy.ts for Hugo shortcodes
            ))
 
 (define (texmacs->markdown* x)
