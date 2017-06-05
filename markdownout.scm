@@ -41,11 +41,15 @@
 ;; Helper routines
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define tm-encoding->md-encoding
-  (if file? cork->utf8 identity))
+;; FIXME: does this make sense? We only convert if exporting to file.
+; The idea is that ""Copy to markdown" might already perform some internal
+; conversion before sending us the stree, because weird chars appear.
+; However if we don't do any conversion here, the copied text is still wrong
+(define (tm-encoding->md-encoding x)
+  (if file? (cork->utf8 x) x))
 
-(define md-encoding->tm-encoding
-  (if file? utf8->cork identity))
+(define (md-encoding->tm-encoding)
+  (if file? (utf8->cork x) x))
 
 (define (list->csv l)
   (string-join (map (cut string-append "\"" <> "\"") l) ", "))
