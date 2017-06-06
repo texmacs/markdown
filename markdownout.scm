@@ -204,8 +204,8 @@
   (let* ((s (string-drop-right (symbol->string (car x)) 1))
          (txt (translate (string-capitalize s)))
          (tag `(strong ,(string-append txt ":")))
-         (content (cdadr x)))
-    (serialize-markdown 
+         (content (cdadr x))) 
+    (serialize-markdown
      `(document (concat ,tag " " ,(car content)) ,@(cdr content)))))
 
 (define (md-dueto x)
@@ -451,19 +451,20 @@
 
 (tm-define (serialize-markdown-document x)
   (with-global file? #t
-    (with-global labels (make-ahash-table)
-      (with-global footnote-nr 0
-        (with-global label-nr 0
-          (with-global environment-nr 0                             
-            (with-global equation-nr 0
-              (with-global paper-authors '()
-                (with-global post-tags '()
-                  (with-global post-author ""
-                    (with-global postlude ""
-                      (with-global paragraph-width
-                                   (get-preference
-                                    "texmacs->markdown:paragraph-width")
-                        (with body (serialize-markdown x)
-                          (string-append (prelude)
-                                         body
-                                         postlude))))))))))))))
+    (with-global indent ""
+      (with-global labels (make-ahash-table)
+        (with-global footnote-nr 0
+          (with-global label-nr 0
+            (with-global environment-nr 0                             
+              (with-global equation-nr 0
+                (with-global paper-authors '()
+                  (with-global post-tags '()
+                    (with-global post-author ""
+                      (with-global postlude ""
+                        (with-global paragraph-width
+                                     (get-preference
+                                      "texmacs->markdown:paragraph-width")
+                          (with body (serialize-markdown x)
+                            (string-append (prelude)
+                                            body
+                                            postlude)))))))))))))))
