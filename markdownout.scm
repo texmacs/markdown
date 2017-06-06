@@ -137,7 +137,7 @@
 (define (adjust-width s cols prefix first-prefix)
   (if (not paragraph-width)  ; set paragraph-width to #f to disable adjustment
       (md-string (string-append prefix s))
-      (let* ((l (map md-string (string-split s #\ )))
+      (let* ((l (map md-string (string-split s #\ ))) ;split words
              (c (string-length prefix))
              (line-len 0)
              (proc (lambda (w acc)
@@ -237,7 +237,7 @@
 (define (md-math x)
  "Takes an stree @x, and returns a valid MathJax-compatible LaTeX string"
  (with ltx (math->latex x)
-   (serialize-latex (md-math* ltx))))
+   (string-replace (serialize-latex (md-math* ltx)) "\n" " ")))
 
 (define (md-equation x)
   ;; HACK
