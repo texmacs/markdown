@@ -343,7 +343,7 @@
   (with-global num-line-breaks 1
     (with syntax (tm-ref x 0)
       (string-concatenate 
-       `("```" ,syntax "\n" ,@(map serialize-markdown (cdr x)) "```\n")))))
+       `("```" ,syntax "\n" ,@(map serialize-markdown (cddr x)) "```\n")))))
 
 (define (md-hugo-tags x)
   (if (hugo-extensions?)
