@@ -46,10 +46,10 @@
 ; conversion before sending us the stree, because weird chars appear.
 ; However if we don't do any conversion here, the copied text is still wrong
 (define (tm-encoding->md-encoding x)
-  (if file? (cork->utf8 x) x))
+  (if file? (string-convert x "Cork" "UTF-8") x))
 
-(define (md-encoding->tm-encoding)
-  (if file? (utf8->cork x) x))
+(define (md-encoding->tm-encoding x)
+  (if file? (string-convert x "UTF-8" "Cork") x))
 
 (define (list->csv l)
   (string-join (map (cut string-append "\"" <> "\"") l) ", "))
@@ -158,6 +158,8 @@
           (adjust-width (serialize-markdown p) paragraph-width indent
                         (first-indent)))
          (else 
+           ;; do not convert otherwise
+           ;; in order to prevent nested conversions
           (serialize-markdown p)))))
 
 (define (md-document x)
