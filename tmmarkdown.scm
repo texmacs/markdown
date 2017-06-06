@@ -77,7 +77,7 @@
         ((and (== "mode" (tm-ref x 0))
               (== "prog" (tm-ref x 1)))
          `(tt ,(parse-with (cons 'with (cdddr x)))))
-        (else (skip x))))
+        (else (parse-with (cons 'with (cdddr x))))))
 
 ; TO-DO
 (define (parse-bibliography x)
