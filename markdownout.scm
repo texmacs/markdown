@@ -340,9 +340,10 @@
   ; Input: (footnote (document [stuff here]))
   (set! footnote-nr (+ 1 footnote-nr))
   (with-global num-line-breaks 0
-    (with-global paragraph-width #f
-      (postlude-add (cdr x))
-      (string-append "[^" (number->string footnote-nr) "]"))))
+    (with-global indent ""
+      (with-global paragraph-width #f
+        (postlude-add (cdr x))
+        (string-append "[^" (number->string footnote-nr) "]")))))
 
 (define (md-doc-title x)
   (set! doc-title (md-string (serialize-markdown (cdr x))))
