@@ -149,6 +149,15 @@
                          (string-append acc w " ")))))
         (string-trim-right (list-fold proc first-prefix l)))))
 
+(define (md-is-document? t)
+  "#t means: don't recursively adjust-width because @t contains paragraphs"
+  (and (list>1? t)
+       (in? (car t) 
+            '(document quotation code-block definition definition* conjecture 
+              conjecture* algorithm algorithm* problem problem* theorem
+              theorem* proposition proposition* corollary corollary*
+              lemma lemma* proof itemize enumerate enumerate-alpha))))
+
 (define (md-paragraph p)
   (line-breaks-after 
    (cond ((string? p)
