@@ -202,10 +202,28 @@
     (serialize-markdown 
      `(document (concat ,tag " " ,(car content)) ,@(cdr content)))))
 
+(define (md-fix-math-row t)
+  "Append backslashes to last item in a !row"
+  (if (and (func? t '!row) (list>1? t))
+      (with cols (cdr t)
+        `(!row ,@(cDr cols) (!concat ,(cAr cols) "\\\\\\\\")))
+      t))
+
+(define (md-fix-math-table t)
+  "Append extra backslashes at the end of !rows in LaTeX tables"
+  (if (not (list>1? (cdr t))) t  ; Nothing to do with only one row
+      (let* ((rows (cdr t))
+             (last-row (cAr rows))
+             (first-rows (cDr rows)))
+        `(!table ,@(map md-fix-math-row first-rows) ,last-row))))
+
 (define (md-math* t)
   (replace-fun-list t
    `((mathbbm . mathbb)
      ((_) . "\\_")
+     ((left\{) . (left\\{))
+     ((right\{) . (right\\{))
+     (,(cut func? <> '!table) . ,md-fix-math-table)
      (,(cut func? <> 'ensuremath) . ,cadr)
      (,(cut func? <> '!sub) . 
        ,(lambda (x) (cons "\\_" (cdr x))))
