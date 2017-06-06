@@ -149,21 +149,26 @@
                          (string-append acc w " ")))))
         (string-trim-right (list-fold proc first-prefix l)))))
 
+(define (md-must-adjust? t)
+  (and (list>1? t)
+       (in? (car t)
+            '(strong em tt strike math concat cite cite-detail 
+                     eqref reference figure hlink))))
+
 (define (md-paragraph p)
-  (line-breaks-after 
-   (cond ((string? p)
-          ;; FIXME: arguments of Hugo shortcodes shouldn't be split
-          (adjust-width p paragraph-width indent (first-indent)))
-         ((func? p 'concat)
-          (adjust-width (serialize-markdown p) paragraph-width indent
-                        (first-indent)))
-         (else 
-           ;; do not convert otherwise
-           ;; in order to prevent nested conversions
-          (serialize-markdown p)))))
+  (cond ((string? p)
+         ;; FIXME: arguments of Hugo shortcodes shouldn't be split
+         (adjust-width p paragraph-width indent (first-indent)))
+        ((md-must-adjust? p)
+         (adjust-width (serialize-markdown p) paragraph-width indent
+                       (first-indent)))
+        (else ;; do not convert to prevent nested conversions
+          (serialize-markdown p))))
 
 (define (md-document x)
-  (string-concatenate (map md-paragraph (cdr x))))
+  (string-concatenate
+   (list-intersperse (map md-paragraph (cdr x))
+                     (string-concatenate (make-list num-line-breaks "\n")))))
 
 (define (md-concat x)
   (string-concatenate (map serialize-markdown (cdr x))))
@@ -178,9 +183,9 @@
                  `(,@(make-list n "#")
                    " "
                    ,@(map serialize-markdown (cdr x))))
-            (if (<= n 4)  ; Special handling of TeXmacs <paragraph>
-                (line-breaks-after res)
-                (string-append res " "))))))
+            (if (> n 4)  ; Special handling of TeXmacs <paragraph>
+                (string-append res " ")
+                res)))))
 
 (define (math->latex t)
  "Converts the TeXmacs tree @t into internal LaTeX representation"
@@ -252,9 +257,12 @@
 (define (md-equation x)
   ;; HACK
   (let*  ((s (md-math x #t))
-          (left (string-replace s "\\[" "\\\\["))
-          (right (string-replace left "\\]" "\\\\]")))
-    right))
+          (s1 (string-replace s "\\[" "\\\\["))
+          (s2 (string-replace s1 "\\]" "\\\\]"))
+          (lines (string-split s2 #\newline)))
+    (with-global num-line-breaks 1
+      (serialize-markdown
+       `(document ,@lines)))))
 
 (define (md-eqref x)
   (let* ((label (cadr x))
