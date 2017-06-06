@@ -234,14 +234,16 @@
             (ahash-set! labels (cadr x) label-name)
             (list '!concat x `(tag ,label-name))))))))
 
-(define (md-math x)
+(define (md-math x . leave-newlines?)
  "Takes an stree @x, and returns a valid MathJax-compatible LaTeX string"
  (with ltx (math->latex x)
-   (string-replace (serialize-latex (md-math* ltx)) "\n" " ")))
+   (if (null? leave-newlines?)
+       (string-replace (serialize-latex (md-math* ltx)) "\n" " ")
+       (serialize-latex (md-math* ltx)))))
 
 (define (md-equation x)
   ;; HACK
-  (let*  ((s (md-math x))
+  (let*  ((s (md-math x #t))
           (left (string-replace s "\\[" "\\\\["))
           (right (string-replace left "\\]" "\\\\]")))
     right))
