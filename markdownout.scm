@@ -208,6 +208,10 @@
     (serialize-markdown 
      `(document (concat ,tag " " ,(car content)) ,@(cdr content)))))
 
+(define (md-dueto x)
+  (serialize-markdown
+   `(concat " " (em (concat "(" ,(cadr x) ")")) " ")))
+
 (define (md-fix-math-row t)
   "Append backslashes to last item in a !row"
   (if (and (func? t '!row) (list>1? t))
@@ -396,6 +400,7 @@
            (list 'lemma* md-environment*)           
            (list 'proof md-environment)
            (list 'proof* md-environment*)                      
+           (list 'dueto md-dueto)
            (list 'math md-math)
            (list 'equation md-equation)
            (list 'equation* md-equation)
