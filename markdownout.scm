@@ -238,8 +238,10 @@
   (replace-fun-list t
    `((mathbbm . mathbb)
      ((_) . "\\_")
-     ((left\{) . (left\\{))
-     ((right\{) . (right\\{))
+     (({) . (lbrace))
+     ((}) . (rbrace))
+     ((left\{) . (left\lbrace))
+     ((right\}) . (right\rbrace))
      (,(cut func? <> '!table) . ,md-fix-math-table)
      (,(cut func? <> 'ensuremath) . ,cadr)
      (,(cut func? <> '!sub) . 
