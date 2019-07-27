@@ -322,7 +322,7 @@
 (define (md-style x)
   (with st (style-text (car x))
     (string-concatenate 
-     `(,st ,@(map serialize-markdown (cdr x)) ,st))))
+     `(,st ,@(map serialize-markdown (cdr x)) ,st " "))))
 
 (define (md-cite x)
   (if (not (hugo-extensions?)) ""
