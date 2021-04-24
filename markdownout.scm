@@ -26,16 +26,21 @@
 (define paragraph-width #f)
 (define paper-authors '())
 (define post-tags '())
-(define post-author "")
+(define doc-authors '())
 (define doc-title "")
+(define abstract "")
 (define postlude "")
 (define labels '())
+(define refs '())
 (define indent "")
 (define (first-indent) indent)
 (define file? #f)
 
 (define (hugo-extensions?)
   (== (get-preference "texmacs->markdown:hugo-extensions") "on"))
+
+; FIXME: i18n...
+(define author-by "By: ")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Helper routines
@@ -52,17 +57,21 @@
   (if file? (string-convert x "UTF-8" "Cork") x))
 
 (define (list->csv l)
-  (string-join (map (cut string-append "\"" <> "\"") l) ", "))
+  (string-recompose-comma (map string-quote l)))
+
+(define (list->yaml l indent-num)
+  (let* ((indent (string-concatenate (make-list indent-num " ")))
+         (item->yaml
+          (lambda (it)
+                  (string-append indent "- " (quote-string it)))))
+  (string-recompose (map item->yaml l) "\n")))
 
 (define (indent-increment s)
   (string-append indent s))
 
-(define (author-add x)
+(define (paper-author-add x)
+  "PaperWhy extension"
   (set! paper-authors (append paper-authors (cdr x)))
-  "")
-
-(define (md-doc-running-author x)
-  (set! post-author (cadr x))
   "")
 
 (define (indent-decrement n)
@@ -75,18 +84,19 @@
   "Output Hugo frontmatter"
   (if (not (hugo-extensions?)) 
       ((md-header 1) `(document ,doc-title))
-      (let ((paper-authors* (list->csv paper-authors))
-            (post-tags* (list->csv post-tags))
-            (date (strftime "%Y-%m-%d"(localtime (current-time)))))
-        (string-append "---\n\n"
-                       "title: \"" doc-title "\"\n"
-                       "author: \"" post-author "\"\n"
-                       "authors: [\"" post-author "\"]\n"
-                       "date: \"" date "\"\n"
-                       "tags: [" post-tags* "]\n"
-                       "paper_authors: [" paper-authors* "]\n"
-                       "paper_key: \"\"\n\n"
-                       "---\n\n"))))
+      (let ((date (strftime "%Y-%m-%d"(localtime (current-time)))))
+        (string-append 
+         "---\n\n"
+         "title: " (string-quote doc-title) "\n"
+         "authors: [" (list->csv doc-authors) "]\n"
+         "date: " date "\n"
+         "tags: [" (list->csv post-tags) "]\n"
+         ;"paper_authors: [" (list->csv paper-authors) "]\n"
+         "summary: >\n" (adjust-width abstract paragraph-width "  " "  ") "\n"
+         "refs: \n"
+         (list->yaml (list-remove-duplicates refs) 2)
+         "\n"
+         "---\n\n"))))
 
 (define (postlude-add x)
   (cond ((list? x) 
@@ -155,6 +165,22 @@
        (in? (car t)
             '(strong em tt strike math concat cite cite-detail 
                      eqref reference figure hlink))))
+
+(define (md-doc-author x)
+  ; TODO? We might want to extract other info
+  (with name (select x '(:* author-name))
+    (if (nnull? name)
+        (if (hugo-extensions?)
+            (set! doc-authors (append doc-authors (cdar name)))
+            (string-append author-by (force-string (cdar name)) ))))
+  "")
+
+(define (md-abstract x)
+  (if (hugo-extensions?)
+      (begin 
+        (set! abstract (serialize-markdown (cdr x)))
+        "")
+      (md-style `(em ,(cdr x)))))
 
 (define (md-paragraph p)
   (cond ((string? p)
@@ -329,10 +355,15 @@
 (define (md-cite x)
   "Custom hugo {{<cite>}} shortcode"
   (if (not (hugo-extensions?)) ""
-      (string-append 
-       "{{< cite "
-       (force-string (list-intersperse (cdr x) " "))
-       " >}}")))
+      (with citations 
+          (map force-string
+               (filter (lambda (x) (and (string? x) (not (string-null? x))))
+                       (cdr x)))
+        (set! refs (append refs citations))
+        (string-append
+         "{{< cite "
+         (string-recompose (map string-quote citations) " ")
+         " >}}"))))
 
 (define (md-cite-detail x)
   (if (not (hugo-extensions?)) ""
@@ -354,9 +385,11 @@
       (with payload (cdr x)
         (with-global num-line-breaks 0
           (string-concatenate
-           `("\n{{< figure src=\"" ,(car payload)
-             "\"\n title=\"" ,@(map serialize-markdown (cdr payload))
-             "\" >}}"))))))
+           `("\n{{< figure src=" ,(string-quote (car payload))
+             "\n title=" ,(string-quote 
+                            (string-concatenate 
+                             (map serialize-markdown (cdr payload))))
+             " >}}"))))))
 
 (define (md-footnote x)
   ; Input: (footnote (document [stuff here]))
@@ -455,8 +488,9 @@
            (list 'h4 (md-header 4))
            (list 'doc-title md-doc-title)
            (list 'doc-subtitle md-doc-subtitle)
-           (list 'doc-running-author md-doc-running-author)
-           (list 'author-name author-add)
+           (list 'doc-author md-doc-author)
+           (list 'abstract md-abstract)
+           (list 'paper-author-name paper-author-add)  ; Paperwhy extension
            (list 'cite md-cite)
            (list 'cite-detail md-cite-detail)
            (list 'eqref md-eqref)
@@ -506,7 +540,7 @@
                 (with-global equation-nr 0
                   (with-global paper-authors '()
                     (with-global post-tags '()
-                      (with-global post-author ""
+                      (with-global doc-authors '()
                         (with-global postlude ""
                           (with-global paragraph-width
                               (get-preference

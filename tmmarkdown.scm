@@ -40,7 +40,7 @@
 
 (define (skip x)
   "Recursively processes @x and drops its func."
-  (display* "Skipped " (car x) "\n")
+  (display* "Skipping into " (car x) "\n")
   (map texmacs->markdown* (cdr x)))
 
 (define (drop x)
