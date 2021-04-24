@@ -147,6 +147,7 @@
            (list 'equation* identity)
            (list 'concat keep)
            (list 'doc-title keep)
+           (list 'doc-subtitle keep)
            (list 'doc-running-author keep)
            (list 'section (change-to 'h2))
            (list 'section* (change-to 'h2))           

@@ -42,7 +42,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; FIXME: does this make sense? We only convert if exporting to file.
-; The idea is that ""Copy to markdown" might already perform some internal
+; The idea is that "Copy to markdown" might already perform some internal
 ; conversion before sending us the stree, because weird chars appear.
 ; However if we don't do any conversion here, the copied text is still wrong
 (define (tm-encoding->md-encoding x)
@@ -73,7 +73,8 @@
 
 (define (prelude)
   "Output Hugo frontmatter"
-  (if (not (hugo-extensions?)) ""
+  (if (not (hugo-extensions?)) 
+      ((md-header 1) `(document ,doc-title))
       (let ((paper-authors* (list->csv paper-authors))
             (post-tags* (list->csv post-tags))
             (date (strftime "%Y-%m-%d"(localtime (current-time)))))
@@ -182,7 +183,8 @@
       (with res (string-concatenate
                  `(,@(make-list n "#")
                    " "
-                   ,@(map serialize-markdown (cdr x))))
+                   ,@(map serialize-markdown (cdr x))
+                   "\n"))
             (if (> n 4)  ; Special handling of TeXmacs <paragraph>
                 (string-append res " ")
                 res)))))
@@ -426,6 +428,7 @@
            (list 'h3 (md-header 3))
            (list 'h4 (md-header 4))
            (list 'doc-title md-doc-title)
+           (list 'doc-subtitle md-doc-subtitle)
            (list 'doc-running-author md-doc-running-author)
            (list 'author-name author-add)
            (list 'cite md-cite)
