@@ -396,6 +396,11 @@
 (define (md-toc x)
   (if (hugo-extensions?) "{{< toc >}}" ""))
 
+(define (md-bibliography x)
+  (if (hugo-extensions?) 
+      (md-hugo-shortcode '(_ "references")) 
+      (md-style '(strong "Bibliography not implemented"))))
+
 (define (md-sidenote x)
   (if (hugo-extensions?)
       (with args (cdr x)
@@ -464,6 +469,7 @@
            (list 'tags md-hugo-tags)  ; Hugo extension
            (list 'hugo md-hugo-shortcode)  ; Hugo extension
            (list 'table-of-contents md-toc) ; Hugo extension
+           (list 'bibliography md-bibliography)
            (list 'marginal-note md-sidenote) ; Custom
            ))
 

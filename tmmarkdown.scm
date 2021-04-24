@@ -79,13 +79,6 @@
          `(tt ,(parse-with (cons 'with (cdddr x)))))
         (else (parse-with (cons 'with (cdddr x))))))
 
-; TO-DO
-(define (parse-bibliography x)
-  ; Input:
-  ; (bibliography "bib-name" "bib-type" "bib-file" 
-  ;   (doc (bib-list "n" (doc (concat 1...) (concat 2... ) ... (concat n...)))))
-  '())
-
 (define (code-block syntax)
   (lambda (x)
     `(block ,syntax ,@(cdr x))))
@@ -181,7 +174,8 @@
            (list 'render-big-figure parse-figure)
            (list 'footnote keep)
            (list 'marginal-note keep)
-           (list 'bibliography drop)
+           (list 'todo keep)
+           (list 'bibliography keep)
            (list 'table-of-contents keep)
            (list 'hide-preamble drop)
            (list 'tags keep)  ; extension in paperwhy.ts for Hugo tags
