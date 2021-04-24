@@ -327,30 +327,36 @@
      `(,st ,@(map serialize-markdown (cdr x)) ,st " "))))
 
 (define (md-cite x)
+  "Custom hugo {{<cite>}} shortcode"
   (if (not (hugo-extensions?)) ""
-      (string-concatenate
-       (list-intersperse
-        (map (cut string-append "{{< cite " <> " >}}") (cdr x))
-        ", "))))
+      (string-append 
+       "{{< cite "
+       (force-string (list-intersperse (cdr x) " "))
+       " >}}")))
 
 (define (md-cite-detail x)
-  (with detail (cAr x)
-      (string-append (md-cite (cDr x)) " (" detail ")")))
+  (if (not (hugo-extensions?)) ""
+      (with detail (serialize-markdown (cddr x))
+        (string-append (md-cite `(cite ,(cadr x))) " (" detail ")"))))
 
 (define (md-hlink x)
   (with payload (cdr x)
-    (string-append "[" (serialize-markdown (car payload)) "]"
-                   "(" (cadr payload) ")")))    
+    (string-append "[" (serialize-markdown (first payload)) "]"
+                   "(" (force-string (second payload)) ")")))    
+
+(define (md-image x)
+  (with payload (cdr x)
+      (string-append "![](" (force-string (first payload)) ")")))
 
 (define (md-figure x)
   "Hugo {{< figure >}} shortcode"
-  (if (hugo-extensions?)
+  (if (not (hugo-extensions?)) ""
       (with payload (cdr x)
         (with-global num-line-breaks 0
-          (string-concatenate 
-           `("{{< figure src=\"" ,(car payload) 
-             "\" title=\"" ,@(map serialize-markdown (cdr payload)) "\" >}}"))))
-      ""))
+          (string-concatenate
+           `("\n{{< figure src=\"" ,(car payload)
+             "\"\n title=\"" ,@(map serialize-markdown (cdr payload))
+             "\" >}}"))))))
 
 (define (md-footnote x)
   ; Input: (footnote (document [stuff here]))
@@ -441,6 +447,7 @@
            (list 'label md-label)
            (list 'reference md-reference)
            (list 'footnote md-footnote)
+           (list 'image md-image)
            (list 'figure md-figure)
            (list 'hlink md-hlink)
            (list 'tags md-hugo-tags)  ; Hugo extension

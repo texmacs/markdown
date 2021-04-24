@@ -47,7 +47,7 @@
   (display* "Dropped " (car x) " !\n")
   '())
 
-(define (parse-big-figure x)
+(define (parse-figure x)
   ; Example input:
   ; (big-figure (image "path-to.jpeg" "251px" "251px" "" "") 
   ;             (document "caption"))
@@ -56,7 +56,7 @@
   ;
   ; FIXME: We need to ignore the text until we write a Hugo shortcode
   ; implementing Figure text as TeXmacs.
-  (let* ((offset (if (func? x 'big-figure) 0 2))
+  (let* ((offset (if (or (func? x 'small-figure) (func? x 'big-figure)) 0 2))
          (img (tm-ref x offset))
          (caption (texmacs->markdown* (tm-ref x (+ 1 offset))))
          (src (if (tm-is? img 'image) 
@@ -174,8 +174,11 @@
            (list 'eqref keep)
            (list 'label keep)
            (list 'reference keep)
-           (list 'big-figure parse-big-figure)
-           (list 'render-big-figure parse-big-figure)
+           (list 'image keep)
+           (list 'small-figure parse-figure)
+           (list 'render-small-figure parse-figure)
+           (list 'big-figure parse-figure)
+           (list 'render-big-figure parse-figure)
            (list 'footnote keep)
            (list 'bibliography drop)
            (list 'hide-preamble drop)
