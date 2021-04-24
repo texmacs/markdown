@@ -400,6 +400,13 @@
         (postlude-add (cdr x))
         (string-append "[^" (number->string footnote-nr) "]")))))
 
+(define (md-todo x)
+  (if (hugo-extensions?)
+      (string-append "{{< alert warning >}}" 
+                     (serialize-markdown (cdr x))
+                     "{{</alert>}}")
+      (md-style `(strong (concat "TODO: " ,(cdr x))))))
+
 (define (md-doc-title x)
   (set! doc-title (md-string (serialize-markdown (cdr x))))
   "")
@@ -497,6 +504,7 @@
            (list 'label md-label)
            (list 'reference md-reference)
            (list 'footnote md-footnote)
+           (list 'todo md-todo)
            (list 'image md-image)
            (list 'figure md-figure)
            (list 'hlink md-hlink)
