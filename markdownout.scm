@@ -363,8 +363,12 @@
 
 (define (md-doc-title x)
   (set! doc-title (md-string (serialize-markdown (cdr x))))
-  (if (hugo-extensions?) ""
-      ((md-header 1) (cdr x))))
+  "")
+
+(define (md-doc-subtitle x)
+  (set! doc-title 
+        (string-append doc-title ". " (md-string (serialize-markdown (cdr x)))))
+  "")
 
 (define (md-block x)
   (with-global num-line-breaks 1
