@@ -28,14 +28,25 @@ git clone https://bitbucket.org/mdbenito/tm2md.git markdown
 * Add the line `(use-modules (convert markdown init-markdown))` to
   your `my-init-texmacs.scm`.
 
+## Known issues
+
+This is **very brittle**. For instance, the converter breaks if:
+
+* There is markup inside tags which expect strings (mostly fixed)
+* There is malformed markup in some other way
+
 ## To do ##
 
+* Tests!
+* Extract all Hugo extensions to a separate file, use overloading and
+  extension of the dispatch hashmaps
 * Use TeXmacs' `logic-dispatch`.
 * Clean up the mess with `with-global`.
+* Extract embedded images.
 * line-breaks and other markup in doc-data (e.g. in the doc-title)
   need to be properly handled if included in YAML metadata for Hugo.
 * Support for tables.
-* Inverse markdown to TeXmacs conversion.
+* Reverse markdown to TeXmacs conversion.
 
 
 ## Hugo support ##
