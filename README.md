@@ -32,12 +32,14 @@ git clone https://bitbucket.org/mdbenito/tm2md.git markdown
 
 This is **very brittle**. For instance, the converter breaks if:
 
-* There is markup inside tags which expect strings (mostly fixed)
-* There is malformed markup in some other way
+* There is markup inside tags which expect strings (mostly fixed).
+* There is malformed markup in some other way.
+* strong or em tags are nested (e.g. em + em = regular in texmacs but 
+  the converter keeps adding asterisks).
 
 ## To do ##
 
-* Tests!
+* Tests! something like `cd tests && texmacs -x '(load "run.scm")' -q`
 * Extract all Hugo extensions to a separate file, use overloading and
   extension of the dispatch hashmaps
 * Use TeXmacs' `logic-dispatch`.
