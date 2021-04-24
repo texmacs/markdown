@@ -273,20 +273,20 @@
        `(document ,@lines)))))
 
 (define (md-eqref x)
-  (let* ((label (cadr x))
+  (let* ((label (serialize-markdown (cadr x)))
          (err-msg (string-append "undefined label: '" label "'"))
          (label-name (ahash-ref labels label err-msg)))
     (string-append "(" label-name ")")))
 
 (define (md-label x)
   (let ((label-name (number->string label-nr))
-        (label (cadr x)))
+        (label (serialize-markdown (cadr x))))
     (if (not (ahash-ref labels label))
         (begin (ahash-set! labels label label-name) "")
         (begin (string-append "duplicate label: '" label "'")))))
 
 (define (md-reference x)
-  (let* ((label (cadr x))
+  (let* ((label (serialize-markdown (cadr x)))
          (err-msg (string-append "undefined label: '" label "'"))
          (label-name (ahash-ref labels label err-msg)))
     label-name))
