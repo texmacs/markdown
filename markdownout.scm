@@ -1,6 +1,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-;; MODULE      : tmmarkdown.scm
+;; MODULE      : markdownout.scm
 ;; DESCRIPTION : markdown-stree to markdown-document or markdown-snippet
 ;; COPYRIGHT   : (C) 2017 Ana Cañizares García and Miguel de Benito Delgado
 ;;
@@ -14,7 +14,7 @@
   (:use (convert tools output)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; "Global" state for document serialization and config options
+;; Global state for document serialization and config options
 ;; Usage is wrapped within a "with-global" in serialize-markdown-document
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
