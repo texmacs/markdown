@@ -393,6 +393,17 @@
        `("{{< " ,(cadr x) " " ,@(list-intersperse (cddr x) " ") " >}}"))
       ""))
 
+(define (md-toc x)
+  (if (hugo-extensions?) "{{< toc >}}" ""))
+
+(define (md-sidenote x)
+  (if (hugo-extensions?)
+      (with args (cdr x)
+        (string-append "{{< sidenote >}}"
+                       (serialize-markdown (third args))
+                       "{{</ sidenote >}}"))
+       ""))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; dispatch
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -452,6 +463,8 @@
            (list 'hlink md-hlink)
            (list 'tags md-hugo-tags)  ; Hugo extension
            (list 'hugo md-hugo-shortcode)  ; Hugo extension
+           (list 'table-of-contents md-toc) ; Hugo extension
+           (list 'marginal-note md-sidenote) ; Custom
            ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

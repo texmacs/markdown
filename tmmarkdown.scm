@@ -180,7 +180,9 @@
            (list 'big-figure parse-figure)
            (list 'render-big-figure parse-figure)
            (list 'footnote keep)
+           (list 'marginal-note keep)
            (list 'bibliography drop)
+           (list 'table-of-contents keep)
            (list 'hide-preamble drop)
            (list 'tags keep)  ; extension in paperwhy.ts for Hugo tags
            (list 'hugo keep)  ; extension in paperwhy.ts for Hugo shortcodes
