@@ -1,33 +1,22 @@
----
+A numbered equation:
 
-title: ""
-authors: []
-date: 2021-04-25
-tags: []
-summary: >
-  
-refs: 
 
----
-
-# Section one˙<span name="eqref:section-one"></span>
-
-This section contains a numbered equation:
-
-<span name="eqref:some-label"></span>
 \begin{equation}
-  f (x) \equiv c. \label{some-label}\tag{1}
+  f (x) \equiv c. \tag{1}
 \end{equation}
 
-Which should be numbered (1). Reference: [(1)](#eqref:some-label).
+This reference will have a link to Equation [(1)](#eqref:some-label).
 
-# Section two˙<span name="eqref:section-two"></span>
+An unnumbered equation:
 
-Another section. Reference to section three: undefined label: 'section-three'. Reference to section one: 0
 
-**Theorem 1:**  <span name="eqref:theorem-one"></span>This theorem should increase the label counter.
+\\[ a = b. \\]
 
-# Section three˙<span name="eqref:section-three"></span>
+Another numbered equation:
 
-Reference to theorem one: 1. Reference to section two: 0
 
+\begin{equation}
+  f (x) \equiv c. \tag{2}
+\end{equation}
+
+This: [(2)](#eqref:another-label) should be a (2).
