@@ -475,7 +475,7 @@
   (if (hugo-extensions?)
       (with args (cdr x)
         (string-append "{{< sidenote "
-                       "halign=" (string-quote (first args)) " >}}"
+                       "halign=" (string-quote (first args)) " "
                        "valign=" (string-quote (second args)) " >}}"
                        (serialize-markdown (third args))
                        "{{</ sidenote >}}"))
