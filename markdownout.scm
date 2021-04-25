@@ -405,8 +405,8 @@
       (with payload (cdr x)
         (with-global num-line-breaks 0
           (string-concatenate
-           `("\n{{< figure src=" ,(string-quote (car payload))
-             "\n title=" ,(string-quote 
+           `("{{< figure src=" ,(string-quote (car payload))
+             " title=" ,(string-quote 
                             (string-concatenate 
                              (map serialize-markdown (cdr payload))))
              " >}}"))))))
@@ -536,7 +536,7 @@
            (list 'hugo md-hugo-shortcode)  ; Hugo extension
            (list 'table-of-contents md-toc) ; Hugo extension
            (list 'bibliography md-bibliography)
-           (list 'marginal-note md-sidenote) ; Custom
+           (list 'marginal-note md-sidenote) ; TfL extension
            ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
