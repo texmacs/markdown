@@ -444,7 +444,9 @@
 (define (md-sidenote x)
   (if (hugo-extensions?)
       (with args (cdr x)
-        (string-append "{{< sidenote >}}"
+        (string-append "{{< sidenote "
+                       "halign=" (quote-string (first args)) " >}}"
+                       "valign=" (quote-string (second args)) " >}}"
                        (serialize-markdown (third args))
                        "{{</ sidenote >}}"))
        ""))
