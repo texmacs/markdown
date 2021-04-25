@@ -314,12 +314,13 @@
           (s1 (string-replace s "\\[" "\\\\["))
           (s2 (string-replace s1 "\\]" "\\\\]"))
           (s3 (string-split s2 #\newline))
-          (lines (map escape-md-symbols s3))
-          (anchors (string-concatenate (map create-equation-link lines))))
+          (s4 (map escape-md-symbols s3))
+          (anchors (string-concatenate (map create-equation-link s4)))
+          (lines (if (string-null? anchors) s4 (cons anchors s4))))
     (with-global label-counter (lambda () equation-nr)
       (with-global num-line-breaks 1
         (serialize-markdown
-         `(document ,anchors ,@lines))))))
+         `(document ,@lines))))))
 
 (define (md-numbered-equation x)
   (set! equation-nr (+ 1 equation-nr))
