@@ -280,7 +280,8 @@
        ,(lambda (x)
           (with label-name (number->string equation-nr)
             (ahash-set! labels (cadr x) label-name)
-            (list '!concat x `(tag ,label-name))))))))
+            ; (list '!concat x `(tag ,label-name))
+            (list 'tag label-name)))))))
 
 (define (md-math x . leave-newlines?)
  "Takes an stree @x, and returns a valid MathJax-compatible LaTeX string"
