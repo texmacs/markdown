@@ -147,6 +147,8 @@
            (list 'math identity)
            (list 'equation identity)
            (list 'equation* identity)
+           (list 'eqnarray identity)
+           (list 'eqnarray* identity)
            (list 'concat keep)
            (list 'doc-title keep)
            (list 'doc-subtitle keep)

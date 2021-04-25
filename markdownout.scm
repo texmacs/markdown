@@ -506,6 +506,8 @@
            (list 'math md-math)
            (list 'equation md-numbered-equation)
            (list 'equation* md-equation)
+           (list 'eqnarray md-numbered-equation)
+           (list 'eqnarray* md-equation)
            (list 'concat md-concat)
            (list 'itemize md-list)
            (list 'enumerate md-list)
