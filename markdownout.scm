@@ -299,12 +299,22 @@
     (if (not matches) ""
       (create-label-link (string-append "eqref:" (match:substring matches 1))))))
 
+(define (escape-md-symbols line)
+  "Escapes certain markdown chars at the beginning of lines"
+  (with matches (string-match "^( *)([-+*>]|\\d\\.)(.*)$" line)
+    (if (not matches) line
+        (string-append (match:substring matches 1)
+                       "\\"
+                       (match:substring matches 2)
+                       (match:substring matches 3)))))
+
 (define (md-equation x)
   ;; HACK 
   (let*  ((s (md-math x #t))
           (s1 (string-replace s "\\[" "\\\\["))
           (s2 (string-replace s1 "\\]" "\\\\]"))
-          (lines (string-split s2 #\newline))
+          (s3 (string-split s2 #\newline))
+          (lines (map escape-md-symbols s3))
           (anchors (string-concatenate (map create-equation-link lines))))
     (with-global label-counter (lambda () equation-nr)
       (with-global num-line-breaks 1
