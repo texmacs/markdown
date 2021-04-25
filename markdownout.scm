@@ -65,7 +65,7 @@
   (let* ((indent (string-concatenate (make-list indent-num " ")))
          (item->yaml
           (lambda (it)
-                  (string-append indent "- " (quote-string it)))))
+                  (string-append indent "- " (string-quote it)))))
   (string-recompose (map item->yaml l) "\n")))
 
 (define (indent-increment s)
@@ -465,8 +465,8 @@
   (if (hugo-extensions?)
       (with args (cdr x)
         (string-append "{{< sidenote "
-                       "halign=" (quote-string (first args)) " >}}"
-                       "valign=" (quote-string (second args)) " >}}"
+                       "halign=" (string-quote (first args)) " >}}"
+                       "valign=" (string-quote (second args)) " >}}"
                        (serialize-markdown (third args))
                        "{{</ sidenote >}}"))
        ""))
