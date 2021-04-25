@@ -353,7 +353,6 @@
 (define (md-list x)
   (let* ((c (cond ((== (car x) 'itemize) "* ")
                   ((== (car x) 'enumerate) "1. ")
-                  ((== (car x) 'enumerate-alpha) "a. ")
                   (else "* ")))
          (cs (string-concatenate (make-list (string-length c) " ")))
          (transform
@@ -522,7 +521,6 @@
            (list 'concat md-concat)
            (list 'itemize md-list)
            (list 'enumerate md-list)
-           (list 'enumerate-alpha md-list)
            (list 'h1 (md-header 1))
            (list 'h2 (md-header 2))
            (list 'h3 (md-header 3))
