@@ -40,6 +40,8 @@ This is **very brittle**. For instance, the converter breaks if:
 ## To do ##
 
 * Tests! something like `cd tests && texmacs -x '(load "run.scm")' -q`
+* Move label and references handling to the intermediate tree creation
+  in `tmmarkdown.scm` in order to handle forward references.
 * Extract all Hugo extensions to a separate file, use overloading and
   extension of the dispatch hashmaps
 * Use TeXmacs' `logic-dispatch`.

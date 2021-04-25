@@ -13,15 +13,18 @@
 (texmacs-module (convert markdown markdownout)
   (:use (convert tools output)))
 
+(use-modules (ice-9 regex))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Global state for document serialization and config options
 ;; Usage is wrapped within a "with-global" in serialize-markdown-document
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define footnote-nr 0)
-(define label-nr 0)  ; global counter for labels (incl. labeled equations)
-(define equation-nr 0)
+(define section-nr 0)  ; global counter for numbered sections
+(define equation-nr 0)  ; global counter for numbered equations
 (define environment-nr 0)  ; global counter for numbered environments
+(define label-counter (lambda () section-nr))
 (define num-line-breaks 2)
 (define paragraph-width #f)
 (define paper-authors '())
@@ -204,12 +207,12 @@
 
 (define (md-header n)
   (lambda (x)
+    (set! section-nr (+ 1 section-nr))
     (with-global num-line-breaks 0
       (with res (string-concatenate
                  `(,@(make-list n "#")
                    " "
-                   ,@(map serialize-markdown (cdr x))
-                   "\n"))
+                   ,@(map serialize-markdown (cdr x))))
             (if (> n 4)  ; Special handling of TeXmacs <paragraph>
                 (string-append res " ")
                 res)))))
@@ -226,13 +229,13 @@
 
 (define (md-environment x)
   (set! environment-nr (+ 1 environment-nr))
-  (set! label-nr (+ 1 label-nr))
   (let* ((txt (translate (string-capitalize (symbol->string (car x)))))
          (nr (number->string environment-nr))
          (tag `(strong ,(string-append txt " " nr ":")))
          (content (cdadr x)))
-    (serialize-markdown 
-     `(document (concat ,tag " " ,(car content)) ,@(cdr content)))))
+    (with-global label-counter (lambda () environment-nr)
+      (serialize-markdown 
+       `(document (concat ,tag " " ,(car content)) ,@(cdr content))))))
 
 (define (md-environment* x)
   (let* ((s (string-drop-right (symbol->string (car x)) 1))
@@ -273,42 +276,59 @@
      (,(cut func? <> 'ensuremath) . ,cadr)
      (,(cut func? <> '!sub) . 
        ,(lambda (x) (cons "\\_" (cdr x))))
-     (,(cut func? <> 'label) .   ; append tags to labels
+     (,(cut func? <> 'label) .   ; append latex tags to labels
        ,(lambda (x)
-          (set! equation-nr (+ 1 equation-nr))
           (with label-name (number->string equation-nr)
             (ahash-set! labels (cadr x) label-name)
             (list '!concat x `(tag ,label-name))))))))
 
 (define (md-math x . leave-newlines?)
  "Takes an stree @x, and returns a valid MathJax-compatible LaTeX string"
- (with ltx (math->latex x)
+ (with ltx (serialize-latex (md-math* (math->latex x)))
    (if (null? leave-newlines?)
-       (string-replace (serialize-latex (md-math* ltx)) "\n" " ")
-       (serialize-latex (md-math* ltx)))))
+       (string-replace ltx "\n" " ")
+       ltx)))
+
+(define (create-label-link label)
+  (string-append "<span name=" (string-quote label) "></span>"))
+
+(define (create-equation-link ltx)
+  "Returns an empty anchor for every label in the latex line"
+  (with matches (string-match "\\label\\{([^}]+)\\}" ltx)
+    (if (not matches) ""
+      (create-label-link (string-append "eqref:" (match:substring matches 1))))))
 
 (define (md-equation x)
-  ;; HACK
+  ;; HACK 
   (let*  ((s (md-math x #t))
           (s1 (string-replace s "\\[" "\\\\["))
           (s2 (string-replace s1 "\\]" "\\\\]"))
-          (lines (string-split s2 #\newline)))
-    (with-global num-line-breaks 1
-      (serialize-markdown
-       `(document ,@lines)))))
+          (lines (string-split s2 #\newline))
+          (anchors (string-concatenate (map create-equation-link lines))))
+    (with-global label-counter (lambda () equation-nr)
+      (with-global num-line-breaks 1
+        (serialize-markdown
+         `(document ,anchors ,@lines))))))
+
+(define (md-numbered-equation x)
+  (set! equation-nr (+ 1 equation-nr))
+  (md-equation x))
 
 (define (md-eqref x)
   (let* ((label (serialize-markdown (cadr x)))
          (err-msg (string-append "undefined label: '" label "'"))
          (label-name (ahash-ref labels label err-msg)))
-    (string-append "(" label-name ")")))
+    (serialize-markdown
+      `(hlink ,(string-append "(" label-name ")") 
+              ,(string-append "#eqref:" label)))))
 
 (define (md-label x)
-  (let ((label-name (number->string label-nr))
+  (let ((label-name (number->string (label-counter)))
         (label (serialize-markdown (cadr x))))
     (if (not (ahash-ref labels label))
         (begin (ahash-set! labels label label-name) "")
-        (begin (string-append "duplicate label: '" label "'")))))
+        (begin (string-append "duplicate label: '" label "'")))
+    (create-label-link (string-append "ref:" label))))
 
 (define (md-reference x)
   (let* ((label (serialize-markdown (cadr x)))
@@ -484,7 +504,7 @@
            (list 'proof md-environment)
            (list 'dueto md-dueto)
            (list 'math md-math)
-           (list 'equation md-equation)
+           (list 'equation md-numbered-equation)
            (list 'equation* md-equation)
            (list 'concat md-concat)
            (list 'itemize md-list)
@@ -544,17 +564,18 @@
       (with-global indent ""
         (with-global labels (make-ahash-table)
           (with-global footnote-nr 0
-            (with-global label-nr 0
+            (with-global section-nr 0
               (with-global environment-nr 0                             
                 (with-global equation-nr 0
-                  (with-global paper-authors '()
-                    (with-global post-tags '()
-                      (with-global doc-authors '()
-                        (with-global postlude ""
-                          (with-global paragraph-width
-                              (get-preference
-                               "texmacs->markdown:paragraph-width")
-                            (with body (serialize-markdown x)
-                              (string-append (prelude)
-                                             body
-                                             postlude))))))))))))))))
+                  (with-global label-counter (lambda () section-nr)
+                    (with-global paper-authors '()
+                      (with-global post-tags '()
+                        (with-global doc-authors '()
+                          (with-global postlude ""
+                            (with-global paragraph-width
+                                (get-preference
+                                 "texmacs->markdown:paragraph-width")
+                              (with body (serialize-markdown x)
+                                (string-append (prelude)
+                                               body
+                                               postlude)))))))))))))))))
