@@ -39,8 +39,7 @@
 (define (hugo-extensions?)
   (== (get-preference "texmacs->markdown:hugo-extensions") "on"))
 
-; FIXME: i18n...
-(define author-by "By: ")
+(define author-by (string-append (translate "By") ": "))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Helper routines
