@@ -47,6 +47,12 @@
   (display* "Dropped " (car x) " !\n")
   '())
 
+(define (parse-image x)
+  (with src (tm-ref x 0)
+    (if (tm-is? src 'tuple)
+        '(document "Cannot process embedded image")  ; TODO
+        `(image ,src))))
+
 (define (parse-figure x)
   ; Example input:
   ; (big-figure (image "path-to.jpeg" "251px" "251px" "" "") 
@@ -60,7 +66,7 @@
          (img (tm-ref x offset))
          (caption (texmacs->markdown* (tm-ref x (+ 1 offset))))
          (src (if (tm-is? img 'image) 
-                  (tm-ref img 0)
+                  (tm-ref (parse-image img) 0)
                   '(document "Wrong image src"))))
     (list 'figure src caption)))
 
@@ -170,7 +176,7 @@
            (list 'eqref keep)
            (list 'label keep)
            (list 'reference keep)
-           (list 'image keep)
+           (list 'image parse-image)
            (list 'small-figure parse-figure)
            (list 'render-small-figure parse-figure)
            (list 'big-figure parse-figure)
