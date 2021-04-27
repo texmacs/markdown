@@ -192,6 +192,7 @@
            (list 'hide-preamble drop)
            (list 'tags keep)  ; extension in paperwhy.ts for Hugo tags
            (list 'hugo keep)  ; extension in paperwhy.ts for Hugo shortcodes
+           (list 'hugo-front keep)  ; Hugo extension to set frontmatter values
            ))
 
 (define (texmacs->markdown* x)

@@ -28,7 +28,8 @@
 (define num-line-breaks 2)
 (define paragraph-width #f)
 (define paper-authors '())
-(define post-tags '())
+(define frontmatter '())  ; Hugo extension
+(define post-tags '())  ; Hugo extension, DEPRECATED
 (define doc-authors '())
 (define doc-title "")
 (define abstract "")
@@ -65,8 +66,21 @@
   (let* ((indent (string-concatenate (make-list indent-num " ")))
          (item->yaml
           (lambda (it)
-                  (string-append indent "- " (string-quote it)))))
+                  (string-append indent "- " (string-quote (force-string it))))))
   (string-recompose (map item->yaml l) "\n")))
+
+(define (frontmatter->yaml l)
+  "WIP: we only accept scalars and lists for now"
+  (let* ((process-value 
+          (lambda (x) 
+            (if (tuple? x)
+                (string-append "\n" (list->yaml x 2))
+                (string-quote x))))
+         (process-key-value 
+          (lambda (x)
+            (if (nlist? x) ""
+              (string-append (car x) ": " (process-value (second x)))))))
+      (string-append (string-recompose (map process-key-value l) "\n") "\n")))
 
 (define (indent-increment s)
   (string-append indent s))
@@ -86,19 +100,15 @@
   "Output Hugo frontmatter"
   (if (not (hugo-extensions?)) 
       ((md-header 1) `(document ,doc-title))
-      (let ((date (strftime "%Y-%m-%d"(localtime (current-time)))))
-        (string-append 
-         "---\n\n"
-         "title: " (string-quote doc-title) "\n"
-         "authors: [" (list->csv doc-authors) "]\n"
-         "date: " date "\n"
-         "tags: [" (list->csv post-tags) "]\n"
-         ;"paper_authors: [" (list->csv paper-authors) "]\n"
-         "summary: >\n" (adjust-width abstract paragraph-width "  " "  ") "\n"
-         "refs: \n"
-         (list->yaml (list-remove-duplicates refs) 2)
-         "\n"
-         "---\n\n"))))
+      (let ((data
+             `(("title" ,doc-title)
+               ("authors" ,doc-authors)
+               ("date" ,(strftime "%Y-%m-%d"(localtime (current-time))))
+               ("publishdate" "2038-01-19T03:14:07")
+               ,@frontmatter
+               ("summary" ,abstract)
+               ("refs" ,(list-remove-duplicates refs)))))
+        (string-append "---\n" (frontmatter->yaml data) "---\n"))))
 
 (define (postlude-add x)
   (cond ((list? x) 
@@ -452,9 +462,13 @@
        `("```" ,syntax "\n" ,@(map serialize-markdown (cddr x)) "```\n")))))
 
 (define (md-hugo-tags x)
-  (if (hugo-extensions?)
-      (begin (set! post-tags (cdr x)) "")
-      (string-append "Tags: " (list->csv (cdr x)))))
+  "hugo-tags DEPRECATED, use `(hugo-front key value) "
+  (if (hugo-extensions?) (set! post-tags (cdr x)))
+  "")
+
+(define (md-hugo-frontmatter x)
+  (if (hugo-extensions?) (set! frontmatter (cons (cdr x) frontmatter)))
+  "")
 
 (define (md-hugo-shortcode x)
   (if (hugo-extensions?)
@@ -542,8 +556,9 @@
            (list 'image md-image)
            (list 'figure md-figure)
            (list 'hlink md-hlink)
-           (list 'tags md-hugo-tags)  ; Hugo extension
+           (list 'tags md-hugo-tags)  ; Hugo extension (DEPRECATED)
            (list 'hugo md-hugo-shortcode)  ; Hugo extension
+           (list 'hugo-front md-hugo-frontmatter)  ; Hugo extension
            (list 'table-of-contents md-toc) ; Hugo extension
            (list 'bibliography md-bibliography)
            (list 'marginal-note md-sidenote) ; TfL extension
