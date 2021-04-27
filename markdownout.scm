@@ -134,19 +134,6 @@
                    (caar rules) (cdar rules))
       where))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; markdown to string serializations
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(define (keep x)
-  (cons (car x) (map serialize-markdown (cdr x))))
-
-(define (skip x)
-  (string-concatenate (map serialize-markdown (cdr x))))
-
-(define (md-string s)
-  (tm-encoding->md-encoding s))
-
 (define (adjust-width s cols prefix first-prefix)
   (if (not paragraph-width)  ; set paragraph-width to #f to disable adjustment
       (md-string (string-append prefix s))
@@ -161,6 +148,29 @@
                            (string-append acc "\n" prefix w " "))
                          (string-append acc w " ")))))
         (string-trim-right (list-fold proc first-prefix l)))))
+
+(define (math->latex t)
+ "Converts the TeXmacs tree @t into internal LaTeX representation"
+ (with options '(("texmacs->latex:replace-style" . "on")
+                 ("texmacs->latex:expand-macros" . "on")
+                 ("texmacs->latex:expand-user-macros" . "off")
+                 ("texmacs->latex:indirect-bib" . "off")
+                 ("texmacs->latex:encoding" . "utf8")
+                 ("texmacs->latex:use-macros" . "off"))
+ (texmacs->latex t options)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; markdown to string serializations
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define (keep x)
+  (cons (car x) (map serialize-markdown (cdr x))))
+
+(define (skip x)
+  (string-concatenate (map serialize-markdown (cdr x))))
+
+(define (md-string s)
+  (tm-encoding->md-encoding s))
 
 (define (md-must-adjust? t)
   (and (list>1? t)
@@ -202,9 +212,6 @@
 (define (md-concat x)
   (string-concatenate (map serialize-markdown (cdr x))))
 
-(define (line-breaks-after s)
-  (string-concatenate `(,s ,@(make-list num-line-breaks "\n"))))
-
 (define (md-header n)
   (lambda (x)
     (set! section-nr (+ 1 section-nr))
@@ -216,16 +223,6 @@
             (if (> n 4)  ; Special handling of TeXmacs <paragraph>
                 (string-append res " ")
                 res)))))
-
-(define (math->latex t)
- "Converts the TeXmacs tree @t into internal LaTeX representation"
- (with options '(("texmacs->latex:replace-style" . "on")
-                 ("texmacs->latex:expand-macros" . "on")
-                 ("texmacs->latex:expand-user-macros" . "off")
-                 ("texmacs->latex:indirect-bib" . "off")
-                 ("texmacs->latex:encoding" . "utf8")
-                 ("texmacs->latex:use-macros" . "off"))
- (texmacs->latex t options)))
 
 (define (md-environment x)
   (set! environment-nr (+ 1 environment-nr))
@@ -300,7 +297,7 @@
       (create-label-link (string-append "eqref:" (match:substring matches 1))))))
 
 (define (escape-md-symbols line)
-  "Escapes certain markdown chars at the beginning of lines"
+  "Escapes special markdown chars at the beginning of lines"
   (with matches (string-match "^( *)([-+*>]|\\d\\.)(.*)$" line)
     (if (not matches) line
         (string-append (match:substring matches 1)
@@ -370,15 +367,17 @@
     (with-global indent (indent-increment "> ")
       (serialize-markdown (cAr x)))))
 
-(define (style-text style)
+(define (md-style-text style)
  (cond ((== style 'strong) "**")
        ((== style 'em) "*")
        ((== style 'tt) (md-encoding->tm-encoding "`"))
        ((== style 'strike) "~~")
+       ; TODO: Hugo shortcode?
+       ((== style 'underline ""))
        (else "")))
 
 (define (md-style x)
-  (with st (style-text (car x))
+  (with st (md-style-text (car x))
     (string-concatenate 
      `(,st ,@(map serialize-markdown (cdr x)) ,st " "))))
 
@@ -464,7 +463,9 @@
       ""))
 
 (define (md-toc x)
-  (if (hugo-extensions?) "{{< toc >}}" ""))
+  (if (hugo-extensions?)
+      "{{< toc >}}"
+      "Table of contents not implemented for raw Markdown"))
 
 (define (md-bibliography x)
   (if (hugo-extensions?) 
@@ -556,16 +557,11 @@
   (cond ((null? x) "")
         ((string? x) x)
         ((symbol? x) 
-         (display* "Ignoring symbol " x "\n")
+         ;(display* "Ignoring symbol " x "\n")
          "")
         ((symbol? (car x))
-         (with fun 
-              (ahash-ref serialize-hash (car x))
-            (if (!= fun #f)
-                (fun x)
-                (begin
-                  (display* "Serialize skipped " (car x) "\n")
-                  (skip x)))))
+         (with fun (ahash-ref serialize-hash (car x) skip)
+           (fun x)))
         (else
          (string-concatenate
                 (map serialize-markdown x)))))
