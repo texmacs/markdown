@@ -41,7 +41,7 @@
 (define file? #f)
 
 (define (hugo-extensions?)
-  (== (get-preference "texmacs->markdown:hugo-extensions") "on"))
+  (== (get-preference "texmacs->markdown:flavour") "hugo"))
 
 (define author-by (string-append (translate "By") ": "))
 
@@ -557,7 +557,7 @@
            (list 'figure md-figure)
            (list 'hlink md-hlink)
            (list 'tags md-hugo-tags)  ; Hugo extension (DEPRECATED)
-           (list 'hugo md-hugo-shortcode)  ; Hugo extension
+           (list 'hugo-short md-hugo-shortcode)  ; Hugo extension
            (list 'hugo-front md-hugo-frontmatter)  ; Hugo extension
            (list 'table-of-contents md-toc) ; Hugo extension
            (list 'bibliography md-bibliography)

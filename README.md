@@ -55,14 +55,25 @@ This is **very brittle**. For instance, the converter breaks if:
 
 ## Hugo support ##
 
-This has been developed for its use in a specific
-website. See [here](https://bitbucket.org/mdbenito/paperwhy) for hugo
+This plugin has been developed for its use in two specific websites.
+See [here](https://bitbucket.org/mdbenito/paperwhy) for hugo
 template examples and TeXmacs style files to make this work.
 
 In addition to the standard markdown, almost everything that Hugo
 supports can be converted from TeXmacs, including blackfriday
-extensions like footnotes and ~~striked through text~~. Bibliography,
-shortcodes and tags are also supported.
+extensions like footnotes and ~~striked through text~~. 
+
+Setting values for the frontmatter is suported via a dedicated tm tag
+defined in `hugo.ts`. To use it type \hugo-front<enter> in texmacs
+and input the key and value pair as arguments. Currently, only strings
+and lists of strings are supported as values. To enter a list, input
+\tuple<enter> and use texmacs' structured insert to add items.
+
+Citations are automatically detected and converted to `{{< cite  ref>}}`,
+and all of them are gathered in the frontmatter as well, for indization
+by Hugo's taxonomy system.
+
+For arbitrary shortcodes, use \hugo-short
 
 ## License ##
 
