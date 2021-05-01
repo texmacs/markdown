@@ -297,8 +297,16 @@
        (string-replace ltx "\n" " ")
        ltx)))
 
+(define (md-span content . args)
+  (with process-attr 
+      (lambda (x) 
+        (string-append (car x) "=" (string-quote (cadr x))))
+  (string-append 
+   "<span " (string-recompose-space (map process-attr args)) ">" 
+   (serialize-markdown content) "</span>")))
+
 (define (create-label-link label)
-  (string-append "<span name=" (string-quote label) "></span>"))
+  (md-span '() `("name" ,label)))
 
 (define (create-equation-link ltx)
   "Returns an empty anchor for every label in the latex line"
@@ -440,11 +448,12 @@
         (string-append "[^" (number->string footnote-nr) "]")))))
 
 (define (md-todo x)
-  (if (hugo-extensions?)
-      (string-append "{{< alert warning >}}" 
-                     (serialize-markdown (cdr x))
-                     "{{</alert>}}")
-      (md-style `(strong (concat "TODO: " ,(cdr x))))))
+  (md-span (serialize-markdown (cdr x)) `("class" "todo")))
+
+(define (md-doc-date x)
+  "FIXME: handle errors, other formats"
+  (set! doc-date (date->string (string->date (cadr x) "~B~d~Y") "~Y-~m-~d"))
+  "")
 
 (define (md-doc-title x)
   (set! doc-title (md-string (serialize-markdown (cdr x))))
