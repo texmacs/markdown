@@ -317,13 +317,13 @@
    (serialize-markdown content) "</span>")))
 
 (define (create-label-link label)
-  (md-span '() `("name" ,label)))
+  (md-span '() `("id" ,label)))
 
 (define (create-equation-link ltx)
   "Returns an empty anchor for every label in the latex line"
   (with matches (string-match "\\label\\{([^}]+)\\}" ltx)
     (if (not matches) ""
-      (create-label-link (string-append "eqref:" (match:substring matches 1))))))
+      (create-label-link (string-append "eqref-" (match:substring matches 1))))))
 
 (define (escape-md-symbols line)
   "Escapes special markdown chars at the beginning of lines"
@@ -358,7 +358,7 @@
          (label-name (ahash-ref labels label err-msg)))
     (serialize-markdown
       `(hlink ,(string-append "(" label-name ")") 
-              ,(string-append "#eqref:" label)))))
+              ,(string-append "#eqref-" label)))))
 
 (define (md-label x)
   (let ((label-name (number->string (label-counter)))
