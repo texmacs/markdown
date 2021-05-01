@@ -82,7 +82,6 @@
   (let* ((bool? (cut in? <> '("false" "true" "False" "True")))  ; yikes...
          (process-value
           (lambda (x)
-            (display x)
             (cond ((tm-is? x 'date) (second x))
                   ((tm-is? x 'tuple) 
                    (string-append "\n" (list->yaml (cdr x) 2)))
