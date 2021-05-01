@@ -116,6 +116,7 @@
            (list 'python-code (code-block "python"))
            (list 'scilab-code (code-block "scilab"))
            (list 'shell-code (code-block "shell"))
+           (list 'doc-date keep)
            (list 'doc-author keep)
            (list 'author-data keep)
            (list 'author-name keep)
@@ -178,6 +179,7 @@
            (list 'hlink keep)
            (list 'eqref keep)
            (list 'label keep)
+           (list 'flag drop)
            (list 'reference keep)
            (list 'image parse-image)
            (list 'small-figure parse-figure)
@@ -191,8 +193,8 @@
            (list 'table-of-contents keep)
            (list 'hide-preamble drop)
            (list 'tags keep)  ; extension in paperwhy.ts for Hugo tags
-           (list 'hugo-short keep)  ; Hugo extension for arbitrary shortcodes
-           (list 'hugo-front keep)  ; Hugo extension to set frontmatter values
+           (list 'hugo-short keep)  ; Hugo extension (arbitrary shortcodes)
+           (list 'hugo-front identity)  ; Hugo extension (frontmatter)
            ))
 
 (define (texmacs->markdown* x)

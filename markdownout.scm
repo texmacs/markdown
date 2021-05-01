@@ -13,7 +13,7 @@
 (texmacs-module (convert markdown markdownout)
   (:use (convert tools output)))
 
-(use-modules (ice-9 regex))
+(use-modules (ice-9 regex) (srfi srfi-19))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Global state for document serialization and config options
@@ -31,6 +31,8 @@
 (define frontmatter '())  ; Hugo extension
 (define post-tags '())  ; Hugo extension, DEPRECATED
 (define doc-authors '())
+; CAREFUL: srfi-19 overwrites current-time. Things might break!!
+(define doc-date (strftime "%Y-%m-%d"(localtime (time-second (current-time)))))
 (define doc-title "")
 (define abstract "")
 (define postlude "")
@@ -77,12 +79,17 @@
 
 (define (frontmatter->yaml l)
   "WIP: we only accept scalars and lists for now"
-  (let* ((process-value 
-          (lambda (x) 
-            (if (tuple? x)
-                (string-append "\n" (list->yaml x 2))
-                (string-quote x))))
-         (process-key-value 
+  (let* ((bool? (cut in? <> '("false" "true" "False" "True")))  ; yikes...
+         (process-value
+          (lambda (x)
+            (display x)
+            (cond ((tm-is? x 'date) (second x))
+                  ((tm-is? x 'tuple) 
+                   (string-append "\n" (list->yaml (cdr x) 2)))
+                  ((tuple? x) (string-append "\n" (list->yaml x 2)))
+                  ((bool? x) x)
+                  ((string? x) (string-quote x)))))  ; quote everything else
+         (process-key-value
           (lambda (x)
             (if (nlist? x) ""
               (string-append (car x) ": " (process-value (second x)))))))
@@ -108,12 +115,11 @@
       ((md-header 1) `(document ,doc-title))
       (let ((data
              `(("title" ,doc-title)
-               ("authors" ,doc-authors)
-               ("date" ,(strftime "%Y-%m-%d"(localtime (current-time))))
-               ("publishdate" "2038-01-19T03:14:07")
+               ("authors" (tuple ,@(reverse doc-authors)))
+               ("date" (date ,doc-date))
                ,@frontmatter
                ("summary" ,abstract)
-               ("refs" ,(list-remove-duplicates refs)))))
+               ("refs" (tuple ,@(list-remove-duplicates refs))))))
         (string-append "---\n" (frontmatter->yaml data) "---\n"))))
 
 (define (postlude-add x)
@@ -199,7 +205,7 @@
   (with name (select x '(:* author-name))
     (if (nnull? name)
         (if (hugo-extensions?)
-            (set! doc-authors (append doc-authors (cdar name)))
+            (set! doc-authors (cons (cadar name) doc-authors))
             (string-append author-by (force-string (cdar name)) ))))
   "")
 
@@ -482,7 +488,8 @@
   "")
 
 (define (md-hugo-frontmatter x)
-  (if (hugo-extensions?) (set! frontmatter (cons (cdr x) frontmatter)))
+  (if (hugo-extensions?) 
+      (set! frontmatter (cons (cdr x) frontmatter)))
   "")
 
 (define (md-hugo-shortcode x)
@@ -554,6 +561,7 @@
            (list 'h2 (md-header 2))
            (list 'h3 (md-header 3))
            (list 'h4 (md-header 4))
+           (list 'doc-date md-doc-date)
            (list 'doc-title md-doc-title)
            (list 'doc-subtitle md-doc-subtitle)
            (list 'doc-author md-doc-author)
