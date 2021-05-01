@@ -59,15 +59,21 @@
 (define (md-encoding->tm-encoding x)
   (if file? (string-convert x "UTF-8" "Cork") x))
 
+(define (string-recompose-space s)
+  (string-recompose s " "))
+
+(define (string-recompose-newline s)
+  (string-recompose s "\n"))
+
 (define (list->csv l)
   (string-recompose-comma (map string-quote l)))
 
 (define (list->yaml l indent-num)
-  (let* ((indent (string-concatenate (make-list indent-num " ")))
+  (let* ((indent (make-string indent-num #\ ))
          (item->yaml
           (lambda (it)
-                  (string-append indent "- " (string-quote (force-string it))))))
-  (string-recompose (map item->yaml l) "\n")))
+            (string-append indent "- " (string-quote (force-string it))))))
+  (string-recompose-newline (map item->yaml l))))
 
 (define (frontmatter->yaml l)
   "WIP: we only accept scalars and lists for now"
@@ -80,7 +86,7 @@
           (lambda (x)
             (if (nlist? x) ""
               (string-append (car x) ": " (process-value (second x)))))))
-      (string-append (string-recompose (map process-key-value l) "\n") "\n")))
+      (string-append (string-recompose-newline (map process-key-value l)) "\n")))
 
 (define (indent-increment s)
   (string-append indent s))
@@ -217,7 +223,7 @@
 (define (md-document x)
   (string-concatenate
    (list-intersperse (map md-paragraph (cdr x))
-                     (string-concatenate (make-list num-line-breaks "\n")))))
+                     (make-string num-line-breaks #\newline))))
 
 (define (md-concat x)
   (string-concatenate (map serialize-markdown (cdr x))))
@@ -408,8 +414,8 @@
                        (cdr x)))
         (set! refs (append refs citations))
         (string-append
-         "{{< cite "
-         (string-recompose (map string-quote citations) " ")
+         "{{< cite " 
+         (string-recompose-space (map string-quote citations))
          " >}}"))))
 
 (define (md-cite-detail x)
@@ -481,9 +487,7 @@
 
 (define (md-hugo-shortcode x)
   (if (hugo-extensions?)
-      (string-concatenate 
-       `("{{< " ,(cadr x) " " ,@(list-intersperse (cddr x) " ") " >}}"))
-      ""))
+      (string-recompose-space `("{{<" ,(cadr x) ,@(cddr x) ">}}"))))
 
 (define (md-toc x)
   (if (hugo-extensions?)
