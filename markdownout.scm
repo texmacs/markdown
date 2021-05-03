@@ -277,8 +277,8 @@
 (define (md-span content . args)
   (with process-attr 
       (lambda (x) 
-        (string-append (car x) "=" (string-quote (cadr x))))
-  (string-append 
+        (string-append (first x) "=" (string-quote (second x))))
+  (string-append
    "<span " (string-recompose-space (map process-attr args)) ">" 
    (serialize-markdown* content) "</span>")))
 
@@ -323,7 +323,9 @@
   (with label (serialize-markdown* (cadr x))
     (if (not (ahash-ref (get 'labels) label))
         (string-append "undefined label: '" label "'")
-        (create-label-link (string-append "ref-" label)))))
+        (string-append "\n"  ; FIXME, this adds 
+ instead of newlines...
+         (create-label-link (string-append "ref-" label))))))
 
 (define (md-eqref x)
   (let* ((label (serialize-markdown* (cadr x)))
@@ -472,15 +474,13 @@
   ;(display* "Serialize: " x "\n")
   (cond ((null? x) "")
         ((string? x) x)
-        ((symbol? x) 
-         ;(display* "Ignoring symbol " x "\n")
-         "")
+        ((char? x) (char->string x))
+        ((symbol? x) "")
         ((symbol? (car x))
          (with fun (ahash-ref serialize-hash (car x) skip)
            (fun x)))
         (else
-         (string-concatenate
-                (map serialize-markdown* x)))))
+         (string-concatenate (map serialize-markdown* x)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; DEPRECATED
