@@ -44,7 +44,8 @@ This is **very brittle**. For instance, the converter breaks if:
   in `tmmarkdown.scm` in order to handle forward references.
 * Extract all Hugo extensions to a separate file, use overloading and
   extension of the dispatch hashmaps
-* Use TeXmacs' `logic-dispatch`.
+* Use "converter environments"?
+* Use TeXmacs' `logic-dispatch`?
 * Clean up the mess with `with-global`.
 * Extract embedded images.
 * line-breaks and other markup in doc-data (e.g. in the doc-title)

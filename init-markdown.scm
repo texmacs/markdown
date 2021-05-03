@@ -1,6 +1,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-;; MODULE      : tmmarkdown.scm
+;; MODULE      : init-markdown.scm
 ;; DESCRIPTION : Markdown format for TeXmacs
 ;; COPYRIGHT   : (C) 2017 Ana Cañizares García and Miguel de Benito Delgado
 ;;
@@ -13,7 +13,7 @@
 (texmacs-module (convert markdown init-markdown))
 
 (define-preferences
-  ("texmacs->markdown:hugo-extensions" "off" (lambda (var val) (noop)))
+  ("texmacs->markdown:flavour" "vanilla" (lambda (var val) (noop)))
   ("texmacs->markdown:paragraph-width" 79 (lambda (var val) (noop))))
 
 (define-format markdown
