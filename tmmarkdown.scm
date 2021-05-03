@@ -137,13 +137,16 @@
       (begin (display* "Labels must be strings. Received: " s "\n") "")))
 
 (define (parse-label x)
-  (with label (sanitize-selector (cadr x))
+  (with label (sanitize-selector (second x))
     (ahash-set! labels label (counter-label current-counter))
     `(label ,label)))
 
+(define (parse-reference x)
+  (list (first x) (sanitize-selector (second x))))
+
 (define (parse-env x)
-  `(,(first x) ,(counter-label current-counter) 
-     ,(texmacs->markdown* (second x))))
+  (list (first x) (counter-label current-counter) 
+        (texmacs->markdown* (second x))))
 
 (define (parse-image x)
   (with src (tm-ref x 0)
@@ -227,7 +230,7 @@
      (,(cut func? <> 'label) .   ; append latex tags to labels
        ,(lambda (x)
           (with label-name (counter-label current-counter)
-            (ahash-set! labels (cadr x) label-name)
+            (ahash-set! labels (sanitize-selector (cadr x)) label-name)
             ; leave the label to create anchors later
             (list '!concat x `(tag ,label-name))))))))
 
@@ -342,10 +345,10 @@
            (list 'cite keep)
            (list 'cite-detail keep)
            (list 'hlink keep)
-           (list 'eqref keep)
+           (list 'eqref parse-reference)
            (list 'label parse-label)
            (list 'flag drop)
-           (list 'reference keep)
+           (list 'reference parse-reference)
            (list 'image parse-image)
            (list 'small-figure (count parse-figure 'figure))
            (list 'render-small-figure parse-figure)
