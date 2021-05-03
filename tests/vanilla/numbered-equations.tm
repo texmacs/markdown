@@ -23,7 +23,7 @@
     f<around*|(|x|)>\<equiv\>c.<label|another-label>
   </equation>
 
-  This: <eqref|another-label> should be a (2).
+  This: <eqref|another-label> should be equal to this: (2).
 </body>
 
 <\initial>
