@@ -213,7 +213,6 @@
         `(!table ,@(map md-fix-math-row first-rows) ,last-row))))
 
 (define (md-math* t)
-  (display t)
   (replace-fun-list t
    `((mathbbm . mathbb)
      ((_) . "\\_")
@@ -233,7 +232,6 @@
             (list '!concat x `(tag ,label-name))))))))
 
 (define (parse-math x)
-  (display x)
   `(,(car x) ,(md-math* (math->latex x))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
