@@ -302,7 +302,7 @@
 
 (define (md-equation x)
   ;; HACK
-  (let*  ((s (md-math (list 'math x) #t))
+  (let*  ((s (md-math x #t))
           (s1 (string-replace s "\\[" "\\\\["))
           (s2 (string-replace s1 "\\]" "\\\\]"))
           (s3 (string-split s2 #\newline))
