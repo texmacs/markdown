@@ -10,13 +10,86 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(texmacs-module (convert markdown tmmarkdown)
-  (:use (convert markdown markdownout)))
+(texmacs-module (convert markdown tmmarkdown))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Counters 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define counters #f)
+(define current-counter #f)  ; the counter which applies to a new label
+(define labels #f)
+
+(define (counter-value which)
+  (car (ahash-ref counters which '(0))))
+
+(define (counter-values which)
+  "List of values of counter and parents (farthest ancestor last)"
+  ; HACK: we remove zeros for missing (sub)sections
+   (list-filter
+    (map counter-value (cons which (counter-parents which)))
+     (compose not zero?)))
+
+(define (counter-parents which)
+  (cdr (ahash-ref counters which '(()))))
+ 
+(define (counter-children which)
+  (list-filter 
+    (ahash-fold (lambda (key val acc) 
+                  (cons (if (member which (cdr val)) key '()) acc))
+                '()
+                counters)
+    nnull?))
+ 
+(define (counter-set which value)
+  (let ((ch (counter-children which))
+        (par (counter-parents which)))
+    (map (cut counter-set <> 0) ch)
+    (ahash-set! counters which (cons value par))))
+ 
+(define (counter-increase which)
+  (counter-set which (+ 1 (counter-value which))))
+ 
+(define (counter-new which . parents)
+  (ahash-set! counters which (cons 0 parents)))
+ 
+(define (counter-label which)
+  (string-recompose 
+   (map number->string (reverse (counter-values which))) "."))
+
+(define (make-counters)
+  (counter-new 'default)
+  (counter-new 'h1)
+  (counter-new 'h2 'h1)
+  (counter-new 'h3 'h2)
+  (counter-new 'environment 'h3 'h2 'h1)
+  (counter-new 'equation)
+  (counter-new 'figure 'h3 'h2 'h1))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Helper functions for the transformation of strees and dispatcher
 ;; TODO: use TeXmacs' logic-dispatch, export sessions, bibliography
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define (replace-fun-sub where what? by)
+  (if (npair? where) (if (what? where) (by where) where)
+      (cons (if (what? (car where)) (by (car where))
+                (replace-fun-sub (car where) what? by))
+            (replace-fun-sub (cdr where) what? by))))
+
+; This looks familiar... :/
+(define (replace-fun where what by)
+ (cond ((not (procedure? what))
+        (replace-fun where (cut == <> what) by))
+       ((not (procedure? by))
+        (replace-fun where what (lambda (x) by)))
+       (else (replace-fun-sub where what by))))
+
+(define (replace-fun-list where rules)
+  (if (and (list>0? rules) (pair? (car rules)))
+      (replace-fun (replace-fun-list where (cdr rules))
+                   (caar rules) (cdar rules))
+      where))
 
 ; For some reason we always receive an stree, so we cannot use tm-file?
 ; because it expects its argument to be a tree and at some point queries a
@@ -29,10 +102,19 @@
   "Recursively processes @x while leaving its func untouched."
   (cons (car x) (map texmacs->markdown* (cdr x))))
 
-(define (change-to func)
-  ; (a . b) -> (func . b)
+(define (count action counter)
+  "Returns @action (e.g. keep) after increasing @counter"
+  (lambda ( . x)
+    (counter-increase counter)
+    (set! current-counter counter)
+    (apply action x)))
+
+(define (change-to what)
+  "Returns a fun (a . b) -> `(,what ,(texmacs->markdown* b)), or -> what if not a symbol"
   (lambda (x)
-    (cons func (map texmacs->markdown* (cdr x)))))
+    (if (symbol? what)
+        (cons what (map texmacs->markdown* (cdr x)))
+        what)))
 
 (define (hrule-hack x)
   ; FIXME: this breaks inside quotations and whatnot. And it's ugly.
@@ -40,12 +122,28 @@
 
 (define (skip x)
   "Recursively processes @x and drops its func."
-  (display* "Skipping into " (car x) "\n")
+  ;(display* "Skipping into " (car x) "\n")
   (map texmacs->markdown* (cdr x)))
 
 (define (drop x)
-  (display* "Dropped " (car x) " !\n")
+  ;(display* "Dropped " (car x) " !\n")
   '())
+
+(define (sanitize-selector s)
+  "Makes @s safe(r) for use in querySelector(). No guarantees"
+  (if (string? s)
+      (string-map 
+        (lambda (c) (if (char-set-contains? char-set:letter+digit c) c #\-)) s)
+      (begin (display* "Labels must be strings. Received: " s "\n") "")))
+
+(define (parse-label x)
+  (with label (sanitize-selector (cadr x))
+    (ahash-set! labels label (counter-label current-counter))
+    `(label ,label)))
+
+(define (parse-env x)
+  `(,(first x) ,(counter-label current-counter) 
+     ,(texmacs->markdown* (second x))))
 
 (define (parse-image x)
   (with src (tm-ref x 0)
@@ -89,6 +187,55 @@
   (lambda (x)
     `(block ,syntax ,@(cdr x))))
 
+(define (math->latex t)
+ "Converts the TeXmacs tree @t into internal LaTeX representation"
+ (with options '(("texmacs->latex:replace-style" . "on")
+                 ("texmacs->latex:expand-macros" . "on")
+                 ("texmacs->latex:expand-user-macros" . "off")
+                 ("texmacs->latex:indirect-bib" . "off")
+                 ("texmacs->latex:encoding" . "utf8")
+                 ("texmacs->latex:use-macros" . "off"))
+ (texmacs->latex t options)))
+
+(define (md-fix-math-row t)
+  "Append backslashes to last item in a !row"
+  (if (and (func? t '!row) (list>1? t))
+      (with cols (cdr t)
+        `(!row ,@(cDr cols) (!concat ,(cAr cols) "\\\\\\\\")))
+      t))
+
+(define (md-fix-math-table t)
+  "Append extra backslashes at the end of !rows in LaTeX tables"
+  (if (not (list>1? (cdr t))) t  ; Nothing to do with only one row
+      (let* ((rows (cdr t))
+             (last-row (cAr rows))
+             (first-rows (cDr rows)))
+        `(!table ,@(map md-fix-math-row first-rows) ,last-row))))
+
+(define (md-math* t)
+  (display t)
+  (replace-fun-list t
+   `((mathbbm . mathbb)
+     ((_) . "\\_")
+     (({) . (lbrace))
+     ((}) . (rbrace))
+     ((left\{) . (left\lbrace))
+     ((right\}) . (right\rbrace))
+     (,(cut func? <> '!table) . ,md-fix-math-table)
+     (,(cut func? <> 'ensuremath) . ,cadr)
+     (,(cut func? <> '!sub) . 
+       ,(lambda (x) (cons "\\_" (cdr x))))
+     (,(cut func? <> 'label) .   ; append latex tags to labels
+       ,(lambda (x)
+          (with label-name (counter-label current-counter)
+            (ahash-set! labels (cadr x) label-name)
+            ; leave the label to create anchors later
+            (list '!concat x `(tag ,label-name))))))))
+
+(define (parse-math x)
+  (display x)
+  `(,(car x) ,(md-math* (math->latex x))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Dispatch
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -124,41 +271,61 @@
            (list 'abstract keep)
            (list 'document keep)
            (list 'quotation keep)
-           (list 'definition keep)
-           (list 'definition* keep)           
-           (list 'conjecture keep)
-           (list 'conjecture* keep)           
-           (list 'question keep)
-           (list 'question* keep)           
-           (list 'algorithm keep)
-           (list 'algorithm* keep)           
-           (list 'problem keep)
-           (list 'problem* keep)           
-           (list 'theorem keep)
-           (list 'theorem* keep)           
-           (list 'proposition keep)
-           (list 'proposition* keep)           
-           (list 'corollary keep)
-           (list 'corollary* keep)           
-           (list 'lemma keep)
-           (list 'lemma* keep)           
-           (list 'proof keep)
-           (list 'proof* keep)                      
+           (list 'acknowledgments (count parse-env 'env))
+           (list 'acknowledgments* keep)
+           (list 'algorithm (count parse-env 'env))
+           (list 'algorithm* keep)
+           (list 'answer (count parse-env 'env))
+           (list 'answer* keep)
+           (list 'axiom (count parse-env 'env))
+           (list 'axiom* keep)
+           (list 'conjecture (count parse-env 'env))
+           (list 'conjecture* keep)
+           (list 'convention (count parse-env 'env))
+           (list 'convention* keep)
+           (list 'corollary (count parse-env 'env))
+           (list 'corollary* keep)
+           (list 'definition (count parse-env 'env))
+           (list 'definition* keep)
+           (list 'example (count parse-env 'env))
+           (list 'example* keep)
+           (list 'exercise (count parse-env 'env))
+           (list 'exercise* keep)
+           (list 'lemma (count parse-env 'env))
+           (list 'lemma* keep)
+           (list 'notation (count parse-env 'env))
+           (list 'notation* keep)
+           (list 'problem (count parse-env 'env))
+           (list 'problem* keep)
+           (list 'proof (count parse-env 'env))
+           (list 'proof* keep) 
+           (list 'proposition (count parse-env 'env))
+           (list 'proposition* keep)
+           (list 'question (count parse-env 'env))
+           (list 'question* keep)
+           (list 'remark (count parse-env 'env))
+           (list 'remark* keep)
+           (list 'solution (count parse-env 'env))
+           (list 'solution* keep)
+           (list 'theorem (count parse-env 'env))
+           (list 'theorem* keep)
+           (list 'warning (count parse-env 'env))
+           (list 'warning* keep)
            (list 'dueto keep)
-           (list 'math identity)
-           (list 'equation identity)
-           (list 'equation* identity)
-           (list 'eqnarray identity)
-           (list 'eqnarray* identity)
+           (list 'math parse-math)
+           (list 'equation (count parse-math 'equation))
+           (list 'equation* parse-math)
+           (list 'eqnarray (count parse-math 'equation))
+           (list 'eqnarray* parse-math)
            (list 'concat keep)
            (list 'doc-title keep)
            (list 'doc-subtitle keep)
            (list 'doc-running-author keep)
-           (list 'section (change-to 'h1))
-           (list 'section* (change-to 'h1))           
-           (list 'subsection (change-to 'h2))
+           (list 'section (count (change-to 'h1) 'h1))
+           (list 'section* (change-to 'h1))
+           (list 'subsection (count (change-to 'h2) 'h2))
            (list 'subsection* (change-to 'h2))
-           (list 'subsubsection (change-to 'h3))
+           (list 'subsubsection (count (change-to 'h3) 'h3))
            (list 'subsubsection* (change-to 'h3))
            (list 'paragraph (change-to 'strong))
            (list 'subparagraph (change-to 'strong))
@@ -178,13 +345,13 @@
            (list 'cite-detail keep)
            (list 'hlink keep)
            (list 'eqref keep)
-           (list 'label keep)
+           (list 'label parse-label)
            (list 'flag drop)
            (list 'reference keep)
            (list 'image parse-image)
-           (list 'small-figure parse-figure)
+           (list 'small-figure (count parse-figure 'figure))
            (list 'render-small-figure parse-figure)
-           (list 'big-figure parse-figure)
+           (list 'big-figure (count parse-figure 'figure))
            (list 'render-big-figure parse-figure)
            (list 'footnote keep)
            (list 'marginal-note keep)
@@ -192,9 +359,10 @@
            (list 'bibliography keep)
            (list 'table-of-contents keep)
            (list 'hide-preamble drop)
-           (list 'tags keep)  ; extension in paperwhy.ts for Hugo tags
+           (list 'tags keep)  ; paperwhy extension (DEPRECATED)
            (list 'hugo-short keep)  ; Hugo extension (arbitrary shortcodes)
            (list 'hugo-front identity)  ; Hugo extension (frontmatter)
+           (list 'text-dots (change-to "..."))
            ))
 
 (define (texmacs->markdown* x)
@@ -212,6 +380,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (tm-define (texmacs->markdown x)
-  (if (is-file? x)
-      (texmacs->markdown* (car (select x '(body document))))
-      (texmacs->markdown* x)))
+  (with-global counters (make-ahash-table)
+    (with-global current-counter 'default
+      (with-global labels (make-ahash-table)
+        (make-counters)
+         `(markdown
+           (labels ,(ahash-table->list labels))
+           ,(if (is-file? x)
+                (texmacs->markdown* (car (select x '(body document))))
+                (texmacs->markdown* x)))))))
