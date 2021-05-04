@@ -323,8 +323,7 @@
   (with label (serialize-markdown* (cadr x))
     (if (not (ahash-ref (get 'labels) label))
         (string-append "undefined label: '" label "'")
-        (string-append "\n"  ; FIXME, this adds 
- instead of newlines...
+        (string-append "\n"  ; FIXME, this adds weird chars  instead of newlines...
          (create-label-link (string-append "ref-" label))))))
 
 (define (md-eqref x)
