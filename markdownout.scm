@@ -92,8 +92,8 @@
             (string-append indent "- " (string-quote (force-string it))))))
   (string-recompose-newline (map item->yaml l))))
 
-(define (frontmatter->yaml l)
-  "WIP: we only accept scalars and lists for now"
+(define (frontmatter->yaml front)
+  "WIP: we only accept scalars and lists as values for now"
   (let* ((bool? (cut in? <> '("false" "true" "False" "True")))  ; yikes...
          (keys<=? (lambda (a b) (string<=? (car a) (car b))))
          (process-value
@@ -110,7 +110,7 @@
               (string-append (car x) ": " (process-value (cdr x)))))))
       (string-append 
        (string-recompose-newline 
-        (map process-key-value (list-sort (ahash-table->list l) keys<=?)))
+        (map process-key-value (list-sort (ahash-table->list front) keys<=?)))
         "\n")))
 
 (define (indent-increment s)
@@ -127,9 +127,11 @@
   (if (hugo-extensions?)
       (with front (get 'frontmatter)
         (when (nnull? (get 'doc-authors))
-          (ahash-set! front "authors" `(tuple ,@(reverse (get 'doc-authors)))))
+          (ahash-set! front "authors" 
+                      `(tuple ,@(reverse (get 'doc-authors)))))
         (when (nnull? (get 'refs))
-          (ahash-set! front "refs" `(tuple ,@(list-remove-duplicates (get 'refs)))))
+          (ahash-set! front "refs" 
+                      `(tuple ,@(list-remove-duplicates (get 'refs)))))
         (string-append "---\n" (frontmatter->yaml front) "---\n"))
       ""))
 
@@ -441,7 +443,11 @@
 
 (define (md-hugo-frontmatter x)
   (if (hugo-extensions?)
-      (ahash-set! (get 'frontmatter) (first (cdr x)) (second (cdr x))))
+      (let* ((key (first (cdr x)))
+             (val (second (cdr x)))
+             (front (get 'frontmatter))
+             (cur (or (ahash-ref front key) '())))
+        (ahash-set! front key (cons val cur))))
   "")
 
 (define (md-hugo-shortcode x)
