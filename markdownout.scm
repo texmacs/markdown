@@ -442,13 +442,15 @@
        `("```" ,syntax "\n" ,@(map serialize-markdown* (cddr x)) "```\n")))))
 
 (define (md-hugo-frontmatter x)
-  (if (hugo-extensions?)
-      (ahash-set! (get 'frontmatter) (first (cdr x)) (second (cdr x))))
+  (when (hugo-extensions?)
+    (with set-pair! (lambda (kv) 
+                      (ahash-set! (get 'frontmatter) (car kv) (cdr kv)))
+      (map set-pair! (list->assoc (cdr x)))))
   "")
 
 (define (md-hugo-shortcode x)
-  (if (hugo-extensions?)
-      (string-recompose-space `("{{<" ,(cadr x) ,@(cddr x) ">}}"))))
+  (when (hugo-extensions?)
+    (string-recompose-space `("{{<" ,(cadr x) ,@(cddr x) ">}}"))))
 
 (define (md-toc x)
   (if (hugo-extensions?)
@@ -474,7 +476,6 @@
                         (serialize-markdown* (third args))
                         "{{</ sidenote >}}"))
         "")))
-
 
 (define (serialize-markdown* x)
   ;(display* "Serialize: " x "\n")

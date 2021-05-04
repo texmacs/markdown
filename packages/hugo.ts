@@ -3,12 +3,10 @@
 <style|source>
 
 <\body>
-  -- FIXME: this should be a variadic macro for n key:val pairs
-
   -- FIXME: the scheme code is brittle: if val is not a string or a tuple of
   strings, it will break, possibly silently ignoring stuff.
 
-  <assign|hugo-front|<macro|key|val|<flag|frontmatter|orange>>>
+  <assign|hugo-front|<xmacro|args|<flag|frontmatter parameters|orange>>>
 </body>
 
 <\initial>
