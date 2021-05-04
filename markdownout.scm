@@ -443,11 +443,7 @@
 
 (define (md-hugo-frontmatter x)
   (if (hugo-extensions?)
-      (let* ((key (first (cdr x)))
-             (val (second (cdr x)))
-             (front (get 'frontmatter))
-             (cur (or (ahash-ref front key) '())))
-        (ahash-set! front key (cons val cur))))
+      (ahash-set! (get 'frontmatter) (first (cdr x)) (second (cdr x))))
   "")
 
 (define (md-hugo-shortcode x)
