@@ -95,6 +95,7 @@
 (define (frontmatter->yaml l)
   "WIP: we only accept scalars and lists for now"
   (let* ((bool? (cut in? <> '("false" "true" "False" "True")))  ; yikes...
+         (keys<=? (lambda (a b) (string<=? (car a) (car b))))
          (process-value
           (lambda (x)
             (cond ((tm-is? x 'date) (second x))
@@ -107,8 +108,10 @@
           (lambda (x)
             (if (npair? x) ""
               (string-append (car x) ": " (process-value (cdr x)))))))
-      (string-append (string-recompose-newline (map process-key-value
-                                                    (ahash-table->list l))) "\n")))
+      (string-append 
+       (string-recompose-newline 
+        (map process-key-value (list-sort (ahash-table->list l) keys<=?)))
+        "\n")))
 
 (define (indent-increment s)
   (string-append (get 'indent) s))
