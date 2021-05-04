@@ -122,13 +122,12 @@
 (define (prelude)
   "Output Hugo frontmatter"
   (if (hugo-extensions?)
-      (string-append 
-        "---\n"
-        (frontmatter->yaml 
-         `(,@(ahash-table->list (get 'frontmatter))
-           ("authors" (tuple ,@(reverse (get 'doc-authors))))
-           ("refs" (tuple ,@(list-remove-duplicates (get 'refs))))))
-        "---\n")
+      (with front (get 'frontmatter)
+        (when (nnull? (get 'doc-authors))
+          (ahash-set! front "authors" `(tuple ,@(reverse (get 'doc-authors)))))
+        (when (nnull? (get 'refs))
+          (ahash-set! front "refs" `(tuple ,@(list-remove-duplicates (get 'refs)))))
+        (string-append "---\n" (frontmatter->yaml front) "---\n"))
       ""))
 
 (define (postlude-add x)
