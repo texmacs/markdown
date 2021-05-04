@@ -25,18 +25,20 @@
 (define globals #f)
 
 (define (globals-defaults)
-  `((file? . #t)
-    (num-line-breaks . 2)
-    (paragraph-width . ,(get-preference "texmacs->markdown:paragraph-width"))
-    (indent . "") 
-    (postlude . "")
-    (footnote-nr . 0)
-    (labels . ())
-    (doc-authors . ())
-    (refs . ())
-    (frontmatter .
-      (("draft" "true")
-       ("date" ,(strftime "%Y-%m-%d"(localtime (time-second (current-time)))))))))
+  (with frontmatter (make-ahash-table)
+    (ahash-set! frontmatter "draft" "true")
+    (ahash-set! frontmatter "date" 
+                (strftime "%Y-%m-%d"(localtime (time-second (current-time)))))
+    `((file? . #t)
+      (num-line-breaks . 2)
+      (paragraph-width . ,(get-preference "texmacs->markdown:paragraph-width"))
+      (indent . "") 
+      (postlude . "")
+      (footnote-nr . 0)
+      (labels . ())
+      (doc-authors . ())
+      (refs . ())
+      (frontmatter . ,frontmatter))))
 
 (define (get what)
   (ahash-ref globals what))
@@ -103,9 +105,10 @@
                   ((string? x) (string-quote x)))))  ; quote everything else
          (process-key-value
           (lambda (x)
-            (if (nlist? x) ""
-              (string-append (car x) ": " (process-value (second x)))))))
-      (string-append (string-recompose-newline (map process-key-value l)) "\n")))
+            (if (npair? x) ""
+              (string-append (car x) ": " (process-value (cdr x)))))))
+      (string-append (string-recompose-newline (map process-key-value
+                                                    (ahash-table->list l))) "\n")))
 
 (define (indent-increment s)
   (string-append (get 'indent) s))
@@ -122,7 +125,7 @@
       (string-append 
         "---\n"
         (frontmatter->yaml 
-         `(,@(get 'frontmatter)
+         `(,@(ahash-table->list (get 'frontmatter))
            ("authors" (tuple ,@(reverse (get 'doc-authors))))
            ("refs" (tuple ,@(list-remove-duplicates (get 'refs))))))
         "---\n")
@@ -436,7 +439,7 @@
 
 (define (md-hugo-frontmatter x)
   (if (hugo-extensions?)
-      (set 'frontmatter (cons (cdr x) (get 'frontmatter))))
+      (ahash-set! (get 'frontmatter) (first (cdr x)) (second (cdr x))))
   "")
 
 (define (md-hugo-shortcode x)
