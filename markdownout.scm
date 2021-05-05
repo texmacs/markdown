@@ -178,7 +178,9 @@
   (string-concatenate (map serialize-markdown* (cdr x))))
 
 (define (md-string s)
-  (tm-encoding->md-encoding s))
+  ;HACK: tm-encoding (Cork) does not have newlines, so we work around those
+  (string-recompose-newline
+   (map tm-encoding->md-encoding (string-split s #\newline))))
 
 (define (must-adjust? t)
   (and (list>1? t)
