@@ -315,7 +315,7 @@
   "Returns an empty anchor for every label in the latex line"
   (with matches (string-match "\\label\\{([^}]+)\\}" ltx)
     (if (not matches) ""
-      (create-label-link (string-append "eqref-" (match:substring matches 1))))))
+      (create-label-link (match:substring matches 1)))))
 
 (define (escape-md-symbols line)
   "Escapes special markdown chars at the beginning of lines"
@@ -349,8 +349,8 @@
   (with label (serialize-markdown* (cadr x))
     (if (not (ahash-ref (get 'labels) label))
         (string-append "undefined label: '" label "'")
-        (string-append "\n"  ; FIXME, this adds weird chars  instead of newlines...
-         (create-label-link (string-append "ref-" label))))))
+        (string-append "\n"  ; FIXME, this adds weird chars instead of newlines.
+         (create-label-link label)))))
 
 (define (md-eqref x)
   (let* ((label (serialize-markdown* (cadr x)))
@@ -358,14 +358,14 @@
          (label-display (ahash-ref (get 'labels) label err-msg)))
     (serialize-markdown*
       `(hlink ,(string-append "(" label-display ")") 
-              ,(string-append "#eqref-" label)))))
+              ,(string-append "#" label)))))
 
 (define (md-reference x)
   (let* ((label (serialize-markdown* (cadr x)))
          (err-msg (string-append "undefined label: '" label "'"))
          (label-display (ahash-ref (get 'labels) label err-msg)))
     (serialize-markdown*
-     `(hlink ,label-display ,(string-append "#ref-" label)))))
+     `(hlink ,label-display ,(string-append "#" label)))))
 
 (define (md-item? x)
   (and (list>0? x) (func? x 'concat) (== (cadr x) '(item))))
