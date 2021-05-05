@@ -167,41 +167,6 @@
                          (string-append acc w " ")))))
         (string-trim-right (list-fold proc first-prefix l)))))
 
-(define (list-intersperse-cond l x cond?)
-  "Insert @x between each element of @l whenever @cond? on two adjacent items holds."
-  (if (null? l) '()
-      (list-fold-right 
-       (lambda (kar kdr)
-         (if (and (nnull? kdr) (cond? kar (first kdr)))
-             (cons* kar x kdr)
-             (cons* kar kdr)))
-       '() l)))
-
-(define (is-style? t)
-  (not (string-null? (md-style-text (car t)))))
-
-(define (md-punctuation? s)
-  ; FIXME? should be any punctuation char or whitespace char, as detailed here:
-  ; https://spec.commonmark.org/0.29/#emphasis-and-strong-emphasis
-  (with chars (char-set-union char-set:punctuation char-set:whitespace)
-    (and (== 1 (string-length s))
-         (char-set-contains? chars (car (string->list s))))))
-
-(define (two-styles? left right)
-  ;(display* "cond?    " left "   " right "\n")
-  (and (pair? left) (pair? right)
-       (is-style? left) (is-style? right)
-       (== (tm-label left) (tm-label right))))
-
-(define (style-must-break? left right)
-  "Returns #t if a style tag is preceded by either"
-  (with cond? 
-      (lambda (l r take)
-        (and (pair? l) (string? r) (not (string-null? r))
-             (is-style? l) (not (md-punctuation? (take r 1)))))
-    (or (cond? left right string-take) 
-        (cond? right left string-take-right))))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; markdown to string serializations
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -261,14 +226,12 @@
       (md-document (md-style `(em ,(cdr x))))))
 
 (define (md-paragraph p)
-  (cond ((string? p)
-         ;; FIXME: arguments of Hugo shortcodes shouldn't be split
-         (adjust-width p (get 'paragraph-width) (get 'indent) (first-indent)))
-        ((must-adjust? p)
-         (adjust-width (serialize-markdown* p) (get 'paragraph-width) (get 'indent)
-                       (first-indent)))
-        (else ;; do not convert to prevent nested conversions
-          (serialize-markdown* p))))
+  ;; FIXME: arguments of Hugo shortcodes shouldn't be split
+  (with adjust
+      (cut adjust-width <> (get 'paragraph-width) (get 'indent) (first-indent))
+    (cond ((string? p) (adjust p))
+          ((must-adjust? p) (adjust (serialize-markdown* p)))
+          (else (serialize-markdown* p)))))
 
 (define (md-document x)
   (string-concatenate
@@ -276,11 +239,17 @@
                      (make-string (get 'num-line-breaks) #\newline))))
 
 (define (md-concat x)
-  (let* ((styles-separated
-          (list-intersperse-cond (cdr x) " " two-styles?))
-         (styles-strings-separated 
-          (list-intersperse-cond (cdr x) " " style-must-break?)))
-    (string-concatenate (map serialize-markdown* styles-strings-separated))))
+  ; HACK: labels in sections will typically look like
+  ;    (concat (section "Section one") (label "section-one"))
+  ; But this will include a span in the md header, which then e.g. Hugo's 
+  ; .TableOfContents will copy to the TOC hence producing two identical ids
+  ; in the document. So we split concats in two lines
+  (if (and (>= (length x) 3)
+           (tuple? (second x))
+           (in? (car (second x)) '(h1 h2 h3)))
+      (with-globals 'num-line-breaks 1
+        (md-document `(document ,@(cdr x))))
+      (string-concatenate (map serialize-markdown* (cdr x)))))
 
 (define (md-header n)
   (lambda (x)
@@ -365,11 +334,7 @@
   "")
 
 (define (md-label x)
-  (with label (serialize-markdown* (cadr x))
-    (if (not (ahash-ref (get 'labels) label))
-        (string-append "undefined label: '" label "'")
-        (string-append "\n"  ; FIXME, this adds weird chars instead of newlines.
-         (create-label-link label)))))
+  (create-label-link (serialize-markdown* (cadr x))))
 
 (define (md-eqref x)
   (let* ((label (serialize-markdown* (cadr x)))
