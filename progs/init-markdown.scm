@@ -10,7 +10,7 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(texmacs-module (convert markdown init-markdown))
+(plugin-configure markdown)
 
 (define-preferences
   ("texmacs->markdown:flavour" "vanilla" (lambda (var val) (noop)))
@@ -22,12 +22,12 @@
   ;(:recognize/:must-recognize markdown-recognizes?))
   )
 
-;(lazy-define (convert markdown markdowntm) parse-markdown)
-;(lazy-define (convert markdown markdowntm) markdown->texmacs)
+;(lazy-define (markdown markdowntm) parse-markdown)
+;(lazy-define (markdown markdowntm) markdown->texmacs)
 
-(lazy-define (convert markdown markdownout) serialize-markdown)
-(lazy-define (convert markdown markdownout) serialize-markdown-document)
-(lazy-define (convert markdown tmmarkdown) texmacs->markdown)
+(lazy-define (markdown markdownout) serialize-markdown)
+(lazy-define (markdown markdownout) serialize-markdown-document)
+(lazy-define (markdown tmmarkdown) texmacs->markdown)
 
 ;(converter markdown-document markdown-stree
 ;  (:function parse-markdown))
