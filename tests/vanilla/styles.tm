@@ -11,8 +11,13 @@
 
   <strong|Some strong <em|and also emphasized text>>
 
-  <strong|Some strong><em| and then some emphasized text, with no blanks
-  in-between tags>
+  <strong|Some strong><em| and then some emphasized text, with blanks inside
+  the tags>
+
+  <strong|Some strong<em| and also emphasized text >with blanks around the em
+  tag>
+
+  Thiswordhas<strong|strong>and<em|em>, but no spaces.\ 
 
   <\em>
     An emphasized paragraph with <strong|strong text in it>.
