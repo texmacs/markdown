@@ -414,9 +414,14 @@
        (else "")))
 
 (define (md-style x)
-  (with st (md-style-text (car x))
-    (string-concatenate
-     `(,st ,@(map serialize-markdown* (cdr x)) ,st))))
+  (let* ((st (md-style-text (car x)))
+         (content (string-concatenate (map serialize-markdown* (cdr x))))
+         (whitespace-left? (string-starts? content " "))
+         (whitespace-right? (string-ends? content " ")))
+      (string-concatenate
+       (list (if whitespace-left? " " "")
+             st (string-trim-spaces content) st
+             (if whitespace-right? " " "")))))
 
 (define (md-cite x)
   "Custom hugo {{<cite>}} shortcode"
