@@ -248,6 +248,7 @@
            (list 'em keep)
            (list 'strike-through (change-to 'strike)) ; non-standard extension
            (list 'hrule hrule-hack)
+           (list 'tt keep)
            (list 'samp (change-to 'tt))
            (list 'python (change-to 'tt))
            (list 'cpp (change-to 'tt))
