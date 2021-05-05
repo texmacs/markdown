@@ -288,6 +288,10 @@
       (string-concatenate
        `(,@(make-list n "#") " " ,@(map serialize-markdown* (cdr x)))))))
 
+(define (md-para x)
+  "TeXmacs <paragraph> tag"
+  (serialize-markdown* `(concat (strong ,@(cdr x)) " ")))
+
 (define (md-environment x)
   (let* ((txt (translate (string-capitalize (symbol->string (first x)))))
          (nr (second x))
@@ -610,6 +614,7 @@
            (list 'h1 (md-header 1))
            (list 'h2 (md-header 2))
            (list 'h3 (md-header 3))
+           (list 'para md-para)
            (list 'doc-date md-doc-date)
            (list 'doc-title md-doc-title)
            (list 'doc-subtitle md-doc-subtitle)
