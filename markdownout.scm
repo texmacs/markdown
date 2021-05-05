@@ -172,7 +172,6 @@
   (if (null? l) '()
       (list-fold-right 
        (lambda (kar kdr)
-         (display* "CHECK:  " kar "     " kdr "\n" )
          (if (and (nnull? kdr) (cond? kar (first kdr)))
              (cons* kar x kdr)
              (cons* kar kdr)))
