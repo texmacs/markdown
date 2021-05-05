@@ -132,7 +132,7 @@
         (when (nnull? (get 'refs))
           (ahash-set! front "refs" 
                       `(tuple ,@(list-remove-duplicates (get 'refs)))))
-        (string-append "---\n" (frontmatter->yaml front) "---\n"))
+        (string-append "---\n" (frontmatter->yaml front) "---\n\n"))
       ""))
 
 (define (postlude-add x)
