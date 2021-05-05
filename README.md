@@ -33,6 +33,8 @@ Configuration is via two variables:
 * `texmacs->markdown:flavour`: one of `vanilla` or `hugo`.
 * `texmacs->markdown:paragraph-width`: either an integer or `#f`
 
+They can be set using the "Markdown" menu.
+
 ## Known issues
 
 This is **very brittle**. For instance, the converter breaks if:
