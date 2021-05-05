@@ -6,7 +6,7 @@ Some regular text.
 
 **Some strong *and also emphasized text***
 
-**Some strong** *and then some emphasized text, with blanks inside the tags*
+**Some strong** *and then some emphasized text*, **with punctuation at the end**
 
 **Some strong *and also emphasized text* with blanks around the em tag**
 

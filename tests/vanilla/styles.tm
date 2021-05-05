@@ -11,8 +11,8 @@
 
   <strong|Some strong <em|and also emphasized text>>
 
-  <strong|Some strong><em| and then some emphasized text, with blanks inside
-  the tags>
+  <strong|Some strong><em| and then some emphasized text><strong|, with
+  punctuation at the end>
 
   <strong|Some strong<em| and also emphasized text >with blanks around the em
   tag>
