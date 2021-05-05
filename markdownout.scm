@@ -180,6 +180,13 @@
 (define (is-style? t)
   (not (string-null? (md-style-text (car t)))))
 
+(define (md-punctuation? s)
+  ; FIXME? should be any punctuation char or whitespace char, as detailed here:
+  ; https://spec.commonmark.org/0.29/#emphasis-and-strong-emphasis
+  (with chars (char-set-union char-set:punctuation char-set:whitespace)
+    (and (== 1 (string-length s))
+         (char-set-contains? chars (car (string->list s))))))
+
 (define (two-styles? left right)
   ;(display* "cond?    " left "   " right "\n")
   (and (pair? left) (pair? right)
@@ -191,10 +198,7 @@
   (with cond? 
       (lambda (l r take)
         (and (pair? l) (string? r) (not (string-null? r))
-             (is-style? l)
-             ; FIXME: any punctuation char or whitespace char
-             ; https://spec.commonmark.org/0.29/#emphasis-and-strong-emphasis
-             (not (member (take r 1) '(" " "," "." ";" ":" )))))
+             (is-style? l) (not (md-punctuation? (take r 1)))))
     (or (cond? left right string-take) 
         (cond? right left string-take-right))))
 
