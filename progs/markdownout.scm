@@ -427,7 +427,7 @@
       (with payload (cdr x)
         (with-globals 'num-line-breaks 0
           (string-concatenate
-           `("{{< figure src=" ,(string-quote (car payload))
+           `("{{< figure src=" ,(string-quote (force-string (car payload)))
              " title=" ,(string-quote 
                             (string-concatenate 
                              (map serialize-markdown* (cdr payload))))
