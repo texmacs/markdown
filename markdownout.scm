@@ -167,6 +167,38 @@
                          (string-append acc w " ")))))
         (string-trim-right (list-fold proc first-prefix l)))))
 
+(define (list-intersperse-cond l x cond?)
+  "Insert @x between each element of @l whenever @cond? on two adjacent items holds."
+  (if (null? l) '()
+      (list-fold-right 
+       (lambda (kar kdr)
+         (display* "CHECK:  " kar "     " kdr "\n" )
+         (if (and (nnull? kdr) (cond? kar (first kdr)))
+             (cons* kar x kdr)
+             (cons* kar kdr)))
+       '() l)))
+
+(define (is-style? t)
+  (not (string-null? (md-style-text (car t)))))
+
+(define (two-styles? left right)
+  ;(display* "cond?    " left "   " right "\n")
+  (and (pair? left) (pair? right)
+       (is-style? left) (is-style? right)
+       (== (tm-label left) (tm-label right))))
+
+(define (style-must-break? left right)
+  "Returns #t if a style tag is preceded by either"
+  (with cond? 
+      (lambda (l r take)
+        (and (pair? l) (string? r) (not (string-null? r))
+             (is-style? l)
+             ; FIXME: any punctuation char or whitespace char
+             ; https://spec.commonmark.org/0.29/#emphasis-and-strong-emphasis
+             (not (member (take r 1) '(" " "," "." ";" ":" )))))
+    (or (cond? left right string-take) 
+        (cond? right left string-take-right))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; markdown to string serializations
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -240,38 +272,18 @@
    (list-intersperse (map md-paragraph (cdr x))
                      (make-string (get 'num-line-breaks) #\newline))))
 
-(define (two-styles? left right)
-  ;(display* "cond?    " left "   " right "\n")
-  (and (pair? left) (pair? right)
-       (not (string-null? (md-style-text left)))  ; check if style tag
-       (not (string-null? (md-style-text right)))  ; --"--
-       (== (tm-label left) (tm-label right))))
-
-(define (list-intersperse-cond l x cond?)
-  "Insert @x between each element of @l whenever @cond? on two adjacent items holds."
-  (if (null? l) '()
-      (list-fold-right 
-       (lambda (kar kdr)
-         (if (and (pair? kdr) (pair? (car kdr)) 
-                  (cond? kar (car kdr)))
-             (cons* kar x kdr)
-             (cons* kar kdr)))
-       '() l)))
-
 (define (md-concat x)
-  (with styles-separated (list-intersperse-cond (cdr x) " " two-styles?)
-    (string-concatenate (map serialize-markdown* styles-separated))))
+  (let* ((styles-separated
+          (list-intersperse-cond (cdr x) " " two-styles?))
+         (styles-strings-separated 
+          (list-intersperse-cond (cdr x) " " style-must-break?)))
+    (string-concatenate (map serialize-markdown* styles-strings-separated))))
 
 (define (md-header n)
   (lambda (x)
     (with-globals 'num-line-breaks 0
-      (with res (string-concatenate
-                 `(,@(make-list n "#")
-                   " "
-                   ,@(map serialize-markdown* (cdr x))))
-            (if (> n 4)  ; Special handling of TeXmacs <paragraph>
-                (string-append res " ")
-                res)))))
+      (string-concatenate
+       `(,@(make-list n "#") " " ,@(map serialize-markdown* (cdr x)))))))
 
 (define (md-environment x)
   (let* ((txt (translate (string-capitalize (symbol->string (first x)))))
@@ -590,7 +602,6 @@
            (list 'h1 (md-header 1))
            (list 'h2 (md-header 2))
            (list 'h3 (md-header 3))
-           (list 'h4 (md-header 4))
            (list 'doc-date md-doc-date)
            (list 'doc-title md-doc-title)
            (list 'doc-subtitle md-doc-subtitle)
