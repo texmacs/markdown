@@ -16,6 +16,8 @@
   ("texmacs->markdown:flavour" "vanilla" (lambda (var val) (noop)))
   ("texmacs->markdown:paragraph-width" 79 (lambda (var val) (noop))))
 
+(import-from (markdown-menus))
+
 (define-format markdown
   (:name "Markdown")
   (:suffix "md")
