@@ -3,6 +3,8 @@
 <style|generic>
 
 <\body>
+  A label without context: <label|first-label>
+
   <section|Section one><label|section-one>
 
   This section contains a numbered equation:
@@ -27,25 +29,21 @@
   Reference to theorem one: <reference|theorem-one>. Reference to section
   two: <reference|section-two>
 
-  \;
+  This is a broken reference: <reference|some invalid label>
+
+  This is another broken reference, but to the label without context at the
+  top: <reference|first-label>
+
+  And this is a reference to an equation not using eqref:
+  <reference|some-label>
 </body>
 
 <\initial>
   <\collection>
+    <associate|global-title|references.tm>
+    <associate|info-flag|detailed>
     <associate|page-medium|paper>
+    <associate|preamble|false>
+    <associate|save-aux|false>
   </collection>
 </initial>
-
-<\references>
-  <\collection>
-    <associate|another-label|<tuple|2|1|numbered-equations.tm>>
-    <associate|auto-1|<tuple|1|?|numbered-equations.tm>>
-    <associate|auto-2|<tuple|2|?|numbered-equations.tm>>
-    <associate|auto-3|<tuple|3|?|numbered-equations.tm>>
-    <associate|section-one|<tuple|1|?|numbered-equations.tm>>
-    <associate|section-three|<tuple|3|?|numbered-equations.tm>>
-    <associate|section-two|<tuple|2|?|numbered-equations.tm>>
-    <associate|some-label|<tuple|1|1|numbered-equations.tm>>
-    <associate|theorem-one|<tuple|1|?|numbered-equations.tm>>
-  </collection>
-</references>
