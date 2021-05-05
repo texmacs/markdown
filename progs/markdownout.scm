@@ -10,7 +10,7 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(texmacs-module (markdown markdownout)
+(texmacs-module (markdownout)
   (:use (convert tools output)))
 
 ; CAREFUL: srfi-19 overwrites some functions (e.g. current-time).

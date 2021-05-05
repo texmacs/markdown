@@ -25,9 +25,9 @@
 ;(lazy-define (markdown markdowntm) parse-markdown)
 ;(lazy-define (markdown markdowntm) markdown->texmacs)
 
-(lazy-define (markdown markdownout) serialize-markdown)
-(lazy-define (markdown markdownout) serialize-markdown-document)
-(lazy-define (markdown tmmarkdown) texmacs->markdown)
+(lazy-define (markdownout) serialize-markdown)
+(lazy-define (markdownout) serialize-markdown-document)
+(lazy-define (tmmarkdown) texmacs->markdown)
 
 ;(converter markdown-document markdown-stree
 ;  (:function parse-markdown))
