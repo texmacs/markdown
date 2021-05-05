@@ -240,8 +240,27 @@
    (list-intersperse (map md-paragraph (cdr x))
                      (make-string (get 'num-line-breaks) #\newline))))
 
+(define (two-styles? left right)
+  ;(display* "cond?    " left "   " right "\n")
+  (and (pair? left) (pair? right)
+       (not (string-null? (md-style-text left)))  ; check if style tag
+       (not (string-null? (md-style-text right)))  ; --"--
+       (== (tm-label left) (tm-label right))))
+
+(define (list-intersperse-cond l x cond?)
+  "Insert @x between each element of @l whenever @cond? on two adjacent items holds."
+  (if (null? l) '()
+      (list-fold-right 
+       (lambda (kar kdr)
+         (if (and (pair? kdr) (pair? (car kdr)) 
+                  (cond? kar (car kdr)))
+             (cons* kar x kdr)
+             (cons* kar kdr)))
+       '() l)))
+
 (define (md-concat x)
-  (string-concatenate (map serialize-markdown* (cdr x))))
+  (with styles-separated (list-intersperse-cond (cdr x) " " two-styles?)
+    (string-concatenate (map serialize-markdown* styles-separated))))
 
 (define (md-header n)
   (lambda (x)
@@ -381,8 +400,8 @@
 
 (define (md-style x)
   (with st (md-style-text (car x))
-    (string-concatenate 
-     `(,st ,@(map serialize-markdown* (cdr x)) ,st " "))))
+    (string-concatenate
+     `(,st ,@(map serialize-markdown* (cdr x)) ,st))))
 
 (define (md-cite x)
   "Custom hugo {{<cite>}} shortcode"
