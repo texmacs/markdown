@@ -15,8 +15,8 @@ There might still be some code very specific to those sites, YMMV.
 
 ## Setup
 
-Clone this repository into your ~/.TeXmacs/pluginsdirectory as markdown. For 
-Linux / OSX this is:
+Clone this repository into your `~/.TeXmacs/plugins` directory as `markdown`. 
+For Linux / OSX this is:
 
 ```shell
 git clone https://bitbucket.org/mdbenito/tm2md.git ~/.TeXmacs/plugins/markdown
@@ -39,8 +39,8 @@ converted from TeXmacs, including setting frontmatter values and extensions
 like footnotes and ~~striked through text~~.
 
 Setting values for the frontmatter is suported via a dedicated macro defined 
-in hugo.ts. To use it first insert the Markdown -> Hugo package in Document -> 
-Style -> Add package or using plus sign in the focus bar.
+in `hugo.ts`. To use it first insert the Markdown -> Hugo package in Document 
+-> Style -> Add package or using plus sign in the focus bar.
 
 Now you can type `\hugo-front` and input any number of key|value pairs as 
 arguments, one argument each. That is: type `\hugo-front`, then use structured 
@@ -51,11 +51,11 @@ dates (insert with `\date`) are supported as values. To enter a list, input
 
 ### Supported shortcodes
 
-  * Figures are converted to {{< figure … >}}
+  * Figures are converted to `{{< figure … >}}`
   * For arbitrary shortcodes, use `\hugo-short`.
-  * Citations are automatically detected and converted to {{< cite ref >}}, and 
-  all of them are gathered in the frontmatter as well, for indization by Hugo's 
-  taxonomy system.
+  * Citations are automatically detected and converted to `{{< cite ref >}}`, 
+  and all of them are gathered in the frontmatter as well, for indization by 
+  Hugo's taxonomy system.
   * Probably more…
 
 # Known issues
@@ -75,7 +75,7 @@ dates (insert with `\date`) are supported as values. To enter a list, input
   * Extract all Hugo extensions to a separate file, use overloading and 
   extension of the dispatch hashmaps.
   * Use “converter environments”?
-  * Use TeXmacs' logic-dispatch?
+  * Use TeXmacs' `logic-dispatch`?
   * line-breaks and other markup in doc-data (e.g. in the doc-title) need to be 
   properly handled if included in YAML metadata for Hugo.
   * Support for tables.
