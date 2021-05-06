@@ -474,10 +474,9 @@
 
 (define (md-sidenote x)
   (if (hugo-extensions?)
-      (with styles
-          (list->ahash-table '(("b" . "bottom") ("c" . "center") ("t" . "top")
-                               ("normal" . "right")))
-       (with args (cdr x)
+      (let ((styles (list->ahash-table '(("b" . "bottom") ("c" . "center")
+                                          ("t" . "top") ("normal" . "right"))))
+            (args (cdr x)))
          (string-append "{{< sidenote "
                         "halign=" (string-quote (ahash-ref styles (first args)))
                         " "
@@ -485,7 +484,7 @@
                         " >}}"
                         (serialize-markdown* (third args))
                         "{{</ sidenote >}}"))
-        "")))
+      ""))
 
 (define (serialize-markdown* x)
   ;(display* "Serialize: " x "\n")
