@@ -29,7 +29,7 @@
   (set-preference "texmacs->markdown:paragraph-width" (string->number w)))
 
 (menu-bind markdown-menu
-  ("Export..." (choose-file (buffer-exporter "md") "markdown" "md"))
+  ("Export..." (choose-file (buffer-exporter "markdown") "Export as Markdown" "markdown"))
   ---
   (group "Preferences")
   (-> "Flavour"
