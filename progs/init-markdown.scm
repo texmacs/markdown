@@ -12,11 +12,11 @@
 
 (plugin-configure markdown)
 
+(define (ignore var val) (noop))
 (define-preferences
-  ("texmacs->markdown:flavour" "vanilla" (lambda (var val) (noop)))
-  ("texmacs->markdown:paragraph-width" 79 (lambda (var val) (noop))))
-
-(import-from (markdown-menus))
+  ("texmacs->markdown:flavour" "vanilla" ignore)
+  ("texmacs->markdown:paragraph-width" 79 ignore)
+  ("texmacs->markdown:show-menu" "off" ignore))
 
 (define-format markdown
   (:name "Markdown")
@@ -48,3 +48,15 @@
 
 (converter texmacs-stree markdown-stree
   (:function texmacs->markdown))
+
+
+;; (import-from (markdown-menus))
+(lazy-menu (markdown-menus) markdown-menu tools-menu)
+
+(define (markdown-menu-show?)
+  (== (get-preference "texmacs->markdown:show-menu") "on"))
+
+(delayed (:idle 1)
+         (menu-bind tools-menu
+           (former)
+           ("Markdown plugin" (toggle-preference "texmacs->markdown:show-menu"))))

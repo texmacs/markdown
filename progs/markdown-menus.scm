@@ -20,12 +20,19 @@
   (:check-mark "v" markdown-test-flavour?)
   (set-preference "texmacs->markdown:flavour" flavour))
 
+(tm-define (markdown-set-paragraph-width w)
+  (:synopsis "Set the number of columns for texmacs->markdown exports")
+  (:argument w "Number of columns (empty for no limit)")
+  (:default w (or (get-preference "texmacs->markdown:paragraph-width") ""))
+  ; Anything which is not a number will be #f => no limit
+  (set-preference "texmacs->markdown:paragraph-width" (string->number w)))
+
 (menu-bind markdown-menu
   (-> "Flavour"
       ("Vanilla" (markdown-set-flavour "vanilla"))
       ("Hugo" (markdown-set-flavour "hugo")))
-  ("Paragraph width" (noop)))
+  ("Paragraph width" (interactive markdown-set-paragraph-width)))
 
 (menu-bind texmacs-extra-menu
-  (if (supports-markdown?)
+  (if (and (supports-markdown?) (markdown-menu-show?))
        (=> "Markdown" (link markdown-menu))))
