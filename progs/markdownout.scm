@@ -449,7 +449,7 @@
   (with-globals 'num-line-breaks 1
     (with syntax (tm-ref x 0)
       (string-concatenate 
-       `("```" ,syntax "\n" ,@(map serialize-markdown* (cddr x)) "```\n")))))
+       `("```" ,syntax "\n" ,@(map serialize-markdown* (cddr x)) "\n```")))))
 
 (define (md-hugo-frontmatter x)
   (when (hugo-extensions?)
