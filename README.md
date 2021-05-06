@@ -22,13 +22,11 @@ For Linux / OSX this is:
 git clone https://bitbucket.org/mdbenito/tm2md.git ~/.TeXmacs/plugins/markdown
 ```
 
-
 For Windows, the path (usually?) is
 
 ```shell
 \Users\YourUser\AppData\Roaming\TeXmacs\plugins
 ```
-
 
 You can activate a menu with Tools -> Markdown plugin.
 
@@ -72,6 +70,8 @@ dates (insert with `\date`) are supported as values. To enter a list, input
 
   * Reverse markdown to TeXmacs conversion.
   * Declare converter options in init file, and use.
+  * Make behaviour of all tags configurable, e.g. to support different styles. 
+  For instance, should titles, chapters or sections be `h1`?
   * Extract all Hugo extensions to a separate file, use overloading and 
   extension of the dispatch hashmaps.
   * Use “converter environments”?

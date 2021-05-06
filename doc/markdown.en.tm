@@ -96,6 +96,9 @@
 
     <item>Declare converter options in init file, and use.
 
+    <item>Make behaviour of all tags configurable, e.g. to support different
+    styles. For instance, should titles, chapters or sections be <code*|h1>?
+
     <item>Extract all Hugo extensions to a separate file, use overloading and
     extension of the dispatch hashmaps.
 
