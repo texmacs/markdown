@@ -19,7 +19,7 @@ Clone this repository into your `~/.TeXmacs/plugins` directory as `markdown`.
 For Linux / OSX this is:
 
 ```shell
-git clone https://bitbucket.org/mdbenito/tm2md.git ~/.TeXmacs/plugins/markdown
+git clone https://github.com/texmacs/markdown.git ~/.TeXmacs/plugins/markdown
 ```
 
 For Windows, the path (usually?) is
