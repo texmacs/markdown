@@ -237,9 +237,10 @@
 (define (parse-math x)
   `(,(car x) ,(md-math* (math->latex x))))
 
-(define (parse-menu t)
+(define (parse-menu n)
   "Documentation tags *menu"
-  `(tt ,(string-concatenate (list-intersperse (cdr t) " -> "))))
+  (lambda (t)
+    `(tt ,(string-concatenate (list-intersperse (list-drop (cdr t) n) " -> ")))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Dispatch
@@ -336,11 +337,11 @@
            (list 'subsubsection* (change-to 'h3))
            (list 'paragraph (change-to 'para))
            (list 'subparagraph (change-to 'para))
-           (list 'menu parse-menu)
-           (list 'submenu parse-menu)
-           (list 'subsubmenu parse-menu)
-           (list 'subsubsubmenu parse-menu)
-           (list 'subsubsubsubmenu parse-menu)
+           (list 'menu (parse-menu 0))
+           (list 'submenu (parse-menu 1))
+           (list 'subsubmenu (parse-menu 2))
+           (list 'subsubsubmenu (parse-menu 3))
+           (list 'subsubsubsubmenu (parse-menu 4))
            (list 'with parse-with)
            (list 'itemize keep)
            (list 'itemize-minus (change-to 'itemize))

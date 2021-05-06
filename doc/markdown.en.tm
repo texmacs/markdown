@@ -37,7 +37,7 @@
     \\Users\\YourUser\\AppData\\Roaming\\TeXmacs\\plugins
   </shell-code>
 
-  You can activate a menu with <submenu|Tools|Markdown plugin>.
+  You can activate a menu with <menu|Tools|Markdown plugin>.
 
   <subsection|Hugo support>
 
@@ -46,9 +46,9 @@
   extensions like footnotes and <strike-through|striked through text>.
 
   Setting values for the frontmatter is suported via a dedicated macro
-  defined in <code*|hugo.ts>. To use it first insert the
-  <submenu|Markdown|Hugo> package in <subsubmenu|Document|Style|Add package>
-  or using plus sign in the focus bar.
+  defined in <code*|hugo.ts>. To use it first insert the <menu|Markdown|Hugo>
+  package in <menu|Document|Style|Add package> or using the plus sign in the
+  focus bar.
 
   Now you can type <verbatim|\\hugo-front> and input any number of key\|value
   pairs as arguments, one argument each. That is: type
