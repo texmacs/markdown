@@ -237,6 +237,10 @@
 (define (parse-math x)
   `(,(car x) ,(md-math* (math->latex x))))
 
+(define (parse-menu t)
+  "Documentation tags *menu"
+  `(verbatim ,(string-concatenate (list-intersperse (cdr t) " -> "))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Dispatch
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -332,6 +336,11 @@
            (list 'subsubsection* (change-to 'h3))
            (list 'paragraph (change-to 'para))
            (list 'subparagraph (change-to 'para))
+           (list 'menu parse-menu)
+           (list 'submenu parse-menu)
+           (list 'subsubmenu parse-menu)
+           (list 'subsubsubmenu parse-menu)
+           (list 'subsubsubsubmenu parse-menu)
            (list 'with parse-with)
            (list 'itemize keep)
            (list 'itemize-minus (change-to 'itemize))
@@ -362,6 +371,7 @@
            (list 'bibliography keep)
            (list 'table-of-contents keep)
            (list 'hide-preamble drop)
+           (list 'TeXmacs (change-to "TeXmacs"))
            (list 'tags keep)  ; paperwhy extension (DEPRECATED)
            (list 'hugo-short keep)  ; Hugo extension (arbitrary shortcodes)
            (list 'hugo-front identity)  ; Hugo extension (frontmatter)
