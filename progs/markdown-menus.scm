@@ -10,7 +10,8 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(texmacs-module (markdown-menus))
+(texmacs-module (markdown-menus)
+  (:use (doc help-funcs)))
 
 (define (markdown-test-flavour? flavour)
   (== (get-preference "texmacs->markdown:flavour") flavour))
@@ -28,10 +29,15 @@
   (set-preference "texmacs->markdown:paragraph-width" (string->number w)))
 
 (menu-bind markdown-menu
+  ("Export..." (choose-file (buffer-exporter "md") "markdown" "md"))
+  ---
+  (group "Preferences")
   (-> "Flavour"
       ("Vanilla" (markdown-set-flavour "vanilla"))
       ("Hugo" (markdown-set-flavour "hugo")))
-  ("Paragraph width" (interactive markdown-set-paragraph-width)))
+  ("Paragraph width" (interactive markdown-set-paragraph-width))
+  ---
+  ("Help" (load-help-article "markdown")))
 
 (menu-bind texmacs-extra-menu
   (if (and (supports-markdown?) (markdown-menu-show?))
