@@ -257,6 +257,7 @@
            (list 'scilab (change-to 'tt))
            (list 'shell (change-to 'tt))
            (list 'verbatim (change-to 'tt))
+           (list 'code* (change-to 'tt))
            (list 'verbatim-code (code-block ""))
            (list 'code (code-block ""))
            (list 'scm-code (code-block "scheme"))
