@@ -26,9 +26,9 @@
 
 (define (globals-defaults)
   (with frontmatter (make-ahash-table)
-    (ahash-set! frontmatter "draft" "true")
-    (ahash-set! frontmatter "date" 
-                (strftime "%Y-%m-%d"(localtime (time-second (current-time)))))
+    ;(ahash-set! frontmatter "draft" "true")
+    ;(ahash-set! frontmatter "date" 
+    ;            (strftime "%Y-%m-%d"(localtime (time-second (current-time)))))
     `((file? . #t)
       (num-line-breaks . 2)
       (paragraph-width . ,(get-preference "texmacs->markdown:paragraph-width"))
