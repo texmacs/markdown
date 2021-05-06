@@ -239,7 +239,7 @@
 
 (define (parse-menu t)
   "Documentation tags *menu"
-  `(verbatim ,(string-concatenate (list-intersperse (cdr t) " -> "))))
+  `(tt ,(string-concatenate (list-intersperse (cdr t) " -> "))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Dispatch
