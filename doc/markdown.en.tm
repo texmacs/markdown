@@ -27,7 +27,7 @@
   <shell|markdown>. For Linux / OSX this is:
 
   <\shell-code>
-    git clone https://bitbucket.org/mdbenito/tm2md.git
+    git clone https://github.com/texmacs/markdown.git
     ~/.TeXmacs/plugins/markdown
   </shell-code>
 
