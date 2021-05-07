@@ -28,7 +28,7 @@ For Windows, the path (usually?) is
 \Users\YourUser\AppData\Roaming\TeXmacs\plugins
 ```
 
-You can activate a menu with Tools -> Markdown plugin.
+You can activate a menu with `Tools -> Markdown plugin`.
 
 ## Hugo support
 
@@ -37,8 +37,8 @@ converted from TeXmacs, including setting frontmatter values and extensions
 like footnotes and ~~striked through text~~.
 
 Setting values for the frontmatter is suported via a dedicated macro defined 
-in `hugo.ts`. To use it first insert the Markdown -> Hugo package in Document 
--> Style -> Add package or using plus sign in the focus bar.
+in `hugo.ts`. To use it first insert the `Markdown -> Hugo` package in 
+`Document -> Style -> Add package` or using the plus sign in the focus bar.
 
 Now you can type `\hugo-front` and input any number of key|value pairs as 
 arguments, one argument each. That is: type `\hugo-front`, then use structured 
