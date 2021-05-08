@@ -216,12 +216,18 @@
   "")
 
 
+(define (decode-date date formats)
+  (cond ((nlist? formats) (decode-date date (list formats)))
+        ((null? formats) (string-append "Failed to convert date: "
+                                        (force-string date)))
+        (else (catch #t
+                     (lambda () (date->string 
+                                 (string->date date (car formats))
+                                 "~Y-~m-~d"))
+                     (lambda _ (decode-date date (cdr formats)))))))
+
 (define (md-doc-date x)
-  (with date (catch #t
-                    (lambda ()
-                      (date->string (string->date (cadr x) "~B~d~Y")
-                                    "~Y-~m-~d"))
-                    (lambda _ ""))
+  (with date (decode-date (cadr x) '("~B~d~Y" "~d~B~Y"))
     (if (hugo-extensions?)
         (md-hugo-frontmatter `(hugo-front "date" ,date))
         date)))
