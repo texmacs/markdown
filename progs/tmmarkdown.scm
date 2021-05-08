@@ -154,6 +154,11 @@
         '(document "Cannot process embedded image")  ; TODO
         `(image ,src))))
 
+(define (is-figure? x)
+  (and (member (car x)
+               (numbered-unnumbered-append (figure-tag-list)))
+       (not (string-contains? (symbol->string (car x)) "table"))))
+
 (define (parse-figure x)
   ; Example input:
   ; (big-figure (image "path-to.jpeg" "251px" "251px" "" "") 
@@ -163,7 +168,7 @@
   ;
   ; FIXME: We need to ignore the text until we write a Hugo shortcode
   ; implementing Figure text as TeXmacs.
-  (let* ((offset (if (or (func? x 'small-figure) (func? x 'big-figure)) 0 2))
+  (let* ((offset (if (is-figure? x) 0 2))
          (img (tm-ref x offset))
          (caption (texmacs->markdown* (tm-ref x (+ 1 offset))))
          (src (if (tm-is? img 'image) 
