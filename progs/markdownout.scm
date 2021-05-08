@@ -215,9 +215,13 @@
             (string-append author-by (force-string (cdar name)) ))))
   "")
 
+
 (define (md-doc-date x)
-  "FIXME: handle errors, other formats"
-  (with date (date->string (string->date (cadr x) "~B~d~Y") "~Y-~m-~d")
+  (with date (catch #t
+                    (lambda ()
+                      (date->string (string->date (cadr x) "~B~d~Y")
+                                    "~Y-~m-~d"))
+                    (lambda _ ""))
     (if (hugo-extensions?)
         (md-hugo-frontmatter `(hugo-front "date" ,date))
         date)))
