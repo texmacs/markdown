@@ -486,17 +486,17 @@
                         "{{</ sidenote >}}"))
       ""))
 
-(define (serialize-markdown* x)
-  ;(display* "Serialize: " x "\n")
-  (cond ((null? x) "")
-        ((string? x) x)
-        ((char? x) (char->string x))
-        ((symbol? x) "")
-        ((symbol? (car x))
-         (with fun (ahash-ref serialize-hash (car x) skip)
-           (fun x)))
-        (else
-         (string-concatenate (map serialize-markdown* x)))))
+(define (md-explain-macro x)
+  ; FIXME: this will break with nested macros (tt style will be interrupted)
+  (md-style
+   `(tt ,(string-append 
+          "<" (string-recompose (map serialize-markdown* (cdr x)) "|" ) ">"))))
+
+(define (md-tmdoc-copyright x)
+  (with args (cdr x)
+    (serialize-markdown*
+     `(concat "---\n" "(C) " ,(first args)
+              " by " ,(string-recompose-comma (cdr args))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; DEPRECATED
@@ -517,6 +517,18 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; dispatch
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define (serialize-markdown* x)
+  ;(display* "Serialize: " x "\n")
+  (cond ((null? x) "")
+        ((string? x) x)
+        ((char? x) (char->string x))
+        ((symbol? x) "")
+        ((symbol? (car x))
+         (with fun (ahash-ref serialize-hash (car x) skip)
+           (fun x)))
+        (else
+         (string-concatenate (map serialize-markdown* x)))))
 
 (define serialize-hash (make-ahash-table))
 (map (lambda (l) (apply (cut ahash-set! serialize-hash <> <>) l)) 
@@ -601,8 +613,11 @@
            (list 'hugo-short md-hugo-shortcode)  ; Hugo extension
            (list 'hugo-front md-hugo-frontmatter)  ; Hugo extension
            (list 'table-of-contents md-toc) ; Hugo extension
-           (list 'bibliography md-bibliography)
+           (list 'bibliography md-bibliography)  ; TfL extension
            (list 'marginal-note md-sidenote) ; TfL extension
+           (list 'marginal-note* md-sidenote) ; TfL extension (TO DO)
+           (list 'explain-macro md-explain-macro)
+           (list 'tmdoc-copyright md-tmdoc-copyright)
            ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

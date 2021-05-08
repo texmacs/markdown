@@ -116,10 +116,6 @@
         (cons what (map texmacs->markdown* (cdr x)))
         what)))
 
-(define (hrule-hack x)
-  ; FIXME: this breaks inside quotations and whatnot. And it's ugly.
-  '(document "" "---" ""))
-
 (define (skip x)
   "Recursively processes @x and drops its func."
   ;(display* "Skipping into " (car x) "\n")
@@ -128,6 +124,10 @@
 (define (drop x)
   ;(display* "Dropped " (car x) " !\n")
   '())
+
+(define (hrule-hack x)
+  ; FIXME: this breaks inside quotations and whatnot. And it's ugly.
+  '(document "" "---" ""))
 
 (define (sanitize-selector s)
   "Makes @s safe(r) for use in querySelector(). No guarantees"
@@ -241,7 +241,7 @@
   "Documentation tags *menu"
   (lambda (t)
     `(tt ,(string-concatenate (list-intersperse (list-drop (cdr t) n) " -> ")))))
-
+  
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Dispatch
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -337,11 +337,6 @@
            (list 'subsubsection* (change-to 'h3))
            (list 'paragraph (change-to 'para))
            (list 'subparagraph (change-to 'para))
-           (list 'menu (parse-menu 0))
-           (list 'submenu (parse-menu 1))
-           (list 'subsubmenu (parse-menu 2))
-           (list 'subsubsubmenu (parse-menu 3))
-           (list 'subsubsubsubmenu (parse-menu 4))
            (list 'with parse-with)
            (list 'itemize keep)
            (list 'itemize-minus (change-to 'itemize))
@@ -366,17 +361,37 @@
            (list 'render-small-figure parse-figure)
            (list 'big-figure (count parse-figure 'figure))
            (list 'render-big-figure parse-figure)
+           (list 'wide-figure (count parse-figure 'figure))
            (list 'footnote keep)
            (list 'marginal-note keep)
+           (list 'marginal-note* keep)
            (list 'todo keep)
-           (list 'bibliography keep)
-           (list 'table-of-contents keep)
            (list 'hide-preamble drop)
            (list 'TeXmacs (change-to "TeXmacs"))
+           (list 'LaTeX (change-to "LaTeX"))
+           (list 'LaTeX* (change-to "(La)TeX"))
+           (list 'LaTeXe (change-to "LaTeXe"))
+           (list 'BibTeX (change-to "BibTeX"))
+
+           (list 'bibliography keep)  ; tfl extension only
+           (list 'table-of-contents keep)  ; tfl extension only
            (list 'tags keep)  ; paperwhy extension (DEPRECATED)
            (list 'hugo-short keep)  ; Hugo extension (arbitrary shortcodes)
            (list 'hugo-front identity)  ; Hugo extension (frontmatter)
            (list 'text-dots (change-to "..."))
+           
+           ;; tm-doc style
+           (list 'menu (parse-menu 0))
+           (list 'submenu (parse-menu 1))
+           (list 'subsubmenu (parse-menu 2))
+           (list 'subsubsubmenu (parse-menu 3))
+           (list 'subsubsubsubmenu (parse-menu 4))
+           (list 'markup (change-to 'tt))
+           (list 'explain-macro keep)
+           (list 'src-var skip)
+           (list 'tmdoc-title (count (change-to 'h1) 'h1))
+           (list 'tmdoc-copyright keep)
+           (list 'tmdoc-license (change-to 'em))
            ))
 
 (define (texmacs->markdown* x)
