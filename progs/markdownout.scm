@@ -412,10 +412,7 @@
                (filter (lambda (x) (and (string? x) (not (string-null? x))))
                        (cdr x)))
         (set 'refs (append (get 'refs) citations))
-        (string-append
-         "{{< cite " 
-         (string-recompose-space (map string-quote citations))
-         " >}}"))))
+        (md-hugo-shortcode (cons 'cite citations)))))
 
 (define (md-cite-detail x)
   (if (not (hugo-extensions?)) ""
@@ -468,9 +465,27 @@
       (map set-pair! (list->assoc (cdr x)))))
   "")
 
-(define (md-hugo-shortcode x)
+(define (md-hugo-shortcode x . inner)
   (when (hugo-extensions?)
-    (string-recompose-space `("{{<" ,(cadr x) ,@(cddr x) ">}}"))))
+    (letrec
+        ((process-one
+          (lambda (arg)
+            (cond ((list-2? arg)
+                    (string-append (process-one (first arg))
+                                   "=" (process-one (second arg))))
+                   ((list-1? arg) (string-quote (car arg)))
+                   ((symbol? arg) (symbol->string arg))
+                   ((string? arg) (string-quote arg))
+                   ((boolean? arg) (string-quote (if arg "true" "false")))
+                   (else ""))))
+          (shortcode (symbol->string (car x)))
+          (arguments (cdr x))
+          (content (if (null? inner) ""
+                       (string-append (serialize-markdown* inner)
+                                      "{{</" (symbol->string (car x)) ">}}"))))
+      (string-trim-both
+       (string-recompose-space
+        `("{{<" ,shortcode ,@(map process-one arguments) ">}}" ,content))))))
 
 (define (md-toc x)
   (if (hugo-extensions?)
@@ -479,22 +494,19 @@
 
 (define (md-bibliography x)
   (if (hugo-extensions?) 
-      (md-hugo-shortcode '(_ "references")) 
-      (md-style '(strong "Bibliography not implemented"))))
+      (md-hugo-shortcode '(references))
+      (md-style '(strong "Bibliography not implemented for raw Markdown"))))
 
 (define (md-sidenote x)
   (if (hugo-extensions?)
       (let ((styles (list->ahash-table '(("b" . "bottom") ("c" . "center")
                                           ("t" . "top") ("normal" . "right"))))
             (args (cdr x)))
-         (string-append "{{< sidenote "
-                        "halign=" (string-quote (ahash-ref styles (first args)))
-                        " "
-                        "valign=" (string-quote (ahash-ref styles (second args)))
-                        " >}}"
-                        (serialize-markdown* (third args))
-                        "{{</ sidenote >}}"))
-      ""))
+        (md-hugo-shortcode
+         `(sidenote (halign ,(ahash-ref styles (first args)))
+                    (valign ,(ahash-ref styles (second args))))
+         (third args)))
+      (md-footnote (list 'footnote (third args)))))
 
 (define (md-explain-macro x)
   ; FIXME: this will break with nested macros (tt style will be interrupted)
