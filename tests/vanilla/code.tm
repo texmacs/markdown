@@ -1,4 +1,4 @@
-<TeXmacs|1.99.18>
+<TeXmacs|1.99.20>
 
 <style|generic>
 
@@ -36,5 +36,8 @@
   \;
 </body>
 
-<initial|<\collection>
-</collection>>
+<\initial>
+  <\collection>
+    <associate|save-aux|false>
+  </collection>
+</initial>

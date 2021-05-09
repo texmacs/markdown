@@ -1,4 +1,4 @@
-<TeXmacs|1.99.18>
+<TeXmacs|1.99.20>
 
 <style|generic>
 
@@ -30,12 +30,6 @@
   <\collection>
     <associate|page-medium|paper>
     <associate|preamble|false>
+    <associate|save-aux|false>
   </collection>
 </initial>
-
-<\references>
-  <\collection>
-    <associate|another-label|<tuple|2|1>>
-    <associate|some-label|<tuple|1|1>>
-  </collection>
-</references>

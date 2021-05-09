@@ -31,5 +31,8 @@
   Documentation License".>
 </body>
 
-<initial|<\collection>
-</collection>>
+<\initial>
+  <\collection>
+    <associate|save-aux|false>
+  </collection>
+</initial>
