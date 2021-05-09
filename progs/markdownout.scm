@@ -425,8 +425,10 @@
                    "(" (force-string (second payload)) ")")))    
 
 (define (md-image x)
-  (with payload (cdr x)
-      (string-append "![](" (force-string (first payload)) ")")))
+  (let* ((payload (cdr x))
+         (src (first payload))
+         (alt (if (list-2? payload) (second payload) "")))
+    (string-append "![" alt "](" (force-string src) ")")))
 
 (define (md-figure x)
   "Hugo {{< figure >}} shortcode"
