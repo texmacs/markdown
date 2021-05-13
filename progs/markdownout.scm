@@ -633,9 +633,9 @@
            (list 'footnote md-footnote)
            (list 'todo md-todo)
            (list 'image md-image)
-           (list 'small-figure (md-figure 'rfigure))
-           (list 'big-figure (md-figure 'rfigure))
-           (list 'wide-figure (md-figure 'rfigure 'class "wide-figure"))
+           (list 'small-figure (md-figure 'tmfigure))
+           (list 'big-figure (md-figure 'tmfigure))
+           (list 'wide-figure (md-figure 'tmfigure 'class "wide-figure"))
            (list 'hlink md-hlink)
            (list 'tags md-hugo-tags)  ; Hugo extension (DEPRECATED)
            (list 'hugo-short md-hugo-shortcode)  ; Hugo extension
