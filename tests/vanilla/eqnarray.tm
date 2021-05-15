@@ -4,9 +4,9 @@
 
 <\body>
   <\eqnarray*>
-    <tformat|<table|<row|<cell|cwECE<rsub|k>>|<cell|:=>|<cell|\<bbb-E\><rsub|C<rsub|k>><around*|(|<around*|\||\<bbb-P\><around*|(|Y=k\<mid\>C<rsub|k>|)>
-    - C<rsub|k>|\|>|)>>>|<row|<cell|>|<cell|=>|<cell|<big|int><rsup|1><rsub|0>p<around*|(|c<rsub|k>|)><around*|\||P<around*|(|Y=k\<mid\>c<rsub|k>|)>-c<rsub|k>|\|>\<mathd\>c<rsub|k>
-    ,>>|<row|<cell|cwEC\<Epsilon\>>|<cell|=>|<cell|<frac|1|K><big|sum><rsub|k>cwECE<rsub|k>.>>>>
+    <tformat|<table|<row|<cell|cwECE<rsub|k>>|<cell|\<assign\>>|<cell|\<bbb-E\><rsub|C<rsub|k>><around*|(|<around*|\||\<bbb-P\><around*|(|Y=k\<mid\>C<rsub|k>|)>
+    - C<rsub|k>|\|>|)>>>|<row|<cell|>|<cell|=>|<cell|<big|int><rsup|1><rsub|0>p<around*|(|c<rsub|k>|)><around*|\||\<bbb-P\><around*|(|Y=k\<mid\>c<rsub|k>|)>-c<rsub|k>|\|>\<mathd\>c<rsub|k>
+    ,>>|<row|<cell|cwEC\<Epsilon\>>|<cell|\<assign\>>|<cell|<frac|1|K><big|sum><rsub|k>cwECE<rsub|k>.>>>>
   </eqnarray*>
 </body>
 
