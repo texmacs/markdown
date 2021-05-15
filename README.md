@@ -28,7 +28,7 @@ For Windows, the path (usually?) is
 \Users\YourUser\AppData\Roaming\TeXmacs\plugins
 ```
 
-You can activate a menu with Tools -> Markdown plugin.
+You can activate a menu with `Tools -> Markdown plugin`.
 
 ## Hugo support
 
@@ -37,8 +37,8 @@ converted from TeXmacs, including setting frontmatter values and extensions
 like footnotes and ~~striked through text~~.
 
 Setting values for the frontmatter is suported via a dedicated macro defined 
-in `hugo.ts`. To use it first insert the Markdown -> Hugo package in Document 
--> Style -> Add package or using plus sign in the focus bar.
+in `hugo.ts`. To use it first insert the `Markdown -> Hugo` package in 
+`Document -> Style -> Add package` or using the plus sign in the focus bar.
 
 Now you can type `\hugo-front` and input any number of key|value pairs as 
 arguments, one argument each. That is: type `\hugo-front`, then use structured 
@@ -49,18 +49,27 @@ dates (insert with `\date`) are supported as values. To enter a list, input
 
 ### Supported shortcodes
 
-  * Figures are converted to `{{< figure … >}}`
-  * For arbitrary shortcodes, use `\hugo-short`.
-  * Citations are automatically detected and converted to `{{< cite ref >}}`, 
-  and all of them are gathered in the frontmatter as well, for indization by 
-  Hugo's taxonomy system.
-  * Probably more…
+Some of the texmacs markdown requires custom shortcodes and layouts. You can
+find them in `extensions/hugo`. Just copy the partials and shortcodes to your
+Hugo project.
+
+  * Figures are converted to `{{< tmfigure … >}}`. This is a simplified version
+  of Hugo's `{{<figure>}}`, which can have `.Inner` content. This is required
+  e.g. to have citations in captions or arbitrary markup.
+  * To introduce any shortcode in a TeXmacs document, you can use the macro 
+  `\hugo-short`.
+  * Citations are automatically detected and converted to 
+  `{{< cite ref1 ref2 ... >}}`, and all of them are gathered in the frontmatter
+  as well, for indization by Hugo's taxonomy system. The presentation of the
+  label itself is done using CSS. Include the partial `ref_labels.html.html`
+  in the document `<head>` for that.
+  * Bibliography is rendered with the `references.html.html` template.
 
 # Known issues
 
   * The converter can break with malformed or unexpected input, like markup 
-  inside tags whose values should be strings (although many cases are 
-  “handled”)
+  inside tags whose values should be strings, although some cases are (a bit
+  sloppily) handled.
   * Error reporting is rather lacking. Run TeXmacs in a console to see stack 
   traces and such in case you are running into problems.
   * No tables (yet)!

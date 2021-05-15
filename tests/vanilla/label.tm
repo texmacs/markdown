@@ -1,4 +1,4 @@
-<TeXmacs|1.99.18>
+<TeXmacs|1.99.20>
 
 <style|generic>
 
@@ -6,11 +6,8 @@
   One label <label|here>
 </body>
 
-<initial|<\collection>
-</collection>>
-
-<\references>
+<\initial>
   <\collection>
-    <associate|here|<tuple|?|?>>
+    <associate|save-aux|false>
   </collection>
-</references>
+</initial>

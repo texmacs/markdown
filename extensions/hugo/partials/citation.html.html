@@ -1,0 +1,53 @@
+{{ $key := index . "key" }}
+{{ $page := index . "page" }}
+{{ $linkOthers := default true (index . "linkOthers") }}
+{{ $bib :=  site.Data.bibliography.references }}
+{{ with $entries := where $bib "id" $key }}
+    {{ $entry := index $entries 0 }}
+    {{ $year := (index $entry.issued 0).year }}
+    <span class="citation-title">{{ $entry.title  }}</span>,
+    <span class="citation-authors">
+        {{ range $i, $author := $entry.author }}
+            {{ printf "%s %s" $author.given $author.family }}
+            {{- if lt $i (sub (len $entry.author) 1)}}, {{end}}
+        {{- end -}}.
+    </span>
+    {{ with index $entry "container-title" }}
+        <span class="citation-publication">{{.}}</span>
+    {{ end }}
+    <span class="citation-date">({{ $year }})</span>
+    {{ with $entry.URL }}
+        <a class="citation-link" href="{{.}}">
+            Publication <i class="fa fa-external-link-alt citation-url"></i>
+        </a>
+    {{ end }}
+    {{ with $entry.note }}
+        {{ range split . "\n" }}
+            {{ if hasPrefix . "code:" }}
+                <a class="citation-link" {{ printf "href=%q" (trim (substr . 6) " ") | safeHTMLAttr }}>
+                    Code <i class="fa fa-external-link-alt citation-url"></i>
+                </a>
+            {{ else if hasPrefix . "video:" }}
+                <a class="citation-link" {{ printf "href=%q" (trim (substr . 6) " ") | safeHTMLAttr }}>
+                    Video <i class="fa fa-external-link-alt citation-url"></i>
+                </a>
+            {{ end }}
+        {{ end }}
+    {{ end }}
+    {{ with $term := index (site.Taxonomies.refs) $key }}
+        {{ if $linkOthers }}
+            {{ with $total := len (where $term.Pages "Page.RelPermalink" "ne" $page.RelPermalink) }}
+                <a class="d-inline-block pl-4 citation-link" href="{{ $term.Page.RelPermalink }}">
+                    &mdash; {{ $total }} other item {{- cond (gt $total 1) "s" "" }}
+                    in this site reference {{- cond (gt $total 1) "" "s" }} this.
+                </a>
+            {{ end }}
+        {{ end }}
+    {{ else }}
+        <div class="alert alert-danger">
+            Reference "{{$key}}" missing in taxonomy "refs".
+        </div>
+    {{ end }}
+{{ else }}
+    <strong>Wrong citekey: {{ $key }}</strong>
+{{ end }}

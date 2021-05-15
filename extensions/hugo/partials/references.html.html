@@ -1,0 +1,21 @@
+<section>
+{{- if gt (.Page.Scratch.Get "citations" | uniq | sort) (.Page.Params.refs | uniq | sort) -}}
+    <div class="alert alert-danger">
+        There are citations in the text which are not present in the
+        <code>refs</code> section of the frontmatter.
+        <pre>{{ .Page.Scratch.Get "citations" | uniq | sort }}</pre>
+        <pre>{{ .Page.Params.refs | uniq | sort }}</pre>
+    </div>
+{{- end -}}
+{{ if .Page.Params.refs }}
+    <h1>References</h1>
+    <ul class="references">
+        {{ range $index, $key := default slice .Page.Params.refs }}
+            {{/* We use CSS in ref_labels.html.html to decorate the li elements with the citation labels */}}
+            <li id="refs-{{$key}}">
+                {{ partial "citation.html.html" (dict "page" $.Page "key" $key) }}
+            </li>
+        {{ end }}
+    </ul>
+{{ end }}
+</section>

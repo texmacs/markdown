@@ -1,4 +1,4 @@
-<TeXmacs|1.99.18>
+<TeXmacs|1.99.20>
 
 <style|generic>
 
@@ -9,5 +9,6 @@
 <\initial>
   <\collection>
     <associate|page-medium|paper>
+    <associate|save-aux|false>
   </collection>
 </initial>

@@ -1,18 +1,22 @@
 (use-modules (ice-9 ftw))
 
-(display "\nRunning tests in vanilla and hugo folders\n\n")
+(texmacs-module (markdown tests))
+
+(lazy-plugin-force)
+
+(display "\nRunning all tests in subdirectories\n")
 
 (define (run-test filename statinfo flag)
   (cond ((== flag 'regular)
          ;(display* "Checking " filename "\n")
          (when (string-ends? filename ".tm")
-           (display* "Converting " filename "... ")
+           (display* "  Converting " filename "... ")
            (with new-name (string-append (string-drop-right filename 3) ".out.md")
              (file-convert filename new-name)
              (display " done.\n")))
          #t)
         ((== flag 'directory)
-         (display* "Entering directory: " filename "\n")
+         (display* "\nEntering directory: " filename "\n")
            #t)
         (else #f)))
 
@@ -25,5 +29,6 @@
     (set-preference "texmacs->markdown:flavour" "hugo")
     (set-preference "texmacs->markdown:paragraph-width" #f)
     (ftw "./hugo/" run-test)
+    (ftw "./tfl/" run-test)
     (set-preference "texmacs->markdown:hugo-extensions" save-hugo)
     (set-preference "texmacs->markdown:paragraph-width" save-width)))

@@ -215,9 +215,19 @@
             (string-append author-by (force-string (cdar name)) ))))
   "")
 
+
+(define (decode-date date formats)
+  (cond ((nlist? formats) (decode-date date (list formats)))
+        ((null? formats) (string-append "Failed to convert date: "
+                                        (force-string date)))
+        (else (catch #t
+                     (lambda () (date->string 
+                                 (string->date date (car formats))
+                                 "~Y-~m-~d"))
+                     (lambda _ (decode-date date (cdr formats)))))))
+
 (define (md-doc-date x)
-  "FIXME: handle errors, other formats"
-  (with date (date->string (string->date (cadr x) "~B~d~Y") "~Y-~m-~d")
+  (with date (decode-date (cadr x) '("~B~d~Y" "~d~B~Y"))
     (if (hugo-extensions?)
         (md-hugo-frontmatter `(hugo-front "date" ,date))
         date)))
@@ -402,10 +412,7 @@
                (filter (lambda (x) (and (string? x) (not (string-null? x))))
                        (cdr x)))
         (set 'refs (append (get 'refs) citations))
-        (string-append
-         "{{< cite " 
-         (string-recompose-space (map string-quote citations))
-         " >}}"))))
+        (md-hugo-shortcode (cons 'cite citations)))))
 
 (define (md-cite-detail x)
   (if (not (hugo-extensions?)) ""
@@ -418,20 +425,24 @@
                    "(" (force-string (second payload)) ")")))    
 
 (define (md-image x)
-  (with payload (cdr x)
-      (string-append "![](" (force-string (first payload)) ")")))
+  (let* ((payload (cdr x))
+         (src (first payload))
+         (alt (if (list-2? payload) (second payload) "")))
+    (string-append "![" alt "](" (force-string src) ")")))
 
-(define (md-figure x)
-  "Hugo {{< figure >}} shortcode"
-  (if (not (hugo-extensions?)) ""
-      (with payload (cdr x)
-        (with-globals 'num-line-breaks 0
-          (string-concatenate
-           `("{{< figure src=" ,(string-quote (force-string (car payload)))
-             " title=" ,(string-quote 
-                            (string-concatenate 
-                             (map serialize-markdown* (cdr payload))))
-             " >}}"))))))
+(define (md-figure-sub x type . args)
+  (let* ((payload (cdr x))
+         (src (force-string (car payload)))
+         (title
+           (with-globals 'num-line-breaks 0 ; Don't break lines in 'document
+             (string-concatenate (map serialize-markdown* (cdr payload))))))
+    (if (hugo-extensions?)
+        (md-hugo-shortcode `(,type (src ,src) ,@args) title)
+        (md-image (list 'image src title)))))
+
+(define (md-figure type . args)
+  (lambda (x) (md-figure-sub x type args)))
+
 
 (define (md-footnote x)
   ; Input: (footnote (document [stuff here]))
@@ -458,9 +469,27 @@
       (map set-pair! (list->assoc (cdr x)))))
   "")
 
-(define (md-hugo-shortcode x)
+(define (md-hugo-shortcode x . inner)
   (when (hugo-extensions?)
-    (string-recompose-space `("{{<" ,(cadr x) ,@(cddr x) ">}}"))))
+    (letrec
+        ((process-one
+          (lambda (arg)
+            (cond ((list-2? arg)
+                    (string-append (process-one (first arg))
+                                   "=" (process-one (second arg))))
+                   ((list-1? arg) (string-quote (car arg)))
+                   ((symbol? arg) (symbol->string arg))
+                   ((string? arg) (string-quote arg))
+                   ((boolean? arg) (string-quote (if arg "true" "false")))
+                   (else ""))))
+          (shortcode (symbol->string (car x)))
+          (arguments (cdr x))
+          (content (if (null? inner) ""
+                       (string-append (serialize-markdown* inner)
+                                      "{{</" (symbol->string (car x)) ">}}"))))
+      (string-trim-both
+       (string-recompose-space
+        `("{{<" ,shortcode ,@(map process-one arguments) ">}}" ,content))))))
 
 (define (md-toc x)
   (if (hugo-extensions?)
@@ -469,34 +498,31 @@
 
 (define (md-bibliography x)
   (if (hugo-extensions?) 
-      (md-hugo-shortcode '(_ "references")) 
-      (md-style '(strong "Bibliography not implemented"))))
+      (md-hugo-shortcode '(references))
+      (md-style '(strong "Bibliography not implemented for raw Markdown"))))
 
 (define (md-sidenote x)
   (if (hugo-extensions?)
       (let ((styles (list->ahash-table '(("b" . "bottom") ("c" . "center")
                                           ("t" . "top") ("normal" . "right"))))
             (args (cdr x)))
-         (string-append "{{< sidenote "
-                        "halign=" (string-quote (ahash-ref styles (first args)))
-                        " "
-                        "valign=" (string-quote (ahash-ref styles (second args)))
-                        " >}}"
-                        (serialize-markdown* (third args))
-                        "{{</ sidenote >}}"))
-      ""))
+        (md-hugo-shortcode
+         `(sidenote (halign ,(ahash-ref styles (first args)))
+                    (valign ,(ahash-ref styles (second args))))
+         (third args)))
+      (md-footnote (list 'footnote (third args)))))
 
-(define (serialize-markdown* x)
-  ;(display* "Serialize: " x "\n")
-  (cond ((null? x) "")
-        ((string? x) x)
-        ((char? x) (char->string x))
-        ((symbol? x) "")
-        ((symbol? (car x))
-         (with fun (ahash-ref serialize-hash (car x) skip)
-           (fun x)))
-        (else
-         (string-concatenate (map serialize-markdown* x)))))
+(define (md-explain-macro x)
+  ; FIXME: this will break with nested macros (tt style will be interrupted)
+  (md-style
+   `(tt ,(string-append 
+          "<" (string-recompose (map serialize-markdown* (cdr x)) "|" ) ">"))))
+
+(define (md-tmdoc-copyright x)
+  (with args (cdr x)
+    (serialize-markdown*
+     `(concat "---\n" "(C) " ,(first args)
+              " by " ,(string-recompose-comma (cdr args))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; DEPRECATED
@@ -517,6 +543,18 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; dispatch
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define (serialize-markdown* x)
+  ;(display* "Serialize: " x "\n")
+  (cond ((null? x) "")
+        ((string? x) x)
+        ((char? x) (char->string x))
+        ((symbol? x) "")
+        ((symbol? (car x))
+         (with fun (ahash-ref serialize-hash (car x) skip)
+           (fun x)))
+        (else
+         (string-concatenate (map serialize-markdown* x)))))
 
 (define serialize-hash (make-ahash-table))
 (map (lambda (l) (apply (cut ahash-set! serialize-hash <> <>) l)) 
@@ -595,14 +633,19 @@
            (list 'footnote md-footnote)
            (list 'todo md-todo)
            (list 'image md-image)
-           (list 'figure md-figure)
+           (list 'small-figure (md-figure 'tmfigure))
+           (list 'big-figure (md-figure 'tmfigure))
+           (list 'wide-figure (md-figure 'tmfigure 'class "wide-figure"))
            (list 'hlink md-hlink)
            (list 'tags md-hugo-tags)  ; Hugo extension (DEPRECATED)
            (list 'hugo-short md-hugo-shortcode)  ; Hugo extension
            (list 'hugo-front md-hugo-frontmatter)  ; Hugo extension
            (list 'table-of-contents md-toc) ; Hugo extension
-           (list 'bibliography md-bibliography)
+           (list 'bibliography md-bibliography)  ; TfL extension
            (list 'marginal-note md-sidenote) ; TfL extension
+           (list 'marginal-note* md-sidenote) ; TfL extension (TO DO)
+           (list 'explain-macro md-explain-macro)
+           (list 'tmdoc-copyright md-tmdoc-copyright)
            ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
