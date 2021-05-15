@@ -430,17 +430,19 @@
          (alt (if (list-2? payload) (second payload) "")))
     (string-append "![" alt "](" (force-string src) ")")))
 
-(define (md-figure x)
-  "Hugo {{< figure >}} shortcode"
-  (if (not (hugo-extensions?)) ""
-      (with payload (cdr x)
-        (with-globals 'num-line-breaks 0
-          (string-concatenate
-           `("{{< figure src=" ,(string-quote (force-string (car payload)))
-             " title=" ,(string-quote 
-                            (string-concatenate 
-                             (map serialize-markdown* (cdr payload))))
-             " >}}"))))))
+(define (md-figure-sub x type . args)
+  (let* ((payload (cdr x))
+         (src (force-string (car payload)))
+         (title
+           (with-globals 'num-line-breaks 0 ; Don't break lines in 'document
+             (string-concatenate (map serialize-markdown* (cdr payload))))))
+    (if (hugo-extensions?)
+        (md-hugo-shortcode `(,type (src ,src) ,@args) title)
+        (md-image (list 'image src title)))))
+
+(define (md-figure type . args)
+  (lambda (x) (md-figure-sub x type args)))
+
 
 (define (md-footnote x)
   ; Input: (footnote (document [stuff here]))
@@ -631,7 +633,9 @@
            (list 'footnote md-footnote)
            (list 'todo md-todo)
            (list 'image md-image)
-           (list 'figure md-figure)
+           (list 'small-figure (md-figure 'tmfigure))
+           (list 'big-figure (md-figure 'tmfigure))
+           (list 'wide-figure (md-figure 'tmfigure 'class "wide-figure"))
            (list 'hlink md-hlink)
            (list 'tags md-hugo-tags)  ; Hugo extension (DEPRECATED)
            (list 'hugo-short md-hugo-shortcode)  ; Hugo extension

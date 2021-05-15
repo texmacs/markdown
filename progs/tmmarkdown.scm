@@ -174,7 +174,7 @@
          (src (if (tm-is? img 'image) 
                   (tm-ref (parse-image img) 0)
                   '(document "Wrong image src"))))
-    (list 'figure src caption)))
+    (list (car x) src caption)))
 
 (define (parse-with x)
   ; HACK: we end up calling ourselves with (with "stuff"), which

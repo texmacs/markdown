@@ -1,0 +1,10 @@
+{{- with .Params -}}
+    {{- $citations := slice -}}
+    {{- range $key := . -}}
+        {{- $.Page.Scratch.Add "citations" (slice $key) -}}
+        {{/* We use CSS in ref_labels.html.html create the classes */}}
+        {{- $html := printf "<a class=\"cite-%s\" href=\"#refs-%s\"></a>" $key $key -}}
+        {{- $citations = $citations | append $html -}}
+    {{- end -}}
+    <span class="citation">[{{ delimit $citations ", " | safeHTML }}]</span>
+{{- end -}}

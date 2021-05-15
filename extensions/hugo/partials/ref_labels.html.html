@@ -1,0 +1,19 @@
+{{/*Include this in the document header*/}}
+{{ with .Params.refs }}
+    <style>
+        {{ range $key := . }}
+            {{ $parts := split $key "_" }}
+            {{ $cite := printf "%s%s%s" (substr (index $parts 0 | title) 0 3) (substr (index $parts 2) 2) (upper (substr (index $parts 1) 0 1)) }}
+            li#refs-{{$key}}::marker {
+                content: '[{{$cite}}] ';
+                font-weight: 600;
+                font-variant: small-caps;
+            }
+
+            a.cite-{{$key}}::before {
+                content: '{{$cite}}';
+            }
+
+        {{ end }}
+    </style>
+{{ end }}
