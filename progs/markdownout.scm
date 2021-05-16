@@ -501,16 +501,24 @@
       (md-hugo-shortcode '(references))
       (md-style '(strong "Bibliography not implemented for raw Markdown"))))
 
-(define (md-sidenote x)
+(define (md-sidenote-sub x numbered?)
   (if (hugo-extensions?)
       (let ((styles (list->ahash-table '(("b" . "bottom") ("c" . "center")
                                           ("t" . "top") ("normal" . "right"))))
+            (numbered (if numbered? '(numbered "numbered") '()))
             (args (cdr x)))
         (md-hugo-shortcode
-         `(sidenote (halign ,(ahash-ref styles (first args)))
-                    (valign ,(ahash-ref styles (second args))))
+         (append `(sidenote (halign ,(ahash-ref styles (first args)))
+                            (valign ,(ahash-ref styles (second args))))
+                 numbered)
          (third args)))
-      (md-footnote (list 'footnote (third args)))))
+      (md-footnote (list 'footnote (third (cdr x))))))
+
+(define (md-sidenote x)
+  (md-sidenote-sub x #t))
+
+(define (md-sidenote* x)
+  (md-sidenote-sub x #f))
 
 (define (md-explain-macro x)
   ; FIXME: this will break with nested macros (tt style will be interrupted)
@@ -643,7 +651,7 @@
            (list 'table-of-contents md-toc) ; Hugo extension
            (list 'bibliography md-bibliography)  ; TfL extension
            (list 'marginal-note md-sidenote) ; TfL extension
-           (list 'marginal-note* md-sidenote) ; TfL extension (TO DO)
+           (list 'marginal-note* md-sidenote*) ; TfL extension
            (list 'explain-macro md-explain-macro)
            (list 'tmdoc-copyright md-tmdoc-copyright)
            ))
