@@ -430,18 +430,31 @@
          (alt (if (list-2? payload) (second payload) "")))
     (string-append "![" alt "](" (force-string src) ")")))
 
-(define (md-figure-sub x type . args)
-  (let* ((payload (cdr x))
-         (src (force-string (car payload)))
+; FIXME: clear this mess with figures, don't expect img as content, etc.
+(define (md-figure-sub payload)
+  (let* ((src (force-string (car payload)))
          (title
            (with-globals 'num-line-breaks 0 ; Don't break lines in 'document
              (string-concatenate (map serialize-markdown* (cdr payload))))))
-    (if (hugo-extensions?)
-        (md-hugo-shortcode `(,type (src ,src) ,@args) title)
-        (md-image (list 'image src title)))))
+    (list src title)))
 
 (define (md-figure type . args)
-  (lambda (x) (md-figure-sub x type args)))
+  (lambda (x)
+    (with params (md-figure-sub (cdr x))
+      (if (hugo-extensions?)
+          (md-hugo-shortcode `(,type (src ,(car params)) ,args) (cadr params))
+          (md-image (list 'image (car params) (cadr params)))))))
+
+(define (md-marginal-figure type . args)
+  (lambda (x)
+    (let ((params (md-figure-sub (cddr x)))
+          (vpos (cadr x)))
+      (if (hugo-extensions?)
+          (md-hugo-shortcode `(,type (valign ,(marginal-style vpos))
+                                     (src ,(car params))
+                                     ,args)
+                             (cadr params))
+          (md-image (list 'image (car params) (cadr params)))))))
 
 
 (define (md-footnote x)
@@ -501,15 +514,20 @@
       (md-hugo-shortcode '(references))
       (md-style '(strong "Bibliography not implemented for raw Markdown"))))
 
+(define marginal-styles-table
+  (list->ahash-table '(("b" . "bottom") ("c" . "center")
+                       ("t" . "top") ("normal" . "right"))))
+
+(define (marginal-style s)
+  (ahash-ref marginal-styles-table s))
+
 (define (md-sidenote-sub x numbered?)
   (if (hugo-extensions?)
-      (let ((styles (list->ahash-table '(("b" . "bottom") ("c" . "center")
-                                          ("t" . "top") ("normal" . "right"))))
-            (numbered (if numbered? '(numbered "numbered") '()))
+      (let ((numbered (if numbered? '(numbered "numbered") '()))
             (args (cdr x)))
         (md-hugo-shortcode
-         (append `(sidenote (halign ,(ahash-ref styles (first args)))
-                            (valign ,(ahash-ref styles (second args))))
+         (append `(sidenote (halign ,(marginal-style (first args)))
+                            (valign ,(marginal-style (second args))))
                  numbered)
          (third args)))
       (md-footnote (list 'footnote (third (cdr x))))))
@@ -641,9 +659,16 @@
            (list 'footnote md-footnote)
            (list 'todo md-todo)
            (list 'image md-image)
-           (list 'small-figure (md-figure 'tmfigure))
-           (list 'big-figure (md-figure 'tmfigure))
-           (list 'wide-figure (md-figure 'tmfigure 'class "wide-figure"))
+           (list 'small-figure (md-figure 'tmfigure 'numbered "numbered"))
+           (list 'small-figure* (md-figure 'tmfigure))
+           (list 'big-figure (md-figure 'tmfigure 'numbered "numbered"))
+           (list 'big-figure* (md-figure 'tmfigure))
+           (list 'wide-figure (md-figure 'tmfigure 'class "wide-figure"
+                                         'numbered "numbered"))
+           (list 'wide-figure* (md-figure 'tmfigure 'class "wide-figure"))
+           (list 'marginal-figure (md-marginal-figure 'sidefigure
+                                                      'numbered "numberered"))
+           (list 'marginal-figure* (md-marginal-figure 'sidefigure))
            (list 'hlink md-hlink)
            (list 'tags md-hugo-tags)  ; Hugo extension (DEPRECATED)
            (list 'hugo-short md-hugo-shortcode)  ; Hugo extension
