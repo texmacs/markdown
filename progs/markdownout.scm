@@ -235,7 +235,7 @@
 (define (md-abstract x)
   (if (hugo-extensions?)
       (md-hugo-frontmatter `(hugo-front "summary" ,(serialize-markdown* (cdr x))))
-      (md-document (md-style `(em ,(cdr x))))))
+      (md-paragraph `(concat (strong "Abstract: ") (em ,(cdr x))))))
 
 (define (md-paragraph p)
   ;; FIXME: arguments of Hugo shortcodes shouldn't be split
