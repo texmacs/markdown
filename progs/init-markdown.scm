@@ -56,7 +56,8 @@
 (define (markdown-menu-show?)
   (== (get-preference "texmacs->markdown:show-menu") "on"))
 
-(delayed (:idle 1)
-         (menu-bind tools-menu
-           (former)
-           ("Markdown plugin" (toggle-preference "texmacs->markdown:show-menu"))))
+(delayed (:idle 1000)
+  (lazy-define-force tools-menu)
+  (menu-bind tools-menu
+    (former)
+    ("Markdown plugin" (toggle-preference "texmacs->markdown:show-menu"))))
