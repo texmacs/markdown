@@ -501,8 +501,10 @@
                        (string-append (serialize-markdown* inner)
                                       "{{</" (symbol->string (car x)) ">}}"))))
       (string-trim-both
-       (string-recompose-space
-        `("{{<" ,shortcode ,@(map process-one arguments) ">}}" ,content))))))
+        (string-append
+          (string-recompose-space
+            `("{{<" ,shortcode ,@(map process-one arguments) ">}}"))
+          content)))))
 
 (define (md-toc x)
   (if (hugo-extensions?)
