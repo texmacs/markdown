@@ -64,7 +64,7 @@
   (counter-new 'h3 'h2)
   (counter-new 'environment 'h3 'h2 'h1)
   (counter-new 'equation)
-  (counter-new 'figure 'h3 'h2 'h1))
+  (counter-new 'figure))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Helper functions for the transformation of strees and dispatcher
@@ -170,7 +170,10 @@
   ; implementing Figure text as TeXmacs.
   (let* ((offset (if (is-figure? x) 0 2))
          (img (tm-ref x offset))
-         (caption (texmacs->markdown* (tm-ref x (+ 1 offset))))
+         (caption `(concat (strong  "Figure "
+                                    ,(counter-label current-counter)
+                                    ". ")
+                           ,(texmacs->markdown* (tm-ref x (+ 1 offset)))))
          (src (if (tm-is? img 'image) 
                   (tm-ref (parse-image img) 0)
                   '(document "Wrong image src"))))

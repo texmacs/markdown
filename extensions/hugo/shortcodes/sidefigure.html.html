@@ -16,6 +16,8 @@ Parameters:
           "center" shifts it by 50% upwards. "bottom" by 100%.
   numbered: whether to prefix the content with an autoincreased counter and
             display it in the main text.
+  markdownify: whether to process .Inner with the markdown renderer. This is a
+               HACK, remove it. Will break nested shortcodes.
   raw: set to true if there are nested shortcodes, e.g. {{<figure>}} or {{<toc>}}
   header: This will be rendered bold and centered above the content
 */}}
@@ -36,18 +38,18 @@ Parameters:
 {{- $anchor := "" -}}
 {{- with .Get "numbered" -}}
     {{- $this.Page.Scratch.Add "sidenote-counter" 1 -}}
-    {{- $refText = printf "[%d]" ($this.Page.Scratch.Get "sidenote-counter") -}}
+    {{- $refText = printf "Figure %d. " ($this.Page.Scratch.Get "sidenote-counter") -}}
     {{- $anchor = printf "<span class=\"sidenote-ref\">%s</span>" $refText -}}
 {{- end -}}
 {{- $anchor | safeHTML -}}
 <span class="{{$class}}">
-    <div class="sidefigure">
+    <span class="sidefigure">
         {{ $src := .Get "src"}}
         {{- with  .Page.Resources.GetMatch $src }}
             {{- $src = .RelPermalink }}
         {{- end }}
         <img src="{{$src | safeURL}}" alt="{{.Get "title"}}">
-    </div>
+    </span>
     <span class="sidefigure-caption">
         {{- with .Get "title" -}}
             <span class="sidenote-title">{{.}}</span>
@@ -60,7 +62,11 @@ Parameters:
                         {{ . | markdownify }}
                     {{ end }}
                     {{ with .Inner }}
-                        {{ . }}
+                        {{ if $.Get "markdownify" }}
+                            {{ . | markdownify }}
+                        {{ else }}
+                            {{ . }}
+                        {{ end }}
                     {{ end }}
                 </span>
             </span>

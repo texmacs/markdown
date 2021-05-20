@@ -525,7 +525,7 @@
 
 (define (md-sidenote-sub x numbered?)
   (if (hugo-extensions?)
-      (let ((numbered (if numbered? '(numbered "numbered") '()))
+      (let ((numbered (if numbered? '((numbered "numbered")) '()))
             (args (cdr x)))
         (md-hugo-shortcode
          (append `(sidenote (halign ,(marginal-style (first args)))
@@ -668,8 +668,7 @@
            (list 'wide-figure (md-figure 'tmfigure 'class "wide-figure"
                                          'numbered "numbered"))
            (list 'wide-figure* (md-figure 'tmfigure 'class "wide-figure"))
-           (list 'marginal-figure (md-marginal-figure 'sidefigure
-                                                      'numbered "numberered"))
+           (list 'marginal-figure (md-marginal-figure 'sidefigure))
            (list 'marginal-figure* (md-marginal-figure 'sidefigure))
            (list 'hlink md-hlink)
            (list 'tags md-hugo-tags)  ; Hugo extension (DEPRECATED)
