@@ -100,7 +100,7 @@
           (lambda (x)
             (cond ((tm-is? x 'date) (second x))
                   ((tm-is? x 'tuple) 
-                   (string-append "\n" (list->yaml (cdr x) 2)))
+                   (string-append "\n" (list->yaml (list-sort (cdr x) string<=?) 2)))
                   ((tuple? x) (string-append "\n" (list->yaml x 2)))
                   ((bool? x) x)
                   ((string? x) (string-quote x)))))  ; quote everything else
