@@ -1,0 +1,76 @@
+{{/* Figures at the margin.
+
+Batteries not included. Requires lots of styles.
+Some content breaks paragraphs!
+
+Usage:
+
+{{< sidefigure class="optional CSS class" valign=<top,center,bottom>
+             numbered=numbered raw=raw header="Some text" >}}
+Content here.
+{{< /sidefigure >}}
+Parameters:
+  class: one or more CSS class names
+  valign: where the bottom of the sidenote will be placed wrt the inline content.
+          "top" is the default: the sidenote starts at the height it is inserted.
+          "center" shifts it by 50% upwards. "bottom" by 100%.
+  numbered: whether to prefix the content with an autoincreased counter and
+            display it in the main text.
+  markdownify: whether to process .Inner with the markdown renderer. This is a
+               HACK, remove it. Will break nested shortcodes.
+  raw: set to true if there are nested shortcodes, e.g. {{<figure>}} or {{<toc>}}
+  header: This will be rendered bold and centered above the content
+*/}}
+{{- $this := . -}}
+{{- $class := "sidenote" -}}
+{{- with .Get "valign" -}}
+    {{- if (eq . "center") -}}
+        {{- $class = printf "%s %s" $class (safeHTMLAttr "sidenote-center") -}}
+    {{- end -}}
+    {{- if (eq . "bottom") -}}
+        {{- $class = printf "%s %s" $class (safeHTMLAttr "sidenote-bottom") -}}
+    {{- end -}}
+{{- end -}}
+{{- with .Get "class" -}}
+    {{- $class = printf "%s %s" $class (safeHTMLAttr .) -}}
+{{- end -}}
+{{- $refText := "" -}}
+{{- $anchor := "" -}}
+{{- with .Get "numbered" -}}
+    {{- $this.Page.Scratch.Add "sidenote-counter" 1 -}}
+    {{- $refText = printf "Figure %d. " ($this.Page.Scratch.Get "sidenote-counter") -}}
+    {{- $anchor = printf "<span class=\"sidenote-ref\">%s</span>" $refText -}}
+{{- end -}}
+{{- $anchor | safeHTML -}}
+<span class="{{$class}}">
+    <span class="sidefigure">
+        {{ $src := .Get "src"}}
+        {{- with  .Page.Resources.GetMatch $src }}
+            {{- $src = .RelPermalink }}
+        {{- end }}
+        <img src="{{$src | safeURL}}" alt="{{.Get "title"}}">
+    </span>
+    <span class="sidefigure-caption">
+        {{- with .Get "title" -}}
+            <span class="sidenote-title">{{.}}</span>
+        {{- end -}}
+        {{ if or (.Get "caption") .Inner }}
+            <span class="sidenote-paragraph text-center">
+                {{- $anchor | safeHTML -}}
+                <span class="font-italic smaller">
+                    {{ with .Get "caption"}}
+                        {{ . | markdownify }}
+                    {{ end }}
+                    {{ with .Inner }}
+                        {{ if $.Get "markdownify" }}
+                            {{ . | markdownify }}
+                        {{ else }}
+                            {{ . }}
+                        {{ end }}
+                    {{ end }}
+                </span>
+            </span>
+        {{ end }}
+    </span>
+</span>
+{{- /**/ -}}

@@ -87,7 +87,6 @@ first empty label"
   (counter-new 'equation)
   (counter-new 'figure))
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Helper functions for the transformation of strees and dispatcher
 ;; TODO: use TeXmacs' logic-dispatch, export sessions, bibliography
@@ -187,7 +186,7 @@ first empty label"
                (numbered-unnumbered-append (figure-tag-list)))
        (not (string-contains? (symbol->string (car x)) "table"))))
 
-(define (parse-figure x)
+(define (parse-figure-sub x)
   ; Example input:
   ; (big-figure (image "path-to.jpeg" "251px" "251px" "" "") 
   ;             (document "caption"))
@@ -198,11 +197,22 @@ first empty label"
   ; implementing Figure text as TeXmacs.
   (let* ((offset (if (is-figure? x) 0 2))
          (img (tm-ref x offset))
-         (caption (texmacs->markdown* (tm-ref x (+ 1 offset))))
+         (caption `(concat (strong  "Figure "
+                                    ,(counter-label current-counter)
+                                    ". ")
+                           ,(texmacs->markdown* (tm-ref x (+ 1 offset)))))
          (src (if (tm-is? img 'image) 
                   (tm-ref (parse-image img) 0)
                   '(document "Wrong image src"))))
-    (list (car x) src caption)))
+    (list src caption)))
+
+(define (parse-figure x)
+  `(,(car x) ,@(parse-figure-sub x)))
+
+(define (parse-marginal-figure x)
+  (let* ((vpos (first (cdr x)))
+         (args (parse-figure-sub `(small-figure ,@(cddr x)))))
+    `(,(car x) ,vpos ,@args)))
 
 (define (parse-with x)
   ; HACK: we end up calling ourselves with (with "stuff"), which
@@ -400,10 +410,15 @@ first empty label"
            (list 'reference parse-reference)
            (list 'image parse-image)
            (list 'small-figure (count parse-figure 'figure))
+           (list 'small-figure* parse-figure)
            (list 'render-small-figure parse-figure)
            (list 'big-figure (count parse-figure 'figure))
+           (list 'big-figure* parse-figure)
            (list 'render-big-figure parse-figure)
            (list 'wide-figure (count parse-figure 'figure))
+           (list 'wide-figure* parse-figure)
+           (list 'marginal-figure (count parse-marginal-figure 'figure))
+           (list 'marginal-figure* parse-marginal-figure)
            (list 'footnote keep)
            (list 'marginal-note keep)
            (list 'marginal-note* keep)
