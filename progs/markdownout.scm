@@ -196,15 +196,14 @@
 (define (md-doc-title x)
   (with title (md-string (serialize-markdown* (cdr x)))
     (if (hugo-extensions?)
-        (md-hugo-frontmatter `(hugo-front "title" ,title))
-        title)))
+        (serialize-markdown* `(hugo-front "title" ,title))
+        (serialize-markdown* `(document ,title "")))))
 
 (define (md-doc-subtitle x)
-  (display "FIXME: append subtitle to title")
   (with subtitle (md-string (serialize-markdown* (cdr x)))
     (if (hugo-extensions?)
-        (md-hugo-frontmatter `(hugo-front "subtitle" ,subtitle))
-        subtitle)))
+        (serialize-markdown* `(hugo-front "subtitle" ,subtitle))
+        (serialize-markdown* `(document ,subtitle)))))
 
 (define (md-doc-author x)
   ; TODO? We might want to extract other info
