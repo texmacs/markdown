@@ -1,0 +1,69 @@
+{{/* Simple sidenotes.
+Assumes main content to be col-md-9 and the rows to be justify-content-end.
+Some content breaks paragraphs!
+
+Usage:
+
+{{< sidenote class="optional CSS class" valign=<top,center,bottom>
+             numbered=numbered raw=raw header="Some text" >}}
+Content here.
+{{< /sidenote >}}
+Parameters:
+  class: one or more CSS class names
+  valign: where the bottom of the sidenote will be placed wrt the inline content.
+          "top" is the default: the sidenote starts at the height it is inserted.
+          "center" shifts it by 50% upwards, "bottom" by 100%.
+  numbered: whether to prefix the content with an autoincreased counter and
+            display it in the main text.
+  raw: set to true if there are nested shortcodes, e.g. {{<figure>}} or {{<toc>}}
+  header: This will be rendered bold and centered above the content
+*/}}
+{{- $this := . -}}
+{{- $class := "sidenote" -}}
+{{- with .Get "valign" -}}
+    {{- if (eq . "center") -}}
+        {{- $class = printf "%s %s" $class (safeHTMLAttr "sidenote-center") -}}
+    {{- end -}}
+    {{- if (eq . "bottom") -}}
+        {{- $class = printf "%s %s" $class (safeHTMLAttr "sidenote-bottom") -}}
+    {{- end -}}
+{{- end -}}
+{{- with .Get "class" -}}
+    {{- $class = printf "%s %s" $class (safeHTMLAttr .) -}}
+{{- end -}}
+{{- $refText := "" -}}
+{{- $content := .Inner -}}
+{{- with .Get "numbered" -}}
+    {{- $this.Page.Scratch.Add "sidenote-counter" 1 -}}
+    {{- $refText = printf "%d" ($this.Page.Scratch.Get "sidenote-counter") -}}
+    {{- $content = printf "<span class=\"sidenote-ref\">%s</span> %s" $refText $content -}}
+{{- end -}}
+{{- if not (.Get "raw") -}}
+    {{- $content = $content | markdownify -}}
+    {{- $content = replace $content "<p>" "<span class=\"sidenote-paragraph\">" -}}
+    {{- $content = replace $content "</p>" "</span>" -}}
+{{- end -}}
+{{- if .Inner -}}
+    {{/*HACKY and incomplete. See https://stackoverflow.com/a/9852381/493464*/}}
+    {{- $hasNonPhrasingContent := findRE "<(p|div|pre|h[1-5]|figure|nav)" $content -}}
+    {{- if or $hasNonPhrasingContent (.Get "raw") -}}
+        <aside class="{{$class}}">
+            {{- with .Get "header" -}}
+                <div class="font-weight-bold mb-1 text-center">{{.}}</div>
+            {{- end -}}
+            {{- $content | safeHTML -}}
+        </aside>
+    {{- else -}}
+        <span class="{{$class}}">
+            {{- with .Get "header" -}}
+                <span class="font-weight-bold mb-1 text-center">{{.}}</span>
+            {{- end -}}
+            {{- $content | safeHTML -}}
+        </span>
+    {{- end -}}
+    <span class="sidenote-ref">{{- $refText -}}</span>
+{{- else -}}
+    <div class="alert alert-danger" role="alert">
+        Warning: unclosed sidenote shortcode
+    </div>
+{{- end -}}

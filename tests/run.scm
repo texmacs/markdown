@@ -29,6 +29,5 @@
     (set-preference "texmacs->markdown:flavour" "hugo")
     (set-preference "texmacs->markdown:paragraph-width" #f)
     (ftw "./hugo/" run-test)
-    (ftw "./tfl/" run-test)
     (set-preference "texmacs->markdown:hugo-extensions" save-hugo)
     (set-preference "texmacs->markdown:paragraph-width" save-width)))
