@@ -4,6 +4,12 @@
 
 <\body>
   <doc-data|<doc-title|A title>|<doc-subtitle|with subtitle>>
+
+  <abstract-data|<abstract|This is an abstract, right after the subtitle.>>
+
+  This is the first paragraph.
+
+  \;
 </body>
 
 <\initial>

@@ -13,26 +13,20 @@
 (texmacs-module (tmmarkdown))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Counters 
+;; Counters
+;; FIXME: this is rather hacky. Should rewrite everything using counter groups
+;; Counters are tuples of (value "label") in order to be able to deactivate
+;; them when interspersing unnumbered and numbered sections.
+;; Counters have one parent. There are no counter groups.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define counters #f)
+(define counters (make-ahash-table))
 (define current-counter #f)  ; the counter which applies to a new label
 (define labels #f)
 
-(define (counter-value which)
-  (car (ahash-ref counters which '(0))))
-
-(define (counter-values which)
-  "List of values of counter and parents (farthest ancestor last)"
-  ; HACK: we remove zeros for missing (sub)sections
-   (list-filter
-    (map counter-value (cons which (counter-parents which)))
-     (compose not zero?)))
-
 (define (counter-parents which)
   (cdr (ahash-ref counters which '(()))))
- 
+
 (define (counter-children which)
   (list-filter 
     (ahash-fold (lambda (key val acc) 
@@ -40,29 +34,56 @@
                 '()
                 counters)
     nnull?))
- 
-(define (counter-set which value)
-  (let ((ch (counter-children which))
-        (par (counter-parents which)))
-    (map (cut counter-set <> 0) ch)
-    (ahash-set! counters which (cons value par))))
- 
-(define (counter-increase which)
-  (counter-set which (+ 1 (counter-value which))))
- 
-(define (counter-new which . parents)
-  (ahash-set! counters which (cons 0 parents)))
- 
+
+(define (counter-value which)
+  (caar (ahash-ref counters which (list (cons 0 "")))))
+
 (define (counter-label which)
-  (string-recompose 
-   (map number->string (reverse (counter-values which))) "."))
+  (cdar (ahash-ref counters which (list (cons 0 "")))))
+
+(define (counter-values which)
+  "List of values of counter and parents (farthest ancestor last)"
+  ; HACK: we remove zeros for missing (sub)sections
+   (list-filter
+    (map counter-value (cons which (counter-parents which)))
+    (compose not zero?)))
+
+(define (counter-labels which)
+  "List of labels of counter and parents (farthest ancestor last), up to 
+first empty label"
+  (letrec ((up-to (lambda (what l)
+                    (cond ((null? l) '())
+                          ((== what (car l)) '())
+                          (else (cons (car l) (up-to what (cdr l))))))))
+    (up-to "" (map counter-label (cons which (counter-parents which))))))
+
+(define (counter-set which value label)
+  (let ((children (counter-children which))
+        (parents (counter-parents which)))
+    (map (cut counter-set <> 0 "") children)
+    (ahash-set! counters which (cons (cons value label) parents))))
+
+(define (counter-increase which)
+  (with value (+ 1 (counter-value which))
+    (counter-set which value (number->string value))))
+
+(define (counter-new which . parents)
+  (ahash-set! counters which (cons (cons 0 "") parents)))
+
+(define (counter-deactivate which)
+  (with value (counter-value which)
+    (counter-set which value "")))
+
+(define (counter->string which)
+  (string-recompose (reverse (counter-labels which)) "."))
 
 (define (make-counters)
   (counter-new 'default)
+  (counter-new 'chapter)  ; TODO
   (counter-new 'h1)
   (counter-new 'h2 'h1)
-  (counter-new 'h3 'h2)
-  (counter-new 'environment 'h3 'h2 'h1)
+  (counter-new 'h3 'h2 'h1)
+  (counter-new 'environment)
   (counter-new 'equation)
   (counter-new 'figure))
 
@@ -109,6 +130,12 @@
     (set! current-counter counter)
     (apply action x)))
 
+(define (count-not action counter)
+  "Returns @action after deactivating @counter"
+  (lambda ( . x)
+    (counter-deactivate counter)
+    (apply action x)))
+
 (define (change-to what)
   "Returns a fun (a . b) -> `(,what ,(texmacs->markdown* b)), or -> what if not a symbol"
   (lambda (x)
@@ -138,14 +165,14 @@
 
 (define (parse-label x)
   (with label (sanitize-selector (second x))
-    (ahash-set! labels label (counter-label current-counter))
+    (ahash-set! labels label (counter->string current-counter))
     `(label ,label)))
 
 (define (parse-reference x)
   (list (first x) (sanitize-selector (second x))))
 
 (define (parse-env x)
-  (list (first x) (counter-label current-counter) 
+  (list (first x) (counter->string current-counter) 
         (texmacs->markdown* (second x))))
 
 (define (parse-image x)
@@ -245,7 +272,7 @@
        ,(lambda (x) (cons "\\_" (cdr x))))
      (,(cut func? <> 'label) .   ; append latex tags to labels
        ,(lambda (x)
-          (with label-name (counter-label current-counter)
+          (with label-name (counter->string current-counter)
             (ahash-set! labels (sanitize-selector (cadr x)) label-name)
             ; leave the label to create anchors later
             (list '!concat x `(tag ,label-name))))))))
@@ -257,7 +284,15 @@
   "Documentation tags *menu"
   (lambda (t)
     `(tt ,(string-concatenate (list-intersperse (list-drop (cdr t) n) " -> ")))))
-  
+
+(define (make-header tag)
+  (lambda (x)
+    (if (preference-on? "texmacs->markdown:numbered-sections")
+        (with label-name (counter->string current-counter)
+                                        ; that space should be an nbsp
+          `(,tag (concat ,label-name " " ,(map texmacs->markdown* (cdr x)))))
+        `(,tag ,(map texmacs->markdown* (cdr x))))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Dispatch
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -270,6 +305,7 @@
            (list 'strike-through (change-to 'strike)) ; non-standard extension
            (list 'hrule hrule-hack)
            (list 'tt keep)
+           (list 'nbsp (change-to "&nbsp;"))
            (list 'samp (change-to 'tt))
            (list 'python (change-to 'tt))
            (list 'cpp (change-to 'tt))
@@ -345,12 +381,12 @@
            (list 'doc-title keep)
            (list 'doc-subtitle keep)
            (list 'doc-running-author keep)
-           (list 'section (count (change-to 'h1) 'h1))
-           (list 'section* (change-to 'h1))
-           (list 'subsection (count (change-to 'h2) 'h2))
-           (list 'subsection* (change-to 'h2))
-           (list 'subsubsection (count (change-to 'h3) 'h3))
-           (list 'subsubsection* (change-to 'h3))
+           (list 'section (count (make-header 'h1) 'h1))
+           (list 'section* (count-not (change-to 'h1) 'h1))
+           (list 'subsection (count (make-header 'h2) 'h2))
+           (list 'subsection* (count-not (change-to 'h2) 'h2))
+           (list 'subsubsection (count (make-header 'h3) 'h3))
+           (list 'subsubsection* (count-not (change-to 'h3) 'h3))
            (list 'paragraph (change-to 'para))
            (list 'subparagraph (change-to 'para))
            (list 'with parse-with)
