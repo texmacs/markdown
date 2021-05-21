@@ -1,6 +1,6 @@
 A label without context: <span id="first-label"></span>
 
-# Section one
+# 1 Section one
 <span id="section-one"></span>
 
 This section contains a numbered equation:
@@ -12,7 +12,7 @@ This section contains a numbered equation:
 
 Which should be numbered (1). Reference: [(1)](#some-label).
 
-# Section two
+# 2 Section two
 <span id="section-two"></span>
 
 Another section. Reference to section three: [3](#section-three). Reference to 
@@ -21,7 +21,7 @@ section one: [1](#section-one)
 **Theorem 1:** <span id="theorem-one"></span>This theorem should increase the 
 label counter.
 
-# Section three
+# 3 Section three
 <span id="section-three"></span>
 
 Reference to theorem one: [1](#theorem-one). Reference to section two: 

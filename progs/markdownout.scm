@@ -100,7 +100,7 @@
           (lambda (x)
             (cond ((tm-is? x 'date) (second x))
                   ((tm-is? x 'tuple) 
-                   (string-append "\n" (list->yaml (cdr x) 2)))
+                   (string-append "\n" (list->yaml (list-sort (cdr x) string<=?) 2)))
                   ((tuple? x) (string-append "\n" (list->yaml x 2)))
                   ((bool? x) x)
                   ((string? x) (string-quote x)))))  ; quote everything else
@@ -196,15 +196,14 @@
 (define (md-doc-title x)
   (with title (md-string (serialize-markdown* (cdr x)))
     (if (hugo-extensions?)
-        (md-hugo-frontmatter `(hugo-front "title" ,title))
-        title)))
+        (serialize-markdown* `(hugo-front "title" ,title))
+        (serialize-markdown* `(document ,title "")))))
 
 (define (md-doc-subtitle x)
-  (display "FIXME: append subtitle to title")
   (with subtitle (md-string (serialize-markdown* (cdr x)))
     (if (hugo-extensions?)
-        (md-hugo-frontmatter `(hugo-front "subtitle" ,subtitle))
-        subtitle)))
+        (serialize-markdown* `(hugo-front "subtitle" ,subtitle))
+        (serialize-markdown* `(document ,subtitle)))))
 
 (define (md-doc-author x)
   ; TODO? We might want to extract other info
@@ -235,7 +234,7 @@
 (define (md-abstract x)
   (if (hugo-extensions?)
       (md-hugo-frontmatter `(hugo-front "summary" ,(serialize-markdown* (cdr x))))
-      (md-document (md-style `(em ,(cdr x))))))
+      (md-paragraph `(concat (strong "Abstract: ") (em ,(cdr x))))))
 
 (define (md-paragraph p)
   ;; FIXME: arguments of Hugo shortcodes shouldn't be split
@@ -430,18 +429,31 @@
          (alt (if (list-2? payload) (second payload) "")))
     (string-append "![" alt "](" (force-string src) ")")))
 
-(define (md-figure-sub x type . args)
-  (let* ((payload (cdr x))
-         (src (force-string (car payload)))
+; FIXME: clear this mess with figures, don't expect img as content, etc.
+(define (md-figure-sub payload)
+  (let* ((src (force-string (car payload)))
          (title
            (with-globals 'num-line-breaks 0 ; Don't break lines in 'document
              (string-concatenate (map serialize-markdown* (cdr payload))))))
-    (if (hugo-extensions?)
-        (md-hugo-shortcode `(,type (src ,src) ,@args) title)
-        (md-image (list 'image src title)))))
+    (list src title)))
 
 (define (md-figure type . args)
-  (lambda (x) (md-figure-sub x type args)))
+  (lambda (x)
+    (with params (md-figure-sub (cdr x))
+      (if (hugo-extensions?)
+          (md-hugo-shortcode `(,type (src ,(car params)) ,args) (cadr params))
+          (md-image (list 'image (car params) (cadr params)))))))
+
+(define (md-marginal-figure type . args)
+  (lambda (x)
+    (let ((params (md-figure-sub (cddr x)))
+          (vpos (cadr x)))
+      (if (hugo-extensions?)
+          (md-hugo-shortcode `(,type (valign ,(marginal-style vpos))
+                                     (src ,(car params))
+                                     ,args)
+                             (cadr params))
+          (md-image (list 'image (car params) (cadr params)))))))
 
 
 (define (md-footnote x)
@@ -488,8 +500,10 @@
                        (string-append (serialize-markdown* inner)
                                       "{{</" (symbol->string (car x)) ">}}"))))
       (string-trim-both
-       (string-recompose-space
-        `("{{<" ,shortcode ,@(map process-one arguments) ">}}" ,content))))))
+        (string-append
+          (string-recompose-space
+            `("{{<" ,shortcode ,@(map process-one arguments) ">}}"))
+          content)))))
 
 (define (md-toc x)
   (if (hugo-extensions?)
@@ -501,16 +515,29 @@
       (md-hugo-shortcode '(references))
       (md-style '(strong "Bibliography not implemented for raw Markdown"))))
 
-(define (md-sidenote x)
+(define marginal-styles-table
+  (list->ahash-table '(("b" . "bottom") ("c" . "center")
+                       ("t" . "top") ("normal" . "right"))))
+
+(define (marginal-style s)
+  (ahash-ref marginal-styles-table s))
+
+(define (md-sidenote-sub x numbered?)
   (if (hugo-extensions?)
-      (let ((styles (list->ahash-table '(("b" . "bottom") ("c" . "center")
-                                          ("t" . "top") ("normal" . "right"))))
+      (let ((numbered (if numbered? '((numbered "numbered")) '()))
             (args (cdr x)))
         (md-hugo-shortcode
-         `(sidenote (halign ,(ahash-ref styles (first args)))
-                    (valign ,(ahash-ref styles (second args))))
+         (append `(sidenote (halign ,(marginal-style (first args)))
+                            (valign ,(marginal-style (second args))))
+                 numbered)
          (third args)))
-      (md-footnote (list 'footnote (third args)))))
+      (md-footnote (list 'footnote (third (cdr x))))))
+
+(define (md-sidenote x)
+  (md-sidenote-sub x #t))
+
+(define (md-sidenote* x)
+  (md-sidenote-sub x #f))
 
 (define (md-explain-macro x)
   ; FIXME: this will break with nested macros (tt style will be interrupted)
@@ -633,9 +660,15 @@
            (list 'footnote md-footnote)
            (list 'todo md-todo)
            (list 'image md-image)
-           (list 'small-figure (md-figure 'tmfigure))
-           (list 'big-figure (md-figure 'tmfigure))
-           (list 'wide-figure (md-figure 'tmfigure 'class "wide-figure"))
+           (list 'small-figure (md-figure 'tmfigure 'numbered "numbered"))
+           (list 'small-figure* (md-figure 'tmfigure))
+           (list 'big-figure (md-figure 'tmfigure 'numbered "numbered"))
+           (list 'big-figure* (md-figure 'tmfigure))
+           (list 'wide-figure (md-figure 'tmfigure 'class "wide-figure"
+                                         'numbered "numbered"))
+           (list 'wide-figure* (md-figure 'tmfigure 'class "wide-figure"))
+           (list 'marginal-figure (md-marginal-figure 'sidefigure))
+           (list 'marginal-figure* (md-marginal-figure 'sidefigure))
            (list 'hlink md-hlink)
            (list 'tags md-hugo-tags)  ; Hugo extension (DEPRECATED)
            (list 'hugo-short md-hugo-shortcode)  ; Hugo extension
@@ -643,7 +676,7 @@
            (list 'table-of-contents md-toc) ; Hugo extension
            (list 'bibliography md-bibliography)  ; TfL extension
            (list 'marginal-note md-sidenote) ; TfL extension
-           (list 'marginal-note* md-sidenote) ; TfL extension (TO DO)
+           (list 'marginal-note* md-sidenote*) ; TfL extension
            (list 'explain-macro md-explain-macro)
            (list 'tmdoc-copyright md-tmdoc-copyright)
            ))

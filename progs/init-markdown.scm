@@ -16,7 +16,8 @@
 (define-preferences
   ("texmacs->markdown:flavour" "vanilla" ignore)
   ("texmacs->markdown:paragraph-width" 79 ignore)
-  ("texmacs->markdown:show-menu" "off" ignore))
+  ("texmacs->markdown:show-menu" "off" ignore)
+  ("texmacs->markdown:numbered-sections" "on" ignore))
 
 (define-format markdown
   (:name "Markdown")
@@ -54,9 +55,10 @@
 (lazy-menu (markdown-menus) markdown-menu tools-menu)
 
 (define (markdown-menu-show?)
-  (== (get-preference "texmacs->markdown:show-menu") "on"))
+  (preference-on? "texmacs->markdown:show-menu"))
 
-(delayed (:idle 1)
-         (menu-bind tools-menu
-           (former)
-           ("Markdown plugin" (toggle-preference "texmacs->markdown:show-menu"))))
+(delayed (:idle 1000)
+  (lazy-define-force tools-menu)
+  (menu-bind tools-menu
+    (former)
+    ("Markdown plugin" (toggle-preference "texmacs->markdown:show-menu"))))
