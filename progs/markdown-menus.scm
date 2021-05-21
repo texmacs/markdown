@@ -36,6 +36,7 @@
       ("Vanilla" (markdown-set-flavour "vanilla"))
       ("Hugo" (markdown-set-flavour "hugo")))
   ("Paragraph width" (interactive markdown-set-paragraph-width))
+  ("Numbered sections" (toggle-preference "texmacs->markdown:numbered-sections"))
   ---
   ("Help" (load-help-article "markdown")))
 

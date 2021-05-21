@@ -277,9 +277,11 @@ first empty label"
 
 (define (make-header tag)
   (lambda (x)
-    (with label-name (counter->string current-counter)
-      ; that space should be an nbsp
-      `(,tag (concat ,label-name " " ,(map texmacs->markdown* (cdr x)))))))
+    (if (preference-on? "texmacs->markdown:numbered-sections")
+        (with label-name (counter->string current-counter)
+                                        ; that space should be an nbsp
+          `(,tag (concat ,label-name " " ,(map texmacs->markdown* (cdr x)))))
+        `(,tag ,(map texmacs->markdown* (cdr x))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Dispatch
