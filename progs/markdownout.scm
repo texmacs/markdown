@@ -594,6 +594,7 @@
            (list 'tt md-style)
            (list 'strike md-style)
            (list 'block md-block)
+           (list 'quotation md-quotation)
            (list 'document md-document)         
            (list 'acknowledgments md-environment)
            (list 'acknowledgments* md-environment*)
