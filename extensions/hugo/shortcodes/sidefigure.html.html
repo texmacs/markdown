@@ -16,13 +16,11 @@ Parameters:
           "center" shifts it by 50% upwards. "bottom" by 100%.
   numbered: whether to prefix the content with an autoincreased counter and
             display it in the main text.
-  markdownify: whether to process .Inner with the markdown renderer. This is a
-               HACK, remove it. Will break nested shortcodes.
   raw: set to true if there are nested shortcodes, e.g. {{<figure>}} or {{<toc>}}
   header: This will be rendered bold and centered above the content
 */}}
 {{- $this := . -}}
-{{- $class := "sidenote" -}}
+{{- $class := "sidenote border-0" -}}
 {{- with .Get "valign" -}}
     {{- if (eq . "center") -}}
         {{- $class = printf "%s %s" $class (safeHTMLAttr "sidenote-center") -}}
@@ -57,16 +55,12 @@ Parameters:
         {{ if or (.Get "caption") .Inner }}
             <span class="sidenote-paragraph text-center">
                 {{- $anchor | safeHTML -}}
-                <span class="font-italic smaller">
+                <span class="font-italic">
                     {{ with .Get "caption"}}
                         {{ . | markdownify }}
                     {{ end }}
                     {{ with .Inner }}
-                        {{ if $.Get "markdownify" }}
-                            {{ . | markdownify }}
-                        {{ else }}
-                            {{ . }}
-                        {{ end }}
+                        {{ . | markdownify }}
                     {{ end }}
                 </span>
             </span>

@@ -15,15 +15,13 @@
         />
     {{- if .Get "link" }}</a>{{ end -}}
     {{- if or (.Get "title") (.Get "caption") (.Get "attr") .Inner -}}
-        <figcaption>
+        <figcaption {{with .Get "marginal-caption"}}class="sidenote sidenote-bottom border-0 pt-0 text-right"{{end}}>
             {{ with (.Get "title") -}}
                 <h4>{{ . }}</h4>
             {{- end -}}
-            {{- with .Inner -}}
-            <p>
-                {{ . }}
-            </p>
-            {{- end -}}
+            {{ with .Inner }}
+                <p>{{ . | markdownify }}</p>
+            {{ end }}
         </figcaption>
     {{- end }}
 </figure>
