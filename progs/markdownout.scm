@@ -393,15 +393,23 @@
        ((== style 'underline ""))
        (else "")))
 
-(define (md-style x)
-  (let* ((st (md-style-text (car x)))
-         (content (string-concatenate (map serialize-markdown* (cdr x))))
+(define (md-style-inner st x)
+  (let* ((content (if (string? x)
+                      (serialize-markdown* x)
+                      (string-concatenate (map serialize-markdown* x))))
          (whitespace-left? (string-starts? content " "))
          (whitespace-right? (string-ends? content " ")))
       (string-concatenate
        (list (if whitespace-left? " " "")
              st (string-trim-spaces content) st
              (if whitespace-right? " " "")))))
+
+(define (md-style x)
+  (with st (md-style-text (car x))
+    (if (tm-is? (cadr x) 'document)
+        (serialize-markdown*
+         `(document ,@(map (cut md-style-inner st <>) (cdadr x))))
+        (md-style-inner st (cdr x)))))
 
 (define (md-cite x)
   "Custom hugo {{<cite>}} shortcode"

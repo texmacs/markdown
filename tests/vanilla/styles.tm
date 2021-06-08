@@ -28,6 +28,20 @@
   <with|font-series|bold|Some bold text (using font-series bold)>
 
   <with|font-shape|italic|Some italics text (using font-series italic)>
+
+  <\em>
+    This is a test of emphasis
+
+    with two paragraphs
+
+    and a third one here
+  </em>
+
+  <\em>
+    Another test of multi-paragraph style, with
+
+    two paragraphs. <strong|And some strong text in the second one.>
+  </em>
 </body>
 
 <\initial>
