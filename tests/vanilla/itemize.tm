@@ -37,7 +37,11 @@
 
     <item>Item 2 has multiple paragraphs.
 
-    This is the second paragraph of item 2.
+    This is the second paragraph of item 2. It contains an equation:
+
+    <\equation*>
+      a=b.
+    </equation*>
   </enumerate>
 
   Enumerate numeric

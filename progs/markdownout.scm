@@ -239,8 +239,9 @@
 (define (md-paragraph p)
   ;; FIXME: arguments of Hugo shortcodes shouldn't be split
   (with adjust
-      (cut adjust-width <> (get 'paragraph-width) (get 'indent) (get 'first-indent))
-    (cond ((string? p) (adjust p))
+      (cut adjust-width
+           <> (get 'paragraph-width) (get 'indent) (get 'first-indent))
+     (cond ((string? p) (adjust p))
           ((must-adjust? p) (adjust (serialize-markdown* p)))
           (else (serialize-markdown* p)))))
 
@@ -362,6 +363,12 @@
     (serialize-markdown*
      `(hlink ,label-display ,(string-append "#" label)))))
 
+(define (md-indent x)
+  "Forces indentation and first-indentation to be equal to its second parameter"
+  (with-globals 'indent (second x)
+    (with-globals 'first-indent (second x)
+      (serialize-markdown* `(document ,(third x))))))
+
 (define (md-item x)
   (get 'item))
 
@@ -377,7 +384,9 @@
   ; considered part of the previous item.
   (with transform
       (lambda (x acc)
-        (append acc (if (is-item-subparagraph? x) (list "" x) (list x))))
+        (append acc (if (is-item-subparagraph? x)
+                        (list "" `(indent ,(get 'indent) ,x))
+                        (list x))))
   (list-fold transform '() l)))
 
 (define (hack l)
@@ -394,7 +403,6 @@
       (with-globals 'item c
         (with-globals 'indent (indent-increment (string-length c))
           (with-globals 'first-indent (indent-decrement (string-length c))
-            ;; (display* "cdr: " (cdr x) "\n\n" "hack: " (map add-paragraphs-after-items (cdr x)) "\n\n\n") 
             (serialize-markdown*
              `(document ,@(map add-paragraphs-after-items (cdr x))))))))))
 
@@ -622,6 +630,7 @@
            (list 'strike md-style)
            (list 'block md-block)
            (list 'quotation md-quotation)
+           (list 'indent md-indent)
            (list 'document md-document)         
            (list 'acknowledgments md-environment)
            (list 'acknowledgments* md-environment*)
