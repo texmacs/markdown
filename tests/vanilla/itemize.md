@@ -21,7 +21,9 @@ Enumerate
    maximum of eighty columns set for the tests.
 1. Item 2 has multiple paragraphs.
 
-This is the second paragraph of item 2.
+   This is the second paragraph of item 2. It contains an equation:
+
+   \\[ a = b. \\]
 
 Enumerate numeric
 
