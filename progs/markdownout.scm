@@ -32,7 +32,9 @@
     `((file? . #t)
       (num-line-breaks . 2)
       (paragraph-width . ,(get-preference "texmacs->markdown:paragraph-width"))
-      (indent . "") 
+      (first-indent . "")
+      (indent . "")
+      (item . "* ")
       (postlude . "")
       (footnote-nr . 0)
       (labels . ())
@@ -53,9 +55,6 @@
        (let ((,new (begin ,@body)))
          (set ,var ,old)
          ,new))))
-
-(define (first-indent)
-  (get 'indent))
 
 (define (hugo-extensions?)
   (== (get-preference "texmacs->markdown:flavour") "hugo"))
@@ -113,14 +112,15 @@
         (map process-key-value (list-sort (ahash-table->list front) keys<=?)))
         "\n")))
 
-(define (indent-increment s)
-  (string-append (get 'indent) s))
+(define (indent-increment sn)
+  "Increments indentation either by a number of spaces or a fixed string"
+  (string-append (get 'indent)
+    (if (number? sn) (string-concatenate (make-list sn " ")) sn)))
 
 (define (indent-decrement n)
-  (lambda () 
-    (if (> (string-length (get 'indent)) n)
-        (string-drop-right (get 'indent) n)
-        "")))
+  (if (> (string-length (get 'indent)) n)
+      (string-drop-right (get 'indent) n)
+      ""))
 
 (define (prelude)
   "Output Hugo frontmatter"
@@ -239,7 +239,7 @@
 (define (md-paragraph p)
   ;; FIXME: arguments of Hugo shortcodes shouldn't be split
   (with adjust
-      (cut adjust-width <> (get 'paragraph-width) (get 'indent) (first-indent))
+      (cut adjust-width <> (get 'paragraph-width) (get 'indent) (get 'first-indent))
     (cond ((string? p) (adjust p))
           ((must-adjust? p) (adjust (serialize-markdown* p)))
           (else (serialize-markdown* p)))))
@@ -362,22 +362,41 @@
     (serialize-markdown*
      `(hlink ,label-display ,(string-append "#" label)))))
 
-(define (md-item? x)
-  (and (list>0? x) (func? x 'concat) (== (cadr x) '(item))))
+(define (md-item x)
+  (get 'item))
+
+(define (is-item-subparagraph? x)
+  "yuk..."
+  (not (or (symbol? x)
+           (tm-in? x '(itemize enumerate quotation))
+           (and (tm-is? x 'concat) (tm-is? (cadr x) 'item)))))
+
+(define (add-paragraphs-after-items l)
+  "Adds empty lines in items with multiple paragraphs"
+  ; paragraphs inside an itemize but don't begin with an (item) are
+  ; considered part of the previous item.
+  (with transform
+      (lambda (x acc)
+        (append acc (if (is-item-subparagraph? x) (list "" x) (list x))))
+  (list-fold transform '() l)))
+
+(define (hack l)
+  (with transform
+      (lambda (x acc)
+        (append acc (if (string? x) (list "" x) (list x))))
+  (list-fold transform '() l)))
 
 (define (md-list x)
-  (let* ((c (cond ((== (car x) 'itemize) "* ")
-                  ((== (car x) 'enumerate) "1. ")
-                  (else "* ")))
-         (cs (string-concatenate (make-list (string-length c) " ")))
-         (transform
-          (lambda (a)
-            (if (md-item? a) `(concat ,c ,@(cddr a)) a)))
-         (doc (cAr x)))
+  (let ((c (cond ((== (car x) 'itemize) "* ")
+                 ((== (car x) 'enumerate) "1. ")
+                 (else "* "))))
     (with-globals 'num-line-breaks 1
-      (with-globals 'indent (indent-increment cs)
-        (with-globals 'first-indent (indent-decrement (string-length c))
-          (serialize-markdown* `(document ,@(map transform (cdr doc)))))))))
+      (with-globals 'item c
+        (with-globals 'indent (indent-increment (string-length c))
+          (with-globals 'first-indent (indent-decrement (string-length c))
+            ;; (display* "cdr: " (cdr x) "\n\n" "hack: " (map add-paragraphs-after-items (cdr x)) "\n\n\n") 
+            (serialize-markdown*
+             `(document ,@(map add-paragraphs-after-items (cdr x))))))))))
 
 (define (md-quotation x)
   (with-globals 'num-line-breaks 1
@@ -651,6 +670,7 @@
            (list 'eqnarray md-numbered-equation)
            (list 'eqnarray* md-equation)
            (list 'concat md-concat)
+           (list 'item md-item)
            (list 'itemize md-list)
            (list 'enumerate md-list)
            (list 'h1 (md-header 1))
