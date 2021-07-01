@@ -403,12 +403,6 @@
                         (list x))))
   (list-fold transform '() l)))
 
-(define (hack l)
-  (with transform
-      (lambda (x acc)
-        (append acc (if (string? x) (list "" x) (list x))))
-  (list-fold transform '() l)))
-
 (define (md-list x)
   (let ((c (cond ((== (car x) 'itemize) "* ")
                  ((== (car x) 'enumerate) "1. ")

@@ -9,7 +9,7 @@ end\*.
 
 **Some strong *and also emphasized text***
 
-**Some strong** *and then some emphasized text* **, with punctuation at the 
+**Some strong** *and then some emphasized text* **, with punctuation at the
 end**
 
 **Some strong *and also emphasized text* with blanks around the em tag**
