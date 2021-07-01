@@ -10,7 +10,8 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(texmacs-module (tmmarkdown))
+(texmacs-module (tmmarkdown)
+  (:use (link ref-markup) (smart-ref-table)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Counters
@@ -170,6 +171,20 @@ first empty label"
 
 (define (parse-reference x)
   (list (first x) (sanitize-selector (second x))))
+
+(define (parse-smart-reference x)
+  (with ref (ext-smart-ref x)
+    (with typed (md-smart-ref-params (first ref))
+      (texmacs->markdown* (ext-typed-ref* (first typed) (second typed) ref)))))
+
+(define (parse-make-eqref* x)
+  (cond ((null? x) x)
+        ((list-1? x) (parse-make-eqref* (first x)))
+        ((list? x) (cons 'eqref (map parse-make-eqref* (cdr x))))
+        (else x)))
+
+(define (parse-make-eqref x)
+  (texmacs->markdown* (parse-make-eqref* (cdr x))))
 
 (define (parse-env x)
   (list (first x) (counter->string current-counter) 
@@ -408,6 +423,8 @@ first empty label"
            (list 'label parse-label)
            (list 'flag drop)
            (list 'reference parse-reference)
+           (list 'smart-ref parse-smart-reference)
+           (list 'make-eqref parse-make-eqref)
            (list 'image parse-image)
            (list 'small-figure (count parse-figure 'figure))
            (list 'small-figure* parse-figure)

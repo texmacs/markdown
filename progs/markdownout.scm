@@ -363,6 +363,14 @@
     (serialize-markdown*
      `(hlink ,label-display ,(string-append "#" label)))))
 
+(define (md-smart-ref x)
+  (let* ((label (serialize-markdown* (cadr x)))
+         (err-msg (string-append "undefined label: '" label "'"))
+         (smart-text ())
+         (label-display (ahash-ref (get 'labels) label err-msg)))
+    (serialize-markdown*
+     `(hlink ,label-display ,(string-append "#" label)))))
+
 (define (md-indent x)
   "Forces indentation and first-indentation to be equal to its second parameter"
   (with-globals 'indent (second x)
