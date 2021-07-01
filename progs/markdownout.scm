@@ -11,7 +11,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (texmacs-module (markdownout)
-  (:use (convert tools output)))
+  (:use (convert tools output) (utils)))
 
 ; CAREFUL: srfi-19 overwrites some functions (e.g. current-time).
 ; Things might break!!
@@ -319,7 +319,8 @@
    (serialize-markdown* content) "</span>")))
 
 (define (create-label-link label)
-  (md-span '() `("id" ,label)))
+  (with clean-label (sanitize-selector label)
+    (md-span '() `("id" ,clean-label))))
 
 (define (create-equation-link ltx)
   "Returns an empty anchor for every label in the latex line"

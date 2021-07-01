@@ -11,7 +11,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (texmacs-module (tmmarkdown)
-  (:use (link ref-markup) (smart-ref-table)))
+  (:use (link ref-markup) (smart-ref-table) (utils)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Counters
@@ -156,13 +156,6 @@ first empty label"
 (define (hrule-hack x)
   ; FIXME: this breaks inside quotations and whatnot. And it's ugly.
   '(document "" "---" ""))
-
-(define (sanitize-selector s)
-  "Makes @s safe(r) for use in querySelector(). No guarantees"
-  (if (string? s)
-      (string-map 
-        (lambda (c) (if (char-set-contains? char-set:letter+digit c) c #\-)) s)
-      (begin (display* "Labels must be strings. Received: " s "\n") "")))
 
 (define (parse-label x)
   (with label (sanitize-selector (second x))
