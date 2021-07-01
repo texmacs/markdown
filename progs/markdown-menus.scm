@@ -13,6 +13,11 @@
 (texmacs-module (markdown-menus)
   (:use (doc help-funcs)))
 
+(define (run-tests)
+  "FIXME: make a module for test collection and execution"
+  (with u (url-resolve "$TEXMACS_HOME_PATH/plugins/markdown/tests/run.scm" "r")
+    (load (url->system u))))
+
 (define (markdown-test-flavour? flavour)
   (== (get-preference "texmacs->markdown:flavour") flavour))
 
@@ -29,7 +34,8 @@
   (set-preference "texmacs->markdown:paragraph-width" (string->number w)))
 
 (menu-bind markdown-menu
-  ("Export..." (choose-file (buffer-exporter "markdown") "Export as Markdown" "markdown"))
+  ("Export..." 
+    (choose-file (buffer-exporter "markdown") "Export as Markdown" "markdown"))
   ---
   (group "Preferences")
   (-> "Flavour"
@@ -38,7 +44,11 @@
   ("Paragraph width" (interactive markdown-set-paragraph-width))
   ("Numbered sections" (toggle-preference "texmacs->markdown:numbered-sections"))
   ---
-  ("Help" (load-help-article "markdown")))
+  ("Help" (load-help-article "markdown"))
+  (when (with-developer-tool?)
+      ---
+      (group "Development")
+      ("Run tests" (run-tests))))
 
 (menu-bind texmacs-extra-menu
   (if (and (supports-markdown?) (markdown-menu-show?))
