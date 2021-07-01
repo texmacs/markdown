@@ -212,7 +212,7 @@ first empty label"
   ; implementing Figure text as TeXmacs.
   (let* ((offset (if (is-figure? x) 0 2))
          (img (tm-ref x offset))
-         (caption `(concat (strong  "Figure "
+         (caption `(concat (strong  (localize "Figure") " "
                                     ,(counter-label current-counter)
                                     ". ")
                            ,(texmacs->markdown* (tm-ref x (+ 1 offset)))))
