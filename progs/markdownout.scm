@@ -30,6 +30,7 @@
     ;(ahash-set! frontmatter "date" 
     ;            (strftime "%Y-%m-%d"(localtime (time-second (current-time)))))
     `((file? . #t)
+      (language . ,(get-document-language))
       (num-line-breaks . 2)
       (paragraph-width . ,(get-preference "texmacs->markdown:paragraph-width"))
       (first-indent . "")
@@ -59,7 +60,8 @@
 (define (hugo-extensions?)
   (== (get-preference "texmacs->markdown:flavour") "hugo"))
 
-(define author-by (string-append (translate "By") ": "))
+(define (author-by)
+  (string-append (md-translate "By") ":"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Helper routines
@@ -166,6 +168,14 @@
                            (string-append acc "\n" prefix w " "))
                          (string-append acc w " ")))))
         (string-trim-right (list-fold proc first-prefix l)))))
+
+(define (md-translate x)
+  (cond ((null? x) "")
+        ((string? x)
+         (translate-from-to x "english" (get 'language)))
+        ((func? x 'localize) (md-translate (cadr x)))
+        ((list? x) (serialize-markdown* x))
+        (else x)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; markdown to string serializations
@@ -274,7 +284,7 @@
   (serialize-markdown* `(concat (strong ,@(cdr x)) " ")))
 
 (define (md-environment x)
-  (let* ((txt (translate (string-capitalize (symbol->string (first x)))))
+  (let* ((txt (md-translate (string-capitalize (symbol->string (first x)))))
          (nr (second x))
          (tag `(strong ,(string-append txt " " nr ":")))
          (content (cdr (third x))))
@@ -283,7 +293,7 @@
 
 (define (md-environment* x)
   (let* ((s (string-drop-right (symbol->string (car x)) 1))
-         (txt (translate (string-capitalize s)))
+         (txt (md-translate (string-capitalize s)))
          (tag `(strong ,(string-append txt ":")))
          (content (cdadr x)))
     (serialize-markdown* 
@@ -631,6 +641,7 @@
 (define serialize-hash (make-ahash-table))
 (map (lambda (l) (apply (cut ahash-set! serialize-hash <> <>) l)) 
      (list (list 'markdown md-markdown)
+           (list 'localize md-translate)
            (list 'labels md-labels)
            (list 'strong md-style)
            (list 'em md-style)

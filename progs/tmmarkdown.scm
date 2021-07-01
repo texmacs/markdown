@@ -314,7 +314,8 @@ first empty label"
 
 (define conversion-hash (make-ahash-table))
 (map (lambda (l) (apply (cut ahash-set! conversion-hash <> <>) l)) 
-     (list (list 'strong keep)
+     (list (list 'localize keep)
+           (list 'strong keep)
            (list 'dfn (change-to 'strong))
            (list 'em keep)
            (list 'strike-through (change-to 'strike)) ; non-standard extension
