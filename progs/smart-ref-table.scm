@@ -1,11 +1,6 @@
 (texmacs-module (smart-ref-table))
 
-(define smart-ref-table (make-ahash-table))
-
-(define-public (md-smart-ref-params x)
-  (ahash-ref smart-ref-table x '("" "")))
-
-(map (lambda (x) (ahash-set! smart-ref-table (car x) (cdr x)))
+(define-public md-smart-ref-table
   '((unknown-ref . ("Unknown reference" "identity"))
     (t-ref . ("Theorem" "identity"))
     (th-ref . ("Theorem" "identity"))

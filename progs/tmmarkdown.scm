@@ -166,9 +166,7 @@ first empty label"
   (list (first x) (sanitize-selector (second x))))
 
 (define (parse-smart-reference x)
-  (with ref (ext-smart-ref x)
-    (with typed (md-smart-ref-params (first ref))
-      (texmacs->markdown* (ext-typed-ref* (first typed) (second typed) ref)))))
+  (texmacs->markdown* (ext-smart-ref x)))
 
 (define (parse-make-eqref* x)
   (cond ((null? x) x)
@@ -462,7 +460,15 @@ first empty label"
            (list 'tmdoc-license (change-to 'em))
            ))
 
-(define (texmacs->markdown* x)
+;; Copy from smart ref table
+(map (lambda (l)
+       (ahash-set! conversion-hash (car l)
+         (lambda (x) 
+           (texmacs->markdown* 
+            (ext-typed-ref* (first (cdr l)) (second (cdr l)) x)))))
+     md-smart-ref-table)
+
+(tm-define (texmacs->markdown* x)
   (cond ((not (list>0? x)) x)
         ((symbol? (car x))
          (with fun (ahash-ref conversion-hash (car x))
