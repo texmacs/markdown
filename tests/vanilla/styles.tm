@@ -5,6 +5,9 @@
 <\body>
   Some regular text.
 
+  Some regular text with a word surrounded by *asterisks* and another at the
+  end*.
+
   <tt|Some tt text.>
 
   <verbatim|Some verbatim text>

@@ -299,6 +299,9 @@ first empty label"
           `(,tag (concat ,label-name " " ,(map texmacs->markdown* (cdr x)))))
         `(,tag ,(map texmacs->markdown* (cdr x))))))
 
+(define (parse-string s)
+  (string-replace (string-replace s "_" "\\_") "*" "\\*"))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Dispatch
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -469,7 +472,8 @@ first empty label"
      md-smart-ref-table)
 
 (tm-define (texmacs->markdown* x)
-  (cond ((not (list>0? x)) x)
+  (cond ((string? x) (parse-string x))
+        ((not (list>0? x)) x)
         ((symbol? (car x))
          (with fun (ahash-ref conversion-hash (car x))
            (if (!= fun #f)

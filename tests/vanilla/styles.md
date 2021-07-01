@@ -1,5 +1,8 @@
 Some regular text.
 
+Some regular text with a word surrounded by \*asterisks\* and another at the 
+end\*.
+
 `Some tt text.`
 
 `Some verbatim text`
