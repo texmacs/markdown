@@ -314,9 +314,12 @@
   (with process-attr 
       (lambda (x) 
         (string-append (first x) "=" (string-quote (second x))))
-  (string-append
-   "<span " (string-recompose-space (map process-attr args)) ">" 
-   (serialize-markdown* content) "</span>")))
+    (string-append
+      "<span " 
+      (string-recompose-space (map process-attr args)) 
+      ">" 
+      (serialize-markdown* content)
+      "</span>")))
 
 (define (create-label-link label)
   (with clean-label (sanitize-selector label)
