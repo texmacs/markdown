@@ -279,9 +279,10 @@ first empty label"
      (,(cut func? <> 'label) .   ; append latex tags to labels
        ,(lambda (x)
           (with label-name (counter->string current-counter)
-            (ahash-set! labels (sanitize-selector (cadr x)) label-name)
-            ; leave the label to create anchors later
-            (list '!concat x `(tag ,label-name))))))))
+            (with label (sanitize-selector (cadr x))
+              (ahash-set! labels label label-name)
+              ; leave the label to create anchors later
+              (list '!concat `(label ,label) `(tag ,label-name)))))))))
 
 (define (parse-math x)
   `(,(car x) ,(md-math* (math->latex x))))

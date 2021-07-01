@@ -40,10 +40,9 @@
 <\references>
   <\collection>
     <associate|auto-1|<tuple|1|1>>
-    <associate|def:bayes-rule|<tuple|1|?>>
-    <associate|eq:bayes-rule|<tuple|1|?>>
-    <associate|eq:one|<tuple|2|1>>
-    <associate|eq:risk|<tuple|2|?>>
+    <associate|def:bayes-rule|<tuple|1|1>>
+    <associate|eq:bayes-rule|<tuple|1|1>>
+    <associate|eq:risk|<tuple|2|1>>
     <associate|fig:figure|<tuple|1|1>>
     <associate|thm:one|<tuple|2|1>>
   </collection>
@@ -53,7 +52,7 @@
   <\collection>
     <\associate|figure>
       <tuple|normal|<\surround|<hidden-binding|<tuple>|1>|>
-        asdfas
+        Texto<hspace|0.3333spc>.<hspace|0.3333spc>.<hspace|0.3333spc>.<hspace|0.3333spc>
       </surround>|<pageref|auto-1>>
     </associate>
   </collection>
