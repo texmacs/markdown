@@ -520,10 +520,12 @@
        `("```" ,syntax "\n" ,@(map serialize-markdown* (cddr x)) "\n```")))))
 
 (define (md-hugo-frontmatter x)
-  (when (hugo-extensions?)
-    (with set-pair! (lambda (kv) 
-                      (ahash-set! (get 'frontmatter) (car kv) (cdr kv)))
-      (map set-pair! (list->assoc (cdr x)))))
+  (if (odd? (length (cdr x)))
+      (display* "ERROR: frontmatter tag must have even number of entries")
+      (when (hugo-extensions?)
+        (with set-pair! (lambda (kv)
+                          (ahash-set! (get 'frontmatter) (car kv) (cdr kv)))
+          (map set-pair! (list->assoc (cdr x))))))
   "")
 
 (define (md-hugo-shortcode x . inner)
