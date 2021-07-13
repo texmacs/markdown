@@ -124,6 +124,8 @@ first empty label"
   "Recursively processes @x while leaving its func untouched."
   (cons (car x) (map texmacs->markdown* (cdr x))))
 
+(define keep-verbatim identity)
+
 (define (count action counter)
   "Returns @action (e.g. keep) after increasing @counter"
   (lambda ( . x)
@@ -412,9 +414,9 @@ first empty label"
            (list 'enumerate-alpha (change-to 'enumerate))
            (list 'enumerate-Alpha (change-to 'enumerate))
            (list 'item keep)
-           (list 'cite keep)
-           (list 'cite-detail keep)
-           (list 'hlink keep)
+           (list 'cite keep-verbatim)
+           (list 'cite-detail keep-verbatim)
+           (list 'hlink keep-verbatim)
            (list 'eqref parse-reference)
            (list 'label parse-label)
            (list 'flag drop)
