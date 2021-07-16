@@ -33,9 +33,3 @@ Thiswordhas**strong**and*em*, but no spaces.
 *Another test of multi-paragraph style, with*
 
 *two paragraphs. **And some strong text in the second one.***
-
-1. *A list with emphasis around it*
-1. ***The second item is strong too***
-1. *The third item has a sublist*
-   1. ***With item 3.1***
-   1. ***And 3.2 both in bold***

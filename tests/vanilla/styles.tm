@@ -45,20 +45,6 @@
 
     two paragraphs. <strong|And some strong text in the second one.>
   </em>
-
-  <em|<\enumerate>
-    <item>A list with emphasis around it
-
-    <item><strong|The second item is strong too>
-
-    <item>The third item has a sublist
-
-    <strong|<\enumerate>
-      <item>With item 3.1
-
-      <item>And 3.2 both in bold
-    </enumerate>>
-  </enumerate>>
 </body>
 
 <\initial>
