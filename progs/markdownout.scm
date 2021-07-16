@@ -639,6 +639,7 @@
            (list 'em md-style)
            (list 'tt md-style)
            (list 'strike md-style)
+           (list 'underline md-style)
            (list 'block md-block)
            (list 'quotation md-quotation)
            (list 'indent md-indent)
