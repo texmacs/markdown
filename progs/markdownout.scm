@@ -442,8 +442,7 @@
 (define (md-style-inner st x)
 ;   (display* "++++ inner: " x "\n")
   (let* ((style (md-style-text st))
-         (content (if (string? x) x
-                      (string-concatenate (map serialize-markdown* x))))
+         (content (serialize-markdown* x))
          (whitespace-left? (string-starts? content " "))
          (whitespace-right? (string-ends? content " ")))
       (string-concatenate
@@ -454,10 +453,8 @@
 
 ;;;;;;;;;;;;;;
 ; FIXME: Move this style preprocessing to tmmarkdown
-; Because of how md-style calls it, it won't be run e.g. if one has
-; (em (footnote "blah")), which shold be dropped / applied to its interior
-; if not already in an emphasized text
-
+; Besides it making more sense there, it might be necessary to have idempotent
+; styles (i.e. em of em is no style)
 
 (define md-style-tag-list '(em strong tt strike underline))
 (define md-style-drop-tag-list '(marginal-note marginal-note* footnote footnote*))
@@ -465,7 +462,6 @@
 
 (define (add-style-to st x)
   "Recurses into children of @x inserting its tag where necessary."
-;   (display* "==== Adding " st " to " x "\n")
   (cond ((string? x)
          `(,st ,x))
         ((== st (first x))  ; UNTESTED: drop repeated styles
@@ -485,12 +481,13 @@
 (define (md-style x)
   (let* ((st (car x))
          (content (cadr x)))
-;     (display* "**** md-style **** " st " for\n    " content "\n")
-    (if (tm-in? content md-stylable-tag-list)
-        (with styled (add-style-to st content)
-;           (display* "---- styled: " styled "\n")
-          (serialize-markdown* styled))
-        (md-style-inner st content))))
+    (cond ((tm-in? content md-stylable-tag-list)
+           (with styled (add-style-to st content)
+             (serialize-markdown* styled)))
+          ((tm-in? content md-style-drop-tag-list)
+           (serialize-markdown* content))
+          (else
+            (md-style-inner st content)))))
 
 (define (md-cite x)
   "Custom hugo {{<cite>}} shortcode"
