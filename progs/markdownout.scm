@@ -83,6 +83,9 @@
 (define (string-recompose-newline s)
   (string-recompose s "\n"))
 
+(define (stree-contains? st l)
+  (nnull? (select st `(:* (:or ,@l)))))
+
 (define (list->csv l)
   (string-recompose-comma (map string-quote l)))
 
@@ -154,20 +157,28 @@
 (define (postlude)
   (get 'postlude))
 
-(define (adjust-width s cols prefix first-prefix)
+(define (adjust-width* s* cols prefix first-prefix)
   (if (not (get 'paragraph-width))  ; set width to #f to disable adjustment
-      (md-string (string-append prefix s))
-      (let* ((l (map md-string (string-split s #\ ))) ;split words
+      (md-string (string-append prefix s*))
+      (let* ((s (string-append first-prefix s*))
+             (l (map md-string (string-split s #\ ))) ;split words
              (c (string-length prefix))
              (line-len 0)
              (proc (lambda (w acc)
                      (set! line-len (+ line-len (string-length w) 1))
                      (if (> line-len cols)
                          (begin
-                           (set! line-len (+ c (string-length w)))
+                           (set! line-len (+ c (string-length w) 1))
                            (string-append acc "\n" prefix w " "))
                          (string-append acc w " ")))))
-        (string-trim-right (list-fold proc first-prefix l)))))
+        (string-trim-right (list-fold proc "" l)))))
+
+(define (adjust-width s cols prefix first-prefix)
+  (with out
+      (string-recompose-newline
+       (map (cut adjust-width* <> cols prefix first-prefix)
+            (string-split s #\newline)))
+    out))
 
 (define (md-translate x)
   (cond ((null? x) "")
@@ -224,7 +235,6 @@
             (string-append author-by (force-string (cdar name)) ))))
   "")
 
-
 (define (decode-date date formats)
   (cond ((nlist? formats) (decode-date date (list formats)))
         ((null? formats) (string-append "Failed to convert date: "
@@ -252,8 +262,8 @@
       (cut adjust-width
            <> (get 'paragraph-width) (get 'indent) (get 'first-indent))
      (cond ((string? p) (adjust p))
-          ((must-adjust? p) (adjust (serialize-markdown* p)))
-          (else (serialize-markdown* p)))))
+           ((must-adjust? p) (adjust (serialize-markdown* p)))
+           (else (serialize-markdown* p)))))
 
 (define (md-document x)
   (string-concatenate
@@ -377,29 +387,25 @@
     (serialize-markdown*
      `(hlink ,label-display ,(string-append "#" label)))))
 
-(define (md-indent x)
-  "Forces indentation and first-indentation to be equal to its second parameter"
-  (with-globals 'indent (second x)
-    (with-globals 'first-indent (second x)
-      (serialize-markdown* `(document ,(third x))))))
-
 (define (md-item x)
   (get 'item))
+
+(define (is-item? x)
+  (and (list>1? x) (tm-is? x 'concat) (tm-is? (cadr x) 'item)))
 
 (define (is-item-subparagraph? x)
   "yuk..."
   (not (or (symbol? x)
-           (tm-in? x '(itemize enumerate quotation))
-           (and (tm-is? x 'concat) (tm-is? (cadr x) 'item)))))
+           (stree-contains? x '(itemize enumerate quotation item)))))
 
-(define (add-paragraphs-after-items l)
+(define (add-paragraphs-after-items l indent)
   "Adds empty lines in items with multiple paragraphs"
   ; paragraphs inside an itemize but don't begin with an (item) are
   ; considered part of the previous item.
   (with transform
       (lambda (x acc)
         (append acc (if (is-item-subparagraph? x)
-                        (list "" `(indent ,(get 'indent) ,x))
+                        (list "" `(concat ,indent ,x))
                         (list x))))
   (list-fold transform '() l)))
 
@@ -411,8 +417,13 @@
       (with-globals 'item c
         (with-globals 'indent (indent-increment (string-length c))
           (with-globals 'first-indent (indent-decrement (string-length c))
+;             (display* "indent = " (string-length (get 'indent))
+;                       ", first indent = " (string-length (get 'first-indent))
+;                       "\n\n")
             (serialize-markdown*
-             `(document ,@(map add-paragraphs-after-items (cdr x))))))))))
+             (add-paragraphs-after-items
+              (cadr x)
+              (string-concatenate (make-list (string-length c) " "))))))))))
 
 (define (md-quotation x)
   (with-globals 'num-line-breaks 1
@@ -429,22 +440,57 @@
        (else "")))
 
 (define (md-style-inner st x)
-  (let* ((content (if (string? x)
-                      (serialize-markdown* x)
+;   (display* "++++ inner: " x "\n")
+  (let* ((style (md-style-text st))
+         (content (if (string? x) x
                       (string-concatenate (map serialize-markdown* x))))
          (whitespace-left? (string-starts? content " "))
          (whitespace-right? (string-ends? content " ")))
       (string-concatenate
        (list (if whitespace-left? " " "")
-             st (string-trim-spaces content) st
+             style (string-trim-spaces content) style
              (if whitespace-right? " " "")))))
 
+
+;;;;;;;;;;;;;;
+; FIXME: Move this style preprocessing to tmmarkdown
+; Because of how md-style calls it, it won't be run e.g. if one has
+; (em (footnote "blah")), which shold be dropped / applied to its interior
+; if not already in an emphasized text
+
+
+(define md-style-tag-list '(em strong tt strike underline))
+(define md-style-drop-tag-list '(marginal-note marginal-note* footnote footnote*))
+(define md-stylable-tag-list '(document itemize enumerate theorem ))  ;FIXME
+
+(define (add-style-to st x)
+  "Recurses into children of @x inserting its tag where necessary."
+;   (display* "==== Adding " st " to " x "\n")
+  (cond ((string? x)
+         `(,st ,x))
+        ((== st (first x))  ; UNTESTED: drop repeated styles
+         (add-style-to st (cadr x)))
+        ((tm-in? x md-stylable-tag-list)
+         `(,(first x) ,@(map (cut add-style-to st <>) (cdr x))))
+        ((and (tm-in? x md-style-tag-list) 
+              (not (tm-in? (second x) md-style-tag-list)))
+         `(,(first x) ,@(map (cut add-style-to st <>) (cdr x))))
+        ((tm-in? x md-style-drop-tag-list)
+         x)
+        ((is-item? x)
+         `(concat (item) (,st ,(third x))))
+        (else
+          `(,st ,x))))
+
 (define (md-style x)
-  (with st (md-style-text (car x))
-    (if (tm-is? (cadr x) 'document)
-        (serialize-markdown*
-         `(document ,@(map (cut md-style-inner st <>) (cdadr x))))
-        (md-style-inner st (cdr x)))))
+  (let* ((st (car x))
+         (content (cadr x)))
+;     (display* "**** md-style **** " st " for\n    " content "\n")
+    (if (tm-in? content md-stylable-tag-list)
+        (with styled (add-style-to st content)
+;           (display* "---- styled: " styled "\n")
+          (serialize-markdown* styled))
+        (md-style-inner st content))))
 
 (define (md-cite x)
   "Custom hugo {{<cite>}} shortcode"
@@ -578,7 +624,7 @@
                             (valign ,(marginal-style (second args))))
                  numbered)
          (third args)))
-      (md-footnote (list 'footnote (third (cdr x))))))
+      (serialize-markdown* `(footnote ,(third (cdr x))))))
 
 (define (md-sidenote x)
   (md-sidenote-sub x #t))
@@ -619,7 +665,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define (serialize-markdown* x)
-  ;(display* "Serialize: " x "\n")
+;   (display* "Serialize: " x "\n")
   (cond ((null? x) "")
         ((string? x) x)
         ((char? x) (char->string x))
@@ -631,7 +677,7 @@
          (string-concatenate (map serialize-markdown* x)))))
 
 (define serialize-hash (make-ahash-table))
-(map (lambda (l) (apply (cut ahash-set! serialize-hash <> <>) l)) 
+(map (lambda (l) (apply (cut ahash-set! serialize-hash <> <>) l))
      (list (list 'markdown md-markdown)
            (list 'localize md-translate)
            (list 'labels md-labels)
@@ -642,7 +688,6 @@
            (list 'underline md-style)
            (list 'block md-block)
            (list 'quotation md-quotation)
-           (list 'indent md-indent)
            (list 'document md-document)         
            (list 'acknowledgments md-environment)
            (list 'acknowledgments* md-environment*)
@@ -714,10 +759,14 @@
            (list 'image md-image)
            (list 'small-figure (md-figure 'tmfigure))
            (list 'small-figure* (md-figure 'tmfigure))
-           (list 'big-figure  (md-figure 'tmfigure '(marginal-caption "true") '(width "100%")))
-           (list 'big-figure* (md-figure 'tmfigure '(marginal-caption "true") '(width "100%")))
-           (list 'wide-figure (md-figure 'tmfigure '(class "wide-figure") '(width "100%")))
-           (list 'wide-figure* (md-figure 'tmfigure '(class "wide-figure") '(width "100%")))
+           (list 'big-figure 
+                 (md-figure 'tmfigure '(marginal-caption "true") '(width "100%")))
+           (list 'big-figure* 
+                 (md-figure 'tmfigure '(marginal-caption "true") '(width "100%")))
+           (list 'wide-figure
+                 (md-figure 'tmfigure '(class "wide-figure") '(width "100%")))
+           (list 'wide-figure*
+                 (md-figure 'tmfigure '(class "wide-figure") '(width "100%")))
            (list 'marginal-figure (md-marginal-figure 'sidefigure))
            (list 'marginal-figure* (md-marginal-figure 'sidefigure))
            (list 'hlink md-hlink)
