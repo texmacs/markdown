@@ -54,7 +54,7 @@
         <item>another sublist also has long items that will span more than
         whatever the number of columns blah blah
 
-        <item>sublist
+        <item>second item in the sublist
       </itemize-dot>
     </enumerate>>
   </enumerate>

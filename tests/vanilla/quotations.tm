@@ -8,6 +8,23 @@
     we can see what happens with the caret at the beginning of the line.
   </quotation>
 
+  <\quotation>
+    This text is also quoted. It is a very long text spanning multiple lines,
+    so we can see what happens with the caret at the beginning of the line.
+
+    <\quotation>
+      This is a quotation inside a quotation. It is a very long text spanning
+      multiple lines, so we can see what happens with the caret at the
+      beginning of the line.
+
+      <\quotation>
+        This is a third quotation inside the second quotation. It is a very
+        long text spanning multiple lines, so we can see what happens with
+        the caret at the beginning of the line.
+      </quotation>
+    </quotation>
+  </quotation>
+
   <\itemize-dot>
     <item>This is a list item
 

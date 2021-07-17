@@ -1,4 +1,4 @@
-![**Figure**<span id="fig-figure"></span>Texto…]()
+![**Figura 1.** <span id="fig-figure"></span>Texto…]()
 
 **Definición 1:** <span id="def-bayes-rule"></span>Sean (…)
 

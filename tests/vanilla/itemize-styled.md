@@ -23,6 +23,6 @@
       beyond the maximum number of columns**
       * **another sublist also has long items that will span more than
         whatever the number of columns blah blah**
-      * **sublist**
+      * **second item in the sublist**
 
 [^1]: text
