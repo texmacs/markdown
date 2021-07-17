@@ -84,7 +84,8 @@ first empty label"
   (counter-new 'h1)
   (counter-new 'h2 'h1)
   (counter-new 'h3 'h2 'h1)
-  (counter-new 'environment)
+  (counter-new 'env)
+  (counter-new 'alg)
   (counter-new 'equation)
   (counter-new 'figure))
 
