@@ -296,9 +296,10 @@
 
 (define (md-environment x)
   (let* ((txt (md-translate (second x)))
-         (nr (if (string-null? (third x)) "" (string-append " " (third x))))
+         (tmp (serialize-markdown* (third x)))
+         (extra (if (string-null? tmp) "" (string-append " " tmp)))
          (content (cdr (fourth x)))  ; content of inner 'document
-         (tag `(strong ,(string-append txt nr ":"))))
+         (tag `(strong ,(string-append txt extra ":"))))
     (serialize-markdown*
      (if (list>1? content)
          `(document (concat ,tag " " (em ,(car content)))
