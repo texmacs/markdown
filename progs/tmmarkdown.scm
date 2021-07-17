@@ -293,8 +293,8 @@ first empty label"
      ((right\}) . (right\rbrace))
      (,(cut func? <> '!table) . ,md-fix-math-table)
      (,(cut func? <> 'ensuremath) . ,cadr)
-     (,(cut func? <> '!sub) . 
-       ,(lambda (x) (cons "\\_" (cdr x))))
+     (,(cut func? <> '!sub) .
+       ,(lambda (x) (cons "\\_" (md-math* (cdr x)))))
      (,(cut func? <> 'label) .   ; append latex tags to labels
        ,(lambda (x)
           (with label-name (counter->string current-counter)
