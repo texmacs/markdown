@@ -18,8 +18,8 @@ Which should be numbered (1). Reference: [(1)](#some-label).
 Another section. Reference to section three: [3](#section-three). Reference to 
 section one: [1](#section-one)
 
-**Theorem 1:** <span id="theorem-one"></span>This theorem should increase the 
-label counter.
+**Theorem 1:** *<span id="theorem-one"></span>This theorem should increase the 
+label counter.*
 
 # 3 Section three
 <span id="section-three"></span>
