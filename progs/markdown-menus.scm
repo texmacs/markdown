@@ -11,12 +11,20 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (texmacs-module (markdown-menus)
-  (:use (doc help-funcs)))
+  (:use (doc help-funcs) (tmmarkdown)))
 
 (define (run-tests)
   "FIXME: make a module for test collection and execution"
   (with u (url-resolve "$TEXMACS_HOME_PATH/plugins/markdown/tests/run.scm" "r")
     (load (url->system u))))
+
+(define (copy-mdtree)
+  (let* ((sel (texmacs->markdown (tree->stree (selection-tree))))
+         (fmt (format #f "~s" sel))
+         (save (clipboard-get-import)))
+    (clipboard-set-export "verbatim")
+    (clipboard-set "primary" fmt)
+    (clipboard-set-export save)))
 
 (define (markdown-test-flavour? flavour)
   (== (get-preference "texmacs->markdown:flavour") flavour))
@@ -48,6 +56,8 @@
   (when (with-developer-tool?)
       ---
       (group "Development")
+      (when (selection-active?)
+        ("Copy markdown tree" (copy-mdtree)))
       ("Run tests" (run-tests))))
 
 (menu-bind texmacs-extra-menu
