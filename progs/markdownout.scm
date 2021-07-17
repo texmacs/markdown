@@ -84,7 +84,8 @@
   (string-recompose s "\n"))
 
 (define (stree-contains? st l)
-  (nnull? (select st `(:* (:or ,@l)))))
+  (or (tm-in? st l)
+      (nnull? (select st `(:* (:or ,@l))))))
 
 (define (list->csv l)
   (string-recompose-comma (map string-quote l)))
@@ -124,7 +125,7 @@
 
 (define (indent-decrement n)
   (if (> (string-length (get 'indent)) n)
-      (string-drop-right (get 'indent) n)
+      (string-drop (get 'indent) n)
       ""))
 
 (define (prelude)
@@ -394,7 +395,7 @@
   (and (list>1? x) (tm-is? x 'concat) (tm-is? (cadr x) 'item)))
 
 (define (is-item-subparagraph? x)
-  "yuk..."
+  "#t if @x is a (text) subparagraph of an item. Excludes subitemizes and others."
   (not (or (symbol? x)
            (stree-contains? x '(itemize enumerate quotation item)))))
 
@@ -428,7 +429,8 @@
 (define (md-quotation x)
   (with-globals 'num-line-breaks 1
     (with-globals 'indent (indent-increment "> ")
-      (serialize-markdown* (cAr x)))))
+      (with-globals 'first-indent (get 'indent)
+        (serialize-markdown* (cdr x))))))
 
 (define (md-style-text style)
  (cond ((== style 'strong) "**")
