@@ -445,11 +445,11 @@
          (content (serialize-markdown* x))
          (whitespace-left? (string-starts? content " "))
          (whitespace-right? (string-ends? content " ")))
-      (string-concatenate
-       (list (if whitespace-left? " " "")
-             style (string-trim-spaces content) style
-             (if whitespace-right? " " "")))))
-
+    (if (string-null? content) ""
+        (string-concatenate
+         (list (if whitespace-left? " " "")
+               style (string-trim-spaces content) style
+               (if whitespace-right? " " ""))))))
 
 ;;;;;;;;;;;;;;
 ; FIXME: Move this style preprocessing to tmmarkdown
@@ -457,7 +457,8 @@
 ; styles (i.e. em of em is no style)
 
 (define md-style-tag-list '(em strong tt strike underline))
-(define md-style-drop-tag-list '(marginal-note marginal-note* footnote footnote*))
+(define md-style-drop-tag-list
+  '(marginal-note marginal-note* footnote footnote* equation equation*))
 (define md-stylable-tag-list '(document itemize enumerate theorem ))  ;FIXME
 
 (define (add-style-to st x)
