@@ -28,37 +28,6 @@
 (define (author-by)
   (string-append (md-translate "By") ":"))
 
-(define (frontmatter->yaml front)
-  "Note: this only accepts scalars and lists as values for now"
-  (let* ((bool? (cut in? <> '("false" "true" "False" "True")))  ; yikes...
-         (keys<=? (lambda (a b) (string<=? (car a) (car b))))
-         (process-value
-          (lambda (x)
-            (cond ((tm-is? x 'date) (second x))
-                  ((tm-is? x 'tuple) 
-                   (string-append "\n" (list->yaml (list-sort (cdr x) string<=?) 2)))
-                  ((tuple? x) (string-append "\n" (list->yaml x 2)))
-                  ((bool? x) x)
-                  ((string? x) (string-quote x)))))  ; quote everything else
-         (process-key-value
-          (lambda (x)
-            (if (npair? x) ""
-              (string-append (car x) ": " (process-value (cdr x)))))))
-      (string-append 
-       (string-recompose-newline 
-        (map process-key-value (list-sort (ahash-table->list front) keys<=?)))
-        "\n")))
-
-(define (indent-increment sn)
-  "Increments indentation either by a number of spaces or a fixed string"
-  (string-append (md-get 'indent)
-    (if (number? sn) (string-concatenate (make-list sn " ")) sn)))
-
-(define (indent-decrement n)
-  (if (> (string-length (md-get 'indent)) n)
-      (string-drop (md-get 'indent) n)
-      ""))
-
 (define (prelude)
   "Output Hugo frontmatter"
   (if (hugo-extensions?)
@@ -69,11 +38,15 @@
         (when (nnull? (md-get 'refs))
           (ahash-set! front "refs" 
                       `(tuple ,@(list-remove-duplicates (md-get 'refs)))))
-        (string-append "---\n" (frontmatter->yaml front) "---\n\n"))
+        (display* "DICT:" `(dict ,(ahash-table->list front)) "\n\n")
+        (string-append 
+         "---"
+         (serialize-yaml `(dict ,@(assoc->list (ahash-table->list front))))
+         "\n---\n"))
       ""))
 
 (define (postlude-add x)
-  (cond ((list? x) 
+  (cond ((list? x)
          (md-set 'postlude 
                (string-concatenate 
                 `(,(md-get 'postlude)
@@ -88,6 +61,16 @@
 
 (define (postlude)
   (md-get 'postlude))
+
+(define (indent-increment sn)
+  "Increments indentation either by a number of spaces or a fixed string"
+  (string-append (md-get 'indent)
+    (if (number? sn) (string-concatenate (make-list sn " ")) sn)))
+
+(define (indent-decrement n)
+  (if (> (string-length (md-get 'indent)) n)
+      (string-drop (md-get 'indent) n)
+      ""))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; markdown to string serializations

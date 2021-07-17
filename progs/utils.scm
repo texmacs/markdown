@@ -36,7 +36,7 @@
          ,new))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Helper functions for tree transformations
+;; Helper functions for stree transformations
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define (replace-fun-sub where what? by)
@@ -123,15 +123,39 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Helper functions for CSV and YAML
+;; Helper functions for YAML output
+;; Sample stree: (dict "key1" "val1" "key2" (tuple "one" "two" "three"))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define-public (list->csv l)
-  (string-recompose-comma (map string-quote l)))
+(define (list->yaml l indent)
+  (with item->yaml
+    (lambda (it)
+      (string-append indent "- " 
+                     (serialize-yaml it (string-append indent "  "))))
+    (string-append "\n"
+      (string-recompose-newline (map item->yaml (cdr l))))))
 
-(define-public (list->yaml l indent-num)
-  (let* ((indent (make-string indent-num #\ ))
-         (item->yaml
-          (lambda (it)
-            (string-append indent "- " (string-quote (force-string it))))))
-  (string-recompose-newline (map item->yaml l))))
+(define keys<=? 
+  (lambda (a b) (string<=? (car a) (car b))))
+
+(define (dict->yaml l indent)
+  (with item->yaml 
+    (lambda (kv)
+      (string-append indent (car kv) ": " 
+        (serialize-yaml (cdr kv) (string-append indent "  "))))
+    (string-append "\n"
+      (string-recompose-newline 
+       (map item->yaml (list-sort (list->assoc (cdr l)) keys<=?))))))
+
+(define (bool-value? x)
+  (in? x '("false" "true" "False" "True")))
+
+(define-public (serialize-yaml l . indent*)
+  (with indent (if (null? indent*) "" (car indent*))
+    (cond ((null? l) "")
+          ((string? l) (string-quote l))
+          ((bool-value? l) l)
+          ((func? l 'dict) (dict->yaml l indent))
+          ((func? l 'tuple) (list->yaml l indent))
+          ((func? l 'date) (second l))
+          (else (force-string l)))))

@@ -1,12 +1,11 @@
-<TeXmacs|1.99.18>
+<TeXmacs|2.1>
 
 <style|source>
 
 <\body>
-  -- FIXME: the scheme code is brittle: if val is not a string or a tuple of
-  strings, it will break, possibly silently ignoring stuff.
-
   <assign|hugo-front|<xmacro|args|<flag|frontmatter parameters|orange>>>
+
+  <assign|dict|<xmacro|kvs|todo: display keys and values here>>
 </body>
 
 <\initial>
