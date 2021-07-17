@@ -391,7 +391,7 @@
   (get 'item))
 
 (define (is-item? x)
-  (and (list>1? x) (tm-is? x 'concat) (tm-is? (cadr x) 'item)))
+  (nnull? (select x '(:%0 item))))
 
 (define (is-item-subparagraph? x)
   "#t if @x is a (text) subparagraph of an item. Excludes subitemizes and others."
@@ -459,7 +459,8 @@
 
 (define md-style-tag-list '(em strong tt strike underline))
 (define md-style-drop-tag-list
-  '(marginal-note marginal-note* footnote footnote* equation equation*))
+  '(marginal-note marginal-note* footnote footnote* label item
+    equation equation* eqnarray eqnarray* math))
 (define md-stylable-tag-list '(document itemize enumerate theorem ))  ;FIXME
 
 (define (add-style-to st x)
@@ -476,7 +477,7 @@
         ((tm-in? x md-style-drop-tag-list)
          x)
         ((is-item? x)
-         `(concat (item) (,st ,(third x))))
+         `(concat ,@(map (cut add-style-to st <>) (cdr x))))
         (else
           `(,st ,x))))
 
