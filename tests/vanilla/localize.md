@@ -1,6 +1,6 @@
 ![**Figura 1.** <span id="fig-figure"></span>Texto…]()
 
-**Definición 1:** <span id="def-bayes-rule"></span>Sean (…)
+**Definición 1:** *<span id="def-bayes-rule"></span>Sean (…)*
 
 <span id="eq-bayes-rule"></span>
 \begin{equation}
@@ -8,8 +8,8 @@
   \label{eq-bayes-rule}\tag{1}
 \end{equation}
 
-**Teorema 2:** <span id="thm-one"></span>(Sea $H$…) La regla de Bayes 
-[(1)](#eq-bayes-rule) cumple:
+**Teorema 2:** *<span id="thm-one"></span>(Sea $H$…) La regla de Bayes 
+[(1)](#eq-bayes-rule) cumple:*
 
 <span id="eq-risk"></span>
 \begin{equation}
