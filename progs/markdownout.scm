@@ -99,12 +99,6 @@
 (define (skip x)
   (string-concatenate (map serialize-markdown* (cdr x))))
 
-(define (must-adjust? t)
-  (and (list>1? t)
-       (in? (car t)
-            '(strong em tt strike math concat cite cite-detail 
-                     eqref reference figure hlink))))
-
 (define (md-markdown x)
   (if (tm-is? x 'markdown)
       (serialize-markdown* (cdr x))
@@ -159,6 +153,10 @@
   (if (hugo-extensions?)
       (md-hugo-frontmatter `(hugo-front "summary" ,(serialize-markdown* (cdr x))))
       (md-paragraph `(concat (strong "Abstract: ") (em ,(cdr x))))))
+
+(define (must-adjust? t)
+  (tm-in? t '(strong em tt strike math concat cite cite-detail 
+              eqref reference figure hlink)))
 
 (define (md-paragraph p)
   ;; FIXME: arguments of Hugo shortcodes shouldn't be split
