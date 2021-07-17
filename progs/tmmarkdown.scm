@@ -29,7 +29,7 @@
   (cdr (ahash-ref counters which '(()))))
 
 (define (counter-children which)
-  (list-filter 
+  (list-filter
     (ahash-fold (lambda (key val acc) 
                   (cons (if (member which (cdr val)) key '()) acc))
                 '()
@@ -89,29 +89,9 @@ first empty label"
   (counter-new 'figure))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Helper functions for the transformation of strees and dispatcher
+;; Helper functions for dispatching
 ;; TODO: use TeXmacs' logic-dispatch, export sessions, bibliography
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(define (replace-fun-sub where what? by)
-  (if (npair? where) (if (what? where) (by where) where)
-      (cons (if (what? (car where)) (by (car where))
-                (replace-fun-sub (car where) what? by))
-            (replace-fun-sub (cdr where) what? by))))
-
-; This looks familiar... :/
-(define (replace-fun where what by)
- (cond ((not (procedure? what))
-        (replace-fun where (cut == <> what) by))
-       ((not (procedure? by))
-        (replace-fun where what (lambda (x) by)))
-       (else (replace-fun-sub where what by))))
-
-(define (replace-fun-list where rules)
-  (if (and (list>0? rules) (pair? (car rules)))
-      (replace-fun (replace-fun-list where (cdr rules))
-                   (caar rules) (cdar rules))
-      where))
 
 ; For some reason we always receive an stree, so we cannot use tm-file?
 ; because it expects its argument to be a tree and at some point queries a

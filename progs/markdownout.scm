@@ -17,45 +17,10 @@
 ; Things might break!!
 (use-modules (ice-9 regex) (srfi srfi-19))
 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Global state for document serialization and config options
-;; Usage is wrapped within a "with-global" in serialize-markdown-document
+;; Helper routines
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(define globals #f)
-
-(define (globals-defaults)
-  (with frontmatter (make-ahash-table)
-    ;(ahash-set! frontmatter "draft" "true")
-    ;(ahash-set! frontmatter "date" 
-    ;            (strftime "%Y-%m-%d"(localtime (time-second (current-time)))))
-    `((file? . #t)
-      (language . ,(get-document-language))
-      (num-line-breaks . 2)
-      (paragraph-width . ,(get-preference "texmacs->markdown:paragraph-width"))
-      (first-indent . "")
-      (indent . "")
-      (item . "* ")
-      (postlude . "")
-      (footnote-nr . 0)
-      (labels . ())
-      (doc-authors . ())
-      (refs . ())
-      (frontmatter . ,frontmatter))))
-
-(define (get what)
-  (ahash-ref globals what))
-
-(define (set what value)
-  (ahash-set! globals what value))
-
-(define-public-macro (with-globals var val . body)
-  (let ((old (gensym)) (new (gensym)))
-    `(let ((,old (get ,var)))
-       (set ,var ,val)
-       (let ((,new (begin ,@body)))
-         (set ,var ,old)
-         ,new))))
 
 (define (hugo-extensions?)
   (== (get-preference "texmacs->markdown:flavour") "hugo"))
@@ -63,42 +28,8 @@
 (define (author-by)
   (string-append (md-translate "By") ":"))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Helper routines
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; FIXME: does this make sense? We only convert if exporting to file.
-; The idea is that "Copy to markdown" might already perform some internal
-; conversion before sending us the stree, because weird chars appear.
-; However if we don't do any conversion here, the copied text is still wrong
-(define (tm-encoding->md-encoding x)
-  (if (get 'file?) (string-convert x "Cork" "UTF-8") x))
-
-(define (md-encoding->tm-encoding x)
-  (if (get 'file?) (string-convert x "UTF-8" "Cork") x))
-
-(define (string-recompose-space s)
-  (string-recompose s " "))
-
-(define (string-recompose-newline s)
-  (string-recompose s "\n"))
-
-(define (stree-contains? st l)
-  (or (tm-in? st l)
-      (nnull? (select st `(:* (:or ,@l))))))
-
-(define (list->csv l)
-  (string-recompose-comma (map string-quote l)))
-
-(define (list->yaml l indent-num)
-  (let* ((indent (make-string indent-num #\ ))
-         (item->yaml
-          (lambda (it)
-            (string-append indent "- " (string-quote (force-string it))))))
-  (string-recompose-newline (map item->yaml l))))
-
 (define (frontmatter->yaml front)
-  "WIP: we only accept scalars and lists as values for now"
+  "Note: this only accepts scalars and lists as values for now"
   (let* ((bool? (cut in? <> '("false" "true" "False" "True")))  ; yikes...
          (keys<=? (lambda (a b) (string<=? (car a) (car b))))
          (process-value
@@ -120,74 +51,43 @@
 
 (define (indent-increment sn)
   "Increments indentation either by a number of spaces or a fixed string"
-  (string-append (get 'indent)
+  (string-append (md-get 'indent)
     (if (number? sn) (string-concatenate (make-list sn " ")) sn)))
 
 (define (indent-decrement n)
-  (if (> (string-length (get 'indent)) n)
-      (string-drop (get 'indent) n)
+  (if (> (string-length (md-get 'indent)) n)
+      (string-drop (md-get 'indent) n)
       ""))
 
 (define (prelude)
   "Output Hugo frontmatter"
   (if (hugo-extensions?)
-      (with front (get 'frontmatter)
-        (when (nnull? (get 'doc-authors))
+      (with front (md-get 'frontmatter)
+        (when (nnull? (md-get 'doc-authors))
           (ahash-set! front "authors" 
-                      `(tuple ,@(reverse (get 'doc-authors)))))
-        (when (nnull? (get 'refs))
+                      `(tuple ,@(reverse (md-get 'doc-authors)))))
+        (when (nnull? (md-get 'refs))
           (ahash-set! front "refs" 
-                      `(tuple ,@(list-remove-duplicates (get 'refs)))))
+                      `(tuple ,@(list-remove-duplicates (md-get 'refs)))))
         (string-append "---\n" (frontmatter->yaml front) "---\n\n"))
       ""))
 
 (define (postlude-add x)
   (cond ((list? x) 
-         (set 'postlude 
+         (md-set 'postlude 
                (string-concatenate 
-                `(,(get 'postlude)
+                `(,(md-get 'postlude)
                  "\n"
-                 "\n[^" ,(number->string (get 'footnote-nr)) "]: "
+                 "\n[^" ,(number->string (md-get 'footnote-nr)) "]: "
                  ,@(map serialize-markdown* x)))))
         ((string? x)
-         (set 'postlude (string-append (get 'postlude) "\n" x)))
+         (md-set 'postlude (string-append (md-get 'postlude) "\n" x)))
         (else 
           (display* "postlude-add: bogus input " x "\n")
           (noop))))
 
 (define (postlude)
-  (get 'postlude))
-
-(define (adjust-width* s* cols prefix first-prefix)
-  (if (not (get 'paragraph-width))  ; set width to #f to disable adjustment
-      (md-string (string-append prefix s*))
-      (let* ((s (string-append first-prefix s*))
-             (l (map md-string (string-split s #\ ))) ;split words
-             (c (string-length prefix))
-             (line-len 0)
-             (proc (lambda (w acc)
-                     (set! line-len (+ line-len (string-length w) 1))
-                     (if (> line-len cols)
-                         (begin
-                           (set! line-len (+ c (string-length w) 1))
-                           (string-append acc "\n" prefix w " "))
-                         (string-append acc w " ")))))
-        (string-trim-right (list-fold proc "" l)))))
-
-(define (adjust-width s cols prefix first-prefix)
-  (with out
-      (string-recompose-newline
-       (map (cut adjust-width* <> cols prefix first-prefix)
-            (string-split s #\newline)))
-    out))
-
-(define (md-translate x)
-  (cond ((null? x) "")
-        ((string? x)
-         (translate-from-to x "english" (get 'language)))
-        ((func? x 'localize) (md-translate (cadr x)))
-        ((list? x) (serialize-markdown* x))
-        (else x)))
+  (md-get 'postlude))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; markdown to string serializations
@@ -199,11 +99,6 @@
 (define (skip x)
   (string-concatenate (map serialize-markdown* (cdr x))))
 
-(define (md-string s)
-  ;HACK: tm-encoding (Cork) does not have newlines, so we work around those
-  (string-recompose-newline
-   (map tm-encoding->md-encoding (string-split s #\newline))))
-
 (define (must-adjust? t)
   (and (list>1? t)
        (in? (car t)
@@ -214,6 +109,14 @@
   (if (tm-is? x 'markdown)
       (serialize-markdown* (cdr x))
       (begin (display "Invalid markdown tree representation") "")))
+
+(define (md-translate x)
+  (cond ((null? x) "")
+        ((string? x)
+         (translate-from-to x "english" (md-get 'language)))
+        ((func? x 'localize) (md-translate (cadr x)))
+        ((list? x) (serialize-markdown* x))
+        (else x)))
 
 (define (md-doc-title x)
   (with title (md-string (serialize-markdown* (cdr x)))
@@ -232,7 +135,7 @@
   (with name (select x '(:* author-name))
     (if (nnull? name)
         (if (hugo-extensions?)
-            (set 'doc-authors (cons (cadar name) (get 'doc-authors)))
+            (md-set 'doc-authors (cons (cadar name) (md-get 'doc-authors)))
             (string-append author-by (force-string (cdar name)) ))))
   "")
 
@@ -261,7 +164,7 @@
   ;; FIXME: arguments of Hugo shortcodes shouldn't be split
   (with adjust
       (cut adjust-width
-           <> (get 'paragraph-width) (get 'indent) (get 'first-indent))
+           <> (md-get 'paragraph-width) (md-get 'indent) (md-get 'first-indent))
      (cond ((string? p) (adjust p))
            ((must-adjust? p) (adjust (serialize-markdown* p)))
            (else (serialize-markdown* p)))))
@@ -269,7 +172,7 @@
 (define (md-document x)
   (string-concatenate
    (list-intersperse (map md-paragraph (cdr x))
-                     (make-string (get 'num-line-breaks) #\newline))))
+                     (make-string (md-get 'num-line-breaks) #\newline))))
 
 (define (md-concat x)
   ; HACK: labels in sections will typically look like
@@ -280,13 +183,13 @@
   (if (and (>= (length x) 3)
            (tuple? (second x))
            (in? (car (second x)) '(h1 h2 h3)))
-      (with-globals 'num-line-breaks 1
+      (with-md-globals 'num-line-breaks 1
         (md-document `(document ,@(cdr x))))
       (string-concatenate (map serialize-markdown* (cdr x)))))
 
 (define (md-header n)
   (lambda (x)
-    (with-globals 'num-line-breaks 0
+    (with-md-globals 'num-line-breaks 0
       (string-concatenate
        `(,@(make-list n "#") " " ,@(map serialize-markdown* (cdr x)))))))
 
@@ -296,10 +199,10 @@
 
 (define (md-environment x)
   (let* ((txt (md-translate (second x)))
-         (tmp (serialize-markdown* (third x)))
-         (extra (if (string-null? tmp) "" (string-append " " tmp)))
+         (extra (if (and (string? (third x)) (string-null? (third x))) ""
+                    `(concat " " ,(third x))))
          (content (cdr (fourth x)))  ; content of inner 'document
-         (tag `(strong ,(string-append txt extra ":"))))
+         (tag `(strong (concat ,txt ,extra ":"))))
     (serialize-markdown*
      (if (list>1? content)
          `(document (concat ,tag " " (em ,(car content)))
@@ -359,14 +262,14 @@
           (s4 (map escape-md-symbols s3))
           (anchors (string-concatenate (map create-equation-link s4)))
           (lines (if (string-null? anchors) s4 (cons anchors s4))))
-     (with-globals 'num-line-breaks 1
+     (with-md-globals 'num-line-breaks 1
        (serialize-markdown* `(document ,@lines)))))
 
 (define (md-numbered-equation x)
   (md-equation x))
 
 (define (md-labels x)
-  (set 'labels (list->ahash-table (cadr x)))
+  (md-set 'labels (list->ahash-table (cadr x)))
   "")
 
 (define (md-label x)
@@ -375,7 +278,7 @@
 (define (md-eqref x)
   (let* ((label (serialize-markdown* (cadr x)))
          (err-msg (string-append "undefined label: '" label "'"))
-         (label-display (ahash-ref (get 'labels) label err-msg)))
+         (label-display (ahash-ref (md-get 'labels) label err-msg)))
     (serialize-markdown*
       `(hlink ,(string-append "(" label-display ")") 
               ,(string-append "#" label)))))
@@ -383,12 +286,12 @@
 (define (md-reference x)
   (let* ((label (serialize-markdown* (cadr x)))
          (err-msg (string-append "undefined label: '" label "'"))
-         (label-display (ahash-ref (get 'labels) label err-msg)))
+         (label-display (ahash-ref (md-get 'labels) label err-msg)))
     (serialize-markdown*
      `(hlink ,label-display ,(string-append "#" label)))))
 
 (define (md-item x)
-  (get 'item))
+  (md-get 'item))
 
 (define (is-item? x)
   (nnull? (select x '(:%0 item))))
@@ -413,12 +316,12 @@
   (let ((c (cond ((== (car x) 'itemize) "* ")
                  ((== (car x) 'enumerate) "1. ")
                  (else "* "))))
-    (with-globals 'num-line-breaks 1
-      (with-globals 'item c
-        (with-globals 'indent (indent-increment (string-length c))
-          (with-globals 'first-indent (indent-decrement (string-length c))
-;             (display* "indent = " (string-length (get 'indent))
-;                       ", first indent = " (string-length (get 'first-indent))
+    (with-md-globals 'num-line-breaks 1
+      (with-md-globals 'item c
+        (with-md-globals 'indent (indent-increment (string-length c))
+          (with-md-globals 'first-indent (indent-decrement (string-length c))
+;             (display* "indent = " (string-length (md-get 'indent))
+;                       ", first indent = " (string-length (md-get 'first-indent))
 ;                       "\n\n")
             (serialize-markdown*
              (add-paragraphs-after-items
@@ -426,15 +329,15 @@
               (string-concatenate (make-list (string-length c) " "))))))))))
 
 (define (md-quotation x)
-  (with-globals 'num-line-breaks 1
-    (with-globals 'indent (indent-increment "> ")
-      (with-globals 'first-indent (get 'indent)
+  (with-md-globals 'num-line-breaks 1
+    (with-md-globals 'indent (indent-increment "> ")
+      (with-md-globals 'first-indent (md-get 'indent)
         (serialize-markdown* (cdr x))))))
 
 (define (md-style-text style)
  (cond ((== style 'strong) "**")
        ((== style 'em) "*")
-       ((== style 'tt) (md-encoding->tm-encoding "`"))
+       ((== style 'tt) (md-encoding->tm-encoding "`" (md-get 'file?)))
        ((== style 'strike) "~~")
        ; TODO: Hugo shortcode?
        ((== style 'underline ""))
@@ -443,14 +346,15 @@
 (define (md-style-inner st x)
 ;   (display* "++++ inner: " x "\n")
   (let* ((style (md-style-text st))
-         (content (serialize-markdown* x))
-         (whitespace-left? (string-starts? content " "))
-         (whitespace-right? (string-ends? content " ")))
-    (if (string-null? content) ""
-        (string-concatenate
-         (list (if whitespace-left? " " "")
-               style (string-trim-spaces content) style
-               (if whitespace-right? " " ""))))))
+         (content* (serialize-markdown* x))
+         (left (if (string-starts? content* " ") " " ""))
+         (right (if (string-ends? content* " ") " " ""))
+         (content (string-trim-spaces content*)))
+    (cond ((string-null? content) "")
+          ((string-punctuation? content) content)
+          (else 
+            (string-concatenate
+             (list left style content style right))))))
 
 ;;;;;;;;;;;;;;
 ; FIXME: Move this style preprocessing to tmmarkdown
@@ -499,7 +403,7 @@
           (map force-string
                (filter (lambda (x) (and (string? x) (not (string-null? x))))
                        (cdr x)))
-        (set 'refs (append (get 'refs) citations))
+        (md-set 'refs (append (md-get 'refs) citations))
         (md-hugo-shortcode (cons 'cite citations)))))
 
 (define (md-cite-detail x)
@@ -522,7 +426,7 @@
 (define (md-figure-sub payload)
   (let* ((src (force-string (car payload)))
          (title
-           (with-globals 'num-line-breaks 0 ; Don't break lines in 'document
+           (with-md-globals 'num-line-breaks 0 ; Don't break lines in 'document
              (string-concatenate (map serialize-markdown* (cdr payload))))))
     (list src title)))
 
@@ -549,18 +453,18 @@
 
 (define (md-footnote x)
   ; Input: (footnote (document [stuff here]))
-  (set 'footnote-nr (+ 1 (get 'footnote-nr)))
-  (with-globals 'num-line-breaks 0
-    (with-globals 'indent ""
-      (with-globals 'paragraph-width #f
+  (md-set 'footnote-nr (+ 1 (md-get 'footnote-nr)))
+  (with-md-globals 'num-line-breaks 0
+    (with-md-globals 'indent ""
+      (with-md-globals 'paragraph-width #f
         (postlude-add (cdr x))
-        (string-append "[^" (number->string (get 'footnote-nr)) "]")))))
+        (string-append "[^" (number->string (md-get 'footnote-nr)) "]")))))
 
 (define (md-todo x)
   (md-span (serialize-markdown* (cdr x)) `("class" "todo")))
 
 (define (md-block x)
-  (with-globals 'num-line-breaks 1
+  (with-md-globals 'num-line-breaks 1
     (with syntax (tm-ref x 0)
       (string-concatenate 
        `("```" ,syntax "\n" ,@(map serialize-markdown* (cddr x)) "\n```")))))
@@ -570,7 +474,7 @@
       (display* "ERROR: frontmatter tag must have even number of entries")
       (when (hugo-extensions?)
         (with set-pair! (lambda (kv)
-                          (ahash-set! (get 'frontmatter) (car kv) (cdr kv)))
+                          (ahash-set! (md-get 'frontmatter) (car kv) (cdr kv)))
           (map set-pair! (list->assoc (cdr x))))))
   "")
 
@@ -747,11 +651,30 @@
 ;; Public interface
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(define (globals-defaults)
+  (with frontmatter (make-ahash-table)
+    ;(ahash-set! frontmatter "draft" "true")
+    ;(ahash-set! frontmatter "date" 
+    ;            (strftime "%Y-%m-%d"(localtime (time-second (current-time)))))
+    `((file? . #t)
+      (language . ,(get-document-language))
+      (num-line-breaks . 2)
+      (paragraph-width . ,(get-preference "texmacs->markdown:paragraph-width"))
+      (first-indent . "")
+      (indent . "")
+      (item . "* ")
+      (postlude . "")
+      (footnote-nr . 0)
+      (labels . ())
+      (doc-authors . ())
+      (refs . ())
+      (frontmatter . ,frontmatter))))
+
 (tm-define (serialize-markdown x)
-  (with-global globals (list->ahash-table (globals-defaults))
+  (with-global md-globals (list->ahash-table (globals-defaults))
     (serialize-markdown* x)))
 
 (tm-define (serialize-markdown-document x)
-  (with-global globals (list->ahash-table (globals-defaults))
+  (with-global md-globals (list->ahash-table (globals-defaults))
     (with body (serialize-markdown* x)
       (string-append (prelude) body (postlude)))))
