@@ -310,7 +310,7 @@
 
 (define (md-dueto x)
   (serialize-markdown*
-   `(concat " " (em (concat "(" ,(cadr x) ")")) " ")))
+   `(concat " " (strong (concat "(" ,(cadr x) ")")) " ")))
 
 (define (md-math x . leave-newlines?)
  "Takes a latex stree @x, and returns a valid MathJax-compatible LaTeX string"
