@@ -114,6 +114,12 @@ first empty label"
     (set! current-counter counter)
     (apply action x)))
 
+(define (with-counter action counter)
+  "Returns @action (e.g. keep) setting @counter to active, without incrementing"
+  (lambda ( . x)
+    (set! current-counter counter)
+    (apply action x)))
+
 (define (count-not action counter)
   "Returns @action after deactivating @counter"
   (lambda ( . x)
@@ -133,7 +139,7 @@ first empty label"
   (map texmacs->markdown* (cdr x)))
 
 (define (drop x)
-  ;(display* "Dropped " (car x) " !\n")
+;   (display* "Dropped " (car x) " !\n")
   '())
 
 (define (hrule-hack x)
@@ -264,6 +270,19 @@ first empty label"
              (first-rows (cDr rows)))
         `(!table ,@(map md-fix-math-row first-rows) ,last-row))))
 
+(define (append-latex-tag x)
+  (with label (sanitize-selector (cadr x))
+    ; Special case: in eqnarrays we set special labels to trigger the generation
+    ; of latex \tag{} in order to always see equation numbers.
+    (if (== label "TMINCREMENT")
+        (begin
+          (counter-increase current-counter)
+          `(!concat (tag ,(counter->string current-counter))))
+        (with latex-tag (counter->string current-counter)
+          (ahash-set! labels label latex-tag)
+          ; leave the label to create anchors later
+          `(!concat (label ,label))))))
+
 (define (md-math* t)
   (replace-fun-list t
    `((mathbbm . mathbb)
@@ -276,16 +295,12 @@ first empty label"
      (,(cut func? <> 'ensuremath) . ,cadr)
      (,(cut func? <> '!sub) .
        ,(lambda (x) (cons "\\_" (md-math* (cdr x)))))
-     (,(cut func? <> 'label) .   ; append latex tags to labels
-       ,(lambda (x)
-          (with label-name (counter->string current-counter)
-            (with label (sanitize-selector (cadr x))
-              (ahash-set! labels label label-name)
-              ; leave the label to create anchors later
-              (list '!concat `(label ,label) `(tag ,label-name)))))))))
+     (,(cut func? <> 'label) . ,append-latex-tag ))))
 
 (define (parse-math x)
-  `(,(car x) ,(md-math* (math->latex x))))
+  ; HACK: use special labels to indicate numbered eqs in eqnarrays
+  (with newx (replace-fun-list x '(((eq-number) . (label "TMINCREMENT"))))
+    `(,(car x) ,(md-math* (math->latex newx)))))
 
 (define (parse-menu n)
   "Documentation tags *menu"
@@ -389,8 +404,8 @@ first empty label"
            (list 'math parse-math)
            (list 'equation (count parse-math 'equation))
            (list 'equation* parse-math)
-           (list 'eqnarray (count parse-math 'equation))
-           (list 'eqnarray* parse-math)
+           (list 'eqnarray (count parse-math 'equation)) ; does this exist?
+           (list 'eqnarray* (with-counter parse-math 'equation))
            (list 'concat keep)
            (list 'doc-title keep)
            (list 'doc-subtitle keep)
