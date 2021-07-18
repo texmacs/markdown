@@ -95,13 +95,13 @@
         (else x)))
 
 (define (md-doc-title x)
-  (with title (md-string (serialize-markdown* (cdr x)))
+  (with title (serialize-markdown* (cdr x))
     (if (hugo-extensions?)
         (serialize-markdown* `(hugo-front "title" ,title))
         (serialize-markdown* `(document ,title "")))))
 
 (define (md-doc-subtitle x)
-  (with subtitle (md-string (serialize-markdown* (cdr x)))
+  (with subtitle (serialize-markdown* (cdr x))
     (if (hugo-extensions?)
         (serialize-markdown* `(hugo-front "subtitle" ,subtitle))
         (serialize-markdown* `(document ,subtitle)))))
@@ -654,9 +654,9 @@
 
 (tm-define (serialize-markdown x)
   (with-global md-globals (list->ahash-table (globals-defaults))
-    (serialize-markdown* x)))
+    (md-string (serialize-markdown* x))))
 
 (tm-define (serialize-markdown-document x)
   (with-global md-globals (list->ahash-table (globals-defaults))
     (with body (serialize-markdown* x)
-      (string-append (prelude) body (postlude)))))
+      (md-string (string-append (prelude) body (postlude))))))

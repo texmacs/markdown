@@ -67,13 +67,11 @@
 ;; Helper functions for string transformations
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; FIXME: does this make sense? We only convert if exporting to file.
-; The idea is that "Copy to markdown" might already perform some internal
-; conversion before sending us the stree, because weird chars appear.
-; However if we don't do any conversion here, the copied text is still wrong
 (define-public (tm-encoding->md-encoding x file?)
   (if file? (string-convert x "Cork" "UTF-8") x))
 
+; "Copy to markdown" already performs some conversion, so we check whether we
+; are exporting to file
 (define-public (md-encoding->tm-encoding x file?)
   (if file? (string-convert x "UTF-8" "Cork") x))
 
@@ -101,9 +99,9 @@
 
 (define (adjust-width* s* cols prefix first-prefix)
   (if (not cols)  ; set width to #f to disable adjustment
-      (md-string (string-append prefix s*))
+      (string-append prefix s*)
       (let* ((s (string-append first-prefix s*))
-             (l (map md-string (string-split s #\ ))) ;split words
+             (l (string-split s #\ )) ;split words
              (c (string-length prefix))
              (line-len 0)
              (proc (lambda (w acc)
@@ -168,7 +166,7 @@
           ((func? x 'dict) (dict->yaml x indent))
           ((func? x 'tuple) (list->yaml x indent))
           ((func? x 'date) (second x))
-          (else (md-string (force-string x))))))
+          (else (force-string x)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Other
