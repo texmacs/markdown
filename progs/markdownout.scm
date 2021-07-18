@@ -113,7 +113,7 @@
     (if (nnull? name)
         (if (hugo-extensions?)
             (md-set 'doc-authors (cons (cadar name) (md-get 'doc-authors)))
-            (string-append author-by (force-string (cdar name)) ))))
+            (string-append (author-by) (force-string (cdar name))))))
   "")
 
 (define (decode-date date formats)
