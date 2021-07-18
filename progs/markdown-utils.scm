@@ -127,11 +127,19 @@
 ;; Sample stree: (dict "key1" "val1" "key2" (tuple "one" "two" "three"))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(define (string->yaml s cols indent)
+  "Outputs @s either quoted or justified to @cols if it's an integer"
+  (if (and (number? cols) (> (string-length s) (- cols (string-length indent) 2)))
+      (string-append ">\n" (adjust-width s cols indent indent))
+      (string-quote s)))
+  
+(define (indent-once indent)
+  (string-append indent "  "))
+
 (define (list->yaml l indent)
   (with item->yaml
-    (lambda (it)
-      (string-append indent "- " 
-                     (serialize-yaml it (string-append indent "  "))))
+    (lambda (it) (string-append indent "- "
+                   (serialize-yaml it (indent-once indent))))
     (string-append "\n"
       (string-recompose-newline (map item->yaml (cdr l))))))
 
@@ -142,7 +150,7 @@
   (with item->yaml 
     (lambda (kv)
       (string-append indent (car kv) ": " 
-        (serialize-yaml (cdr kv) (string-append indent "  "))))
+        (serialize-yaml (cdr kv) (indent-once indent))))
     (string-append "\n"
       (string-recompose-newline 
        (map item->yaml (list-sort (list->assoc (cdr l)) keys<=?))))))
@@ -150,12 +158,22 @@
 (define (bool-value? x)
   (in? x '("false" "true" "False" "True")))
 
-(define-public (serialize-yaml l . indent*)
+(define-public (serialize-yaml x . indent*)
   (with indent (if (null? indent*) "" (car indent*))
-    (cond ((null? l) "")
-          ((string? l) (string-quote l))
-          ((bool-value? l) l)
-          ((func? l 'dict) (dict->yaml l indent))
-          ((func? l 'tuple) (list->yaml l indent))
-          ((func? l 'date) (second l))
-          (else (force-string l)))))
+    (cond ((null? x) "")
+          ((string? x)
+           (string->yaml x (md-get 'paragraph-width) (indent-once indent)))
+          ((bool-value? x) x)
+          ((func? x 'pdf-name) (download-name))
+          ((func? x 'dict) (dict->yaml x indent))
+          ((func? x 'tuple) (list->yaml x indent))
+          ((func? x 'date) (second x))
+          (else (md-string (force-string x))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Other
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(tm-define (download-name)
+  (:secure #t)
+  (string-append (url-basename (current-buffer)) ".pdf"))

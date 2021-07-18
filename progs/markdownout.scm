@@ -38,21 +38,20 @@
         (when (nnull? (md-get 'refs))
           (ahash-set! front "refs" 
                       `(tuple ,@(list-remove-duplicates (md-get 'refs)))))
-        (display* "DICT:" `(dict ,(ahash-table->list front)) "\n\n")
-        (string-append 
+        (string-append
          "---"
          (serialize-yaml `(dict ,@(assoc->list (ahash-table->list front))))
          "\n---\n"))
       ""))
 
 (define (postlude-add x)
-  (cond ((list? x)
-         (md-set 'postlude 
-               (string-concatenate 
-                `(,(md-get 'postlude)
-                 "\n"
-                 "\n[^" ,(number->string (md-get 'footnote-nr)) "]: "
-                 ,@(map serialize-markdown* x)))))
+  (cond ((func? x 'footnote)
+         (md-set 'postlude
+           (string-concatenate
+            `(,(md-get 'postlude)
+               "\n[^" ,(number->string (md-get 'footnote-nr)) "]: "
+               ,@(map serialize-markdown* (cdr x))
+               "\n"))))
         ((string? x)
          (md-set 'postlude (string-append (md-get 'postlude) "\n" x)))
         (else 
@@ -134,7 +133,9 @@
 
 (define (md-abstract x)
   (if (hugo-extensions?)
-      (md-hugo-frontmatter `(hugo-front "summary" ,(serialize-markdown* (cdr x))))
+      (with-md-globals 'paragraph-width #f
+        (md-hugo-frontmatter 
+         `(hugo-front "summary" ,(serialize-markdown* (cdr x)))))
       (md-paragraph `(concat (strong "Abstract: ") (em ,(cdr x))))))
 
 (define (must-adjust? t)
@@ -441,7 +442,7 @@
   (with-md-globals 'num-line-breaks 0
     (with-md-globals 'indent ""
       (with-md-globals 'paragraph-width #f
-        (postlude-add (cdr x))
+        (postlude-add x)
         (string-append "[^" (number->string (md-get 'footnote-nr)) "]")))))
 
 (define (md-todo x)
@@ -539,13 +540,13 @@
 (define (paper-author-add x)
   "PaperWhy extension DEPRECATED"
   (if (hugo-extensions?)
-      (md-hugo-frontmatter '(hugo-front "paper-authors" (cdr x)))
+      (md-hugo-frontmatter `(hugo-front "paper-authors" (tuple ,@(cdr x))))
       ""))
 
 (define (md-hugo-tags x)
   "hugo-tags DEPRECATED, use `(hugo-front tags `(tuple tag1 tag2 ...)) "
   (if (hugo-extensions?)
-      (md-hugo-frontmatter '(hugo-front "tags" (cdr x)))
+      (md-hugo-frontmatter `(hugo-front "tags" (tuple (cdr x))))
       ""))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -637,9 +638,6 @@
 
 (define (globals-defaults)
   (with frontmatter (make-ahash-table)
-    ;(ahash-set! frontmatter "draft" "true")
-    ;(ahash-set! frontmatter "date" 
-    ;            (strftime "%Y-%m-%d"(localtime (time-second (current-time)))))
     `((file? . #t)
       (language . ,(get-document-language))
       (num-line-breaks . 2)
@@ -647,7 +645,7 @@
       (first-indent . "")
       (indent . "")
       (item . "* ")
-      (postlude . "")
+      (postlude . "\n")
       (footnote-nr . 0)
       (labels . ())
       (doc-authors . ())
