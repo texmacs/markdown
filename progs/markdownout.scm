@@ -199,10 +199,13 @@
 
 (define (md-math x . leave-newlines?)
  "Takes a latex stree @x, and returns a valid MathJax-compatible LaTeX string"
- (with ltx (serialize-latex (second x))
-   (if (null? leave-newlines?)
-       (string-replace ltx "\n" " ")
-       ltx)))
+ ; Set line length for latex output
+ (with save (output-set-line-length (or (md-get 'paragraph-width) 9999))
+   (with ltx (serialize-latex (second x))
+     (output-set-line-length save)
+     (if (null? leave-newlines?)
+         (string-replace ltx "\n" " ")
+         ltx))))
 
 (define (md-span content . args)
   (with process-attr 
@@ -235,8 +238,7 @@
                        (match:substring matches 3)))))
 
 (define (md-equation x)
-  ;; HACK
-  (let*  ((s (md-math x #t))
+  (let*  ((s (md-math x (number? (md-get 'paragraph-width))))
           (s1 (string-replace s "\\[" "\\\\["))
           (s2 (string-replace s1 "\\]" "\\\\]"))
           (s3 (string-split s2 #\newline))
