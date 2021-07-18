@@ -146,6 +146,9 @@ first empty label"
   ; FIXME: this breaks inside quotations and whatnot. And it's ugly.
   '(document "" "---" ""))
 
+(define (parse-link x)
+  `(hlink ,(texmacs->markdown* (second x)) ,(third x)))
+
 (define (parse-label x)
   (with label (sanitize-selector (second x))
     (ahash-set! labels label (counter->string current-counter))
@@ -442,7 +445,7 @@ first empty label"
            (list 'item keep)
            (list 'cite keep-verbatim)
            (list 'cite-detail keep-verbatim)
-           (list 'hlink keep-verbatim)
+           (list 'hlink parse-link)
            (list 'eqref parse-reference)
            (list 'label parse-label)
            (list 'flag drop)
