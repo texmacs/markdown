@@ -209,8 +209,9 @@
 
 (define (md-span content . args)
   (with process-attr 
-      (lambda (x) 
-        (string-append (first x) "=" (string-quote (second x))))
+      (lambda (x)
+        (if (not (pair? x)) x
+            (string-append (first x) "=" (string-quote (second x)))))
     (string-append
       "<span " 
       (string-recompose-space (map process-attr args)) 
@@ -218,15 +219,15 @@
       (serialize-markdown* content)
       "</span>")))
 
-(define (create-label-link label)
+(define (create-label-link label . extra-attrs)
   (with clean-label (sanitize-selector label)
-    (md-span '() `("id" ,clean-label))))
+    (apply md-span "" (append `(("id" ,clean-label)) extra-attrs))))
 
 (define (create-equation-link ltx)
   "Returns an empty anchor for every label in the latex line"
   (with matches (string-match "\\label\\{([^}]+)\\}" ltx)
     (if (not matches) ""
-      (create-label-link (match:substring matches 1)))))
+      (create-label-link (match:substring matches 1) '("class" "tm-eqlabel")))))
 
 (define (escape-md-symbols line)
   "Escapes special markdown chars at the beginning of lines"

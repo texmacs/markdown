@@ -1,0 +1,19 @@
+/* Centers the viewport vertically around tm-labels when jumping to them*/
+.tm-eqlabel {
+    display: block;
+    visibility: hidden;
+    height: 50vh;
+    margin-top: -50vh;
+    margin-bottom: -1rem;
+}
+
+.tm-table {
+    display: inline-table;
+    vertical-align: middle;
+    text-align: center;
+    margin-bottom: 1rem;
+    border-color: var(--dark-grey);
+}
+.tm-table td {
+    padding: 0.5rem;
+}
