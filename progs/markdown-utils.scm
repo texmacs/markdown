@@ -19,7 +19,7 @@
 ;; Usage is wrapped within a "with-global" in serialize-markdown-document
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define-public md-globals #f)
+(define-public md-globals (make-ahash-table))
 
 (define-public (md-get what)
   (ahash-ref md-globals what))
