@@ -255,33 +255,39 @@ first empty label"
                  ("texmacs->latex:use-macros" . "off"))
  (texmacs->latex t options)))
 
-(define (md-fix-math-row t)
-  "Append backslashes to last item in a !row"
+(define (md-fix-labels-in-row x)
+  "Delete our generated labels from rows already having one, for append-latex-tag"
+  (if (list>1? (select x '(:* label)))
+      (replace-fun-list x '(((label "TMINCREMENT") . "")))
+      x))
+
+(define (md-add-backslashes-to-row t)
+  "Append extra backslashes at the end of a !row in LaTeX tables"
   (if (and (func? t '!row) (list>1? t))
       (with cols (cdr t)
         `(!row ,@(cDr cols) (!concat ,(cAr cols) "\\\\\\\\")))
       t))
 
 (define (md-fix-math-table t)
-  "Append extra backslashes at the end of !rows in LaTeX tables"
-  (if (not (list>1? (cdr t))) t  ; Nothing to do with only one row
-      (let* ((rows (cdr t))
-             (last-row (cAr rows))
+  (with rows (map md-fix-labels-in-row (cdr t))
+    (if (not (list>1? rows)) t
+      (let* ((last-row (cAr rows))
              (first-rows (cDr rows)))
-        `(!table ,@(map md-fix-math-row first-rows) ,last-row))))
+        `(!table ,@(map md-add-backslashes-to-row first-rows) ,last-row)))))
 
 (define (append-latex-tag x)
-  (with label (sanitize-selector (cadr x))
+  (counter-increase current-counter)
+  (let* ((label (sanitize-selector (cadr x)))
+         (latex-tag (counter->string current-counter)))
     ; Special case: in eqnarrays we set special labels to trigger the generation
     ; of latex \tag{} in order to always see equation numbers.
     (if (== label "TMINCREMENT")
         (begin
-          (counter-increase current-counter)
-          `(!concat (tag ,(counter->string current-counter))))
-        (with latex-tag (counter->string current-counter)
+          `(tag ,latex-tag))
+        (begin
           (ahash-set! labels label latex-tag)
           ; leave the label to create anchors later
-          `(!concat (label ,label))))))
+          `(!concat (label ,label) (tag ,latex-tag))))))
 
 (define (md-math* t)
   (replace-fun-list t
@@ -291,14 +297,18 @@ first empty label"
      ((}) . (rbrace))
      ((left\{) . (left\lbrace))
      ((right\}) . (right\rbrace))
-     (,(cut func? <> '!table) . ,md-fix-math-table)
      (,(cut func? <> 'ensuremath) . ,cadr)
      (,(cut func? <> '!sub) .
        ,(lambda (x) (cons "\\_" (md-math* (cdr x)))))
-     (,(cut func? <> 'label) . ,append-latex-tag ))))
+     (,(cut func? <> 'label) . ,append-latex-tag )
+     ; CAREFUL: this needs to happen before append-latex-tag, so it must go after
+     (,(cut func? <> '!table) . ,md-fix-math-table))))
 
 (define (parse-math x)
-  ; HACK: use special labels to indicate numbered eqs in eqnarrays
+  ; HACK: use special labels to indicate numbered equations
+  ; Needed because math->latex ignores and drops any (eq-number) in eqnarrays
+  (when (and (func? x 'equation) (not (stree-contains? x '(label))))
+    (set! x `(equation (document ,@(cdadr x) (label "TMINCREMENT")))))
   (with newx (replace-fun-list x '(((eq-number) . (label "TMINCREMENT"))))
     `(,(car x) ,(md-math* (math->latex newx)))))
 
@@ -402,9 +412,9 @@ first empty label"
            (list 'warning* parse-env*)
            (list 'dueto keep)
            (list 'math parse-math)
-           (list 'equation (count parse-math 'equation))
+           (list 'equation (with-counter parse-math 'equation))
            (list 'equation* parse-math)
-           (list 'eqnarray (count parse-math 'equation)) ; does this exist?
+           (list 'eqnarray (with-counter parse-math 'equation)) ; does this exist?
            (list 'eqnarray* (with-counter parse-math 'equation))
            (list 'concat keep)
            (list 'doc-title keep)
