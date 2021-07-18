@@ -3,9 +3,10 @@
 <style|<tuple|generic|hugo>>
 
 <\body>
-  <doc-data|<doc-title|On the properties of Gauÿ-milnor
-  knots>|<doc-subtitle|with applications to low-dimensional
-  portals>|<doc-date|February 28th, 1982>|<doc-author|<author-data|<author-name|John
+  <doc-data|<doc-title|On the properties of<new-line>
+  <math|L<rsup|\<infty\>>>-Gauÿ-Milnor knots>|<doc-subtitle|with applications
+  to low-dimensional portals>|<doc-date|February 28th,
+  1982>|<doc-author|<author-data|<author-name|John
   Doe>|<author-email|him@home.org>>>|<doc-author|<author-data|<author-name|Rick
   Sanchez>|<\author-affiliation>
     Another dimension

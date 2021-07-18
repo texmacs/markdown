@@ -9,11 +9,13 @@ This is a submenu with the same amount of items (should display only two):
 
 This is a subsubmenu (3 items, should display one): `Hugo`
 
-This is a `tag`
+This is a `tag`.
 
-This is an explained macro `<name|argument1|argument2>`
+This is an explained macro `<name|argument1|argument2>`.
 
-Note that nested explained macros will break
+Note that nested explained macros will break.
+
+Done with TeXmacs.
 
 ---
 (C) 2021 by Rick, Morty

@@ -1,4 +1,4 @@
-<TeXmacs|1.99.20>
+<TeXmacs|2.1>
 
 <style|tmdoc>
 
@@ -15,11 +15,13 @@
   This is a subsubmenu (3 items, should display one):
   <subsubmenu|Markdown|Flavour|Hugo>
 
-  This is a <markup|tag>
+  This is a <markup|tag>.
 
-  This is an explained macro <explain-macro|name|argument1|argument2>
+  This is an explained macro <explain-macro|name|argument1|argument2>.
 
-  Note that nested explained macros will break
+  Note that nested explained macros will break.
+
+  Done with <TeXmacs>.
 
   <tmdoc-copyright|2021|Rick|Morty>
 
