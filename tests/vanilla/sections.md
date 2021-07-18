@@ -24,3 +24,4 @@ This section resets the subsection counter despite not being itself numbered.
 
 ## 2.2 Subsection 2.2
 
+
