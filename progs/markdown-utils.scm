@@ -1,6 +1,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-;; MODULE      : utils.scm
+;; MODULE      : markdown-utils.scm
 ;; DESCRIPTION : misc stuff for the md converter
 ;; COPYRIGHT   : (C) 2021 Miguel de Benito Delgado
 ;;
@@ -10,7 +10,7 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(texmacs-module (utils))
+(texmacs-module (markdown-utils))
 
 (use-modules (ice-9 regex))
 

@@ -1,4 +1,16 @@
-(texmacs-module (smart-ref-table))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; MODULE      : markdown-smart-ref.scm
+;; DESCRIPTION : Values for smart-ref conversion to markdown
+;; COPYRIGHT   : (C) 2021 Miguel de Benito Delgado
+;;
+;; This software falls under the GNU general public license version 3 or later.
+;; It comes WITHOUT ANY WARRANTY WHATSOEVER. For details, see the file LICENSE
+;; in the root directory or <http://www.gnu.org/licenses/gpl-3.0.html>.
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(texmacs-module (markdown-smart-ref))
 
 (define-public md-smart-ref-table
   '((unknown-ref . ("Unknown reference" "identity"))
