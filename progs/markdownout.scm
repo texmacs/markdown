@@ -416,9 +416,7 @@
     (list src title)))
 
 (define (md-figure type . args)
-  ;; (display* "md-figure: " args "\n")
   (lambda (x)
-    ;(display* "md-figure captured: " args "\n")
     (with params (md-figure-sub (cdr x))
       (if (hugo-extensions?)
           (md-hugo-shortcode `(,type (src ,(car params)) ,@args) (cadr params))
@@ -450,9 +448,14 @@
 
 (define (md-block x)
   (with-md-globals 'num-line-breaks 1
-    (with syntax (tm-ref x 0)
-      (string-concatenate 
-       `("```" ,syntax "\n" ,@(map serialize-markdown* (cddr x)) "\n```")))))
+    (let ((syntax (second x))
+          (backquotes (md-encoding->tm-encoding "```" (md-get 'file?))))
+      (string-concatenate
+       `(,backquotes ,syntax
+         "\n"
+         ,@(map serialize-markdown* (cddr x))
+         "\n"
+         ,backquotes)))))
 
 (define (md-hugo-frontmatter x)
   (if (odd? (length (cdr x)))
