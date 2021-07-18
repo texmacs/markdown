@@ -133,13 +133,13 @@ first empty label"
         (cons what (map texmacs->markdown* (cdr x)))
         what)))
 
-(define (skip x)
-  "Recursively processes @x and drops its func."
-  ;(display* "Skipping into " (car x) "\n")
-  (map texmacs->markdown* (cdr x)))
+(define (skip-to . n)
+  "Recursively processes @x dropping some of it first"
+  (with num (if (null? n) 1 (car n))
+    (lambda (x)
+      (map texmacs->markdown* (list-drop x num)))))
 
 (define (drop x)
-;   (display* "Dropped " (car x) " !\n")
   '())
 
 (define (hrule-hack x)
@@ -192,10 +192,12 @@ first empty label"
     ,(texmacs->markdown* (third x))))
 
 (define (parse-image x)
-  (with src (tm-ref x 0)
-    (if (tm-is? src 'tuple)
-        '(document "Cannot process embedded image")  ; TODO
-        `(image ,src))))
+  (if (func? x 'md-alt-image)
+      (parse-image (third x))
+      (with src (second x)
+        (if (tm-is? src 'tuple)
+            '(document "Cannot process embedded image")  ; TODO
+            `(image ,src)))))
 
 (define (is-figure? x)
   (and (member (car x)
@@ -216,7 +218,7 @@ first empty label"
          (caption `(concat (strong (concat (localize "Figure") " "
                                           ,(counter-label current-counter) ". "))
                            ,(texmacs->markdown* (tm-ref x (+ 1 offset)))))
-         (src (if (tm-is? img 'image) 
+         (src (if (tm-in? img '(image md-alt-image))
                   (tm-ref (parse-image img) 0)
                   '(document "Wrong image src"))))
     (list src caption)))
@@ -481,6 +483,7 @@ first empty label"
            (list 'hugo-front identity)  ; Hugo extension (frontmatter)
            (list 'text-dots (change-to "..."))
            
+           (list 'md-alt-image (skip-to 2))
            ;; tm-doc style
            (list 'menu (parse-menu 0))
            (list 'submenu (parse-menu 1))
@@ -489,7 +492,7 @@ first empty label"
            (list 'subsubsubsubmenu (parse-menu 4))
            (list 'markup (change-to 'tt))
            (list 'explain-macro keep)
-           (list 'src-var skip)
+           (list 'src-var (skip-to))
            (list 'tmdoc-title (count (change-to 'h1) 'h1))
            (list 'tmdoc-copyright keep)
            (list 'tmdoc-license (change-to 'em))
@@ -510,7 +513,7 @@ first empty label"
          (with fun (ahash-ref conversion-hash (car x))
            (if (!= fun #f)
                (fun x)
-               (skip x))))
+               ((skip-to 1) x))))
         (else (cons (texmacs->markdown* (car x))
                     (texmacs->markdown* (cdr x))))))
 

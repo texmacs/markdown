@@ -8,6 +8,8 @@
   <assign|dict|<xmacro|kvs|dict (to do: display keys and values)>>
 
   <assign|pdf-name|<macro|<use-module|(markdown-utils)><extern|download-name>>>
+
+  <assign|md-alt-image|<macro|img|alt-img|<arg|img>>>
 </body>
 
 <\initial>
