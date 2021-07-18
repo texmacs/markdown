@@ -2,7 +2,7 @@
 
 **Definición 1:** *<span id="def-bayes-rule"></span>Sean (…)*
 
-<span id="eq-bayes-rule"></span>
+<span id="eq-bayes-rule" class="tm-eqlabel"></span>
 \begin{equation}
   h^{\ast} (x) := I\_{\left( 1 / 2, 1 \right]} (\mathbb{E} (Y|X = x)),
   \label{eq-bayes-rule}\tag{1}
@@ -11,7 +11,7 @@
 **Teorema 2:** *<span id="thm-one"></span>(Sea $H$…) La regla de Bayes 
 [(1)](#eq-bayes-rule) cumple:*
 
-<span id="eq-risk"></span>
+<span id="eq-risk" class="tm-eqlabel"></span>
 \begin{equation}
   R (h^{\ast}) = \min \_{h \in H} R (h) . \label{eq-risk}\tag{2}
 \end{equation}
