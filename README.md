@@ -72,8 +72,8 @@ All custom shortcodes are in `extensions/hugo/`.
 * Figures are converted to `{{< figure … >}}`.
 * For arbitrary shortcodes, use `<hugo-short>`, e.g. `<hugo-short|toc>` for 
   `{{< toc >}}`.
-* Citations are automatically detected and converted to `{{< cite ref 
-  >}}`, and all of them are gathered in the frontmatter as well, for 
+* Citations are automatically detected and converted to `{{< cite ref >}}`,
+  and all of them are gathered in the frontmatter as well, for 
   indization by Hugo's taxonomy system. The rendering of bibliography is done 
   by `{{< references >}}`.
 * Marginal notes and figures are converted to `{{< sidenote … >}}` 
