@@ -536,6 +536,17 @@
      `(concat "---\n" "(C) " ,(first args)
               " by " ,(string-recompose-comma (cdr args))))))
 
+(tm-define (md-table x)
+  (serialize-markdown* `(document "Tables not implemented for raw markdown")))
+
+(tm-define (md-table x)
+  (:require (== "html" (get-preference "texmacs->markdown:table-format")))
+  (with opts '(("texmacs->html:css" . "on")
+               ("texmacs->html:mathjax" . "on")
+               ("texmacs->html:mathml" . "off")
+               ("texmacs->html:images" . "on"))
+    (serialize-html (texmacs->html (cdr x) opts))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; DEPRECATED
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -623,6 +634,7 @@
                  (md-figure 'tmfigure '(class "wide-figure") '(width "100%")))
            (list 'marginal-figure (md-marginal-figure 'sidefigure))
            (list 'marginal-figure* (md-marginal-figure 'sidefigure))
+           (list 'table md-table)
            (list 'hlink md-hlink)
            (list 'tags md-hugo-tags)  ; Hugo extension (DEPRECATED)
            (list 'hugo-short md-hugo-shortcode)  ; Hugo extension

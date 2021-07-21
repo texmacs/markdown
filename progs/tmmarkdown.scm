@@ -333,6 +333,10 @@ first empty label"
 (define (parse-string s)
   (string-replace (string-replace s "_" "\\_") "*" "\\*"))
 
+(define (parse-table x)
+  ; TODO: handle different types tabular, tabular*, block*, etc.
+  (cons 'table (tmtable-normalize (cons 'tformat (cdr x)))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Dispatch
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -465,6 +469,11 @@ first empty label"
            (list 'wide-figure* parse-figure)
            (list 'marginal-figure (count parse-marginal-figure 'figure))
            (list 'marginal-figure* parse-marginal-figure)
+           (list 'tabular parse-table)
+           (list 'tabular* parse-table) ; centered contents
+           (list 'block parse-table)
+           (list 'block* parse-table)  ; centered contents
+           (list 'wide-tabular parse-table)
            (list 'footnote keep)
            (list 'marginal-note keep)
            (list 'marginal-note* keep)
