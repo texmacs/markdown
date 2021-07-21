@@ -41,10 +41,29 @@
   ; Anything which is not a number will be #f => no limit
   (set-preference "texmacs->markdown:paragraph-width" (string->number w)))
 
+(define (markdown-test-auto-export? value)
+  (== (get-preference "texmacs->markdown:auto-export") value))
+
+(tm-define (markdown-set-auto-export value)
+  (:synopsis "Whether and where to automatically export documents")
+  (:check-mark "v" markdown-test-auto-export?)
+  (set-preference "texmacs->markdown:auto-export" value))
+
 (define (markdown-export)
   (lambda (u)
-    (set-init-env "markdown-auto-export" (url->string u))
-    ((buffer-exporter "markdown") u)))
+    (let* ((pref (get-preference "texmacs->markdown:auto-export"))
+           (url (cond ((== pref "off") "")
+                      ((== pref "relative") (url-delta (current-buffer) u))
+                      ((== pref "absolute") u)
+                      (else (string-append
+                             "Bogus value of texmacs->markdown:auto-export: "
+                             pref))))
+           (dirty? (buffer-modified? (current-buffer))))
+      (set-init-env "markdown-auto-export" (url->string url))
+      ; set-init-env modifies the buffer, so we save it if it was clean
+      (when (not dirty?)
+        (buffer-save (current-buffer)))
+      ((buffer-exporter "markdown") u))))
 
 (menu-bind markdown-menu
   ("Export..." (choose-file (markdown-export) "Export as Markdown" "markdown"))
@@ -55,8 +74,10 @@
       ("Hugo" (markdown-set-flavour "hugo")))
   ("Paragraph width" (interactive markdown-set-paragraph-width))
   ("Numbered sections?" (toggle-preference "texmacs->markdown:numbered-sections"))
-  (when (get-init-env "markdown-auto-export")
-    ("Export on save?" (toggle-preference "texmacs->markdown:auto-export")))
+  (-> "Export on save?"
+      ("No" (markdown-set-auto-export "off"))
+      ("With relative path" (markdown-set-auto-export "relative"))
+      ("With absolute path" (markdown-set-auto-export "absolute")))
   ---
   ("Help" (load-help-article "markdown"))
   (when (with-developer-tool?)
