@@ -48,19 +48,15 @@
 
 (menu-bind markdown-menu
   ("Export..." (choose-file (markdown-export) "Export as Markdown" "markdown"))
-  (when (get-init-env "markdown-auto-export")
-    ((check "Export on save?" "v"
-            (get-preference "texmacs->markdown:auto-export"))
-     (toggle-preference "texmacs->markdown:auto-export")))
   ---
   (group "Preferences")
   (-> "Flavour"
       ("Vanilla" (markdown-set-flavour "vanilla"))
       ("Hugo" (markdown-set-flavour "hugo")))
   ("Paragraph width" (interactive markdown-set-paragraph-width))
-  ((check "Numbered sections" "v"
-          (get-preference "texmacs->markdown:numbered-sections"))
-   (toggle-preference "texmacs->markdown:numbered-sections"))
+  ("Numbered sections?" (toggle-preference "texmacs->markdown:numbered-sections"))
+  (when (get-init-env "markdown-auto-export")
+    ("Export on save?" (toggle-preference "texmacs->markdown:auto-export")))
   ---
   ("Help" (load-help-article "markdown"))
   (when (with-developer-tool?)
