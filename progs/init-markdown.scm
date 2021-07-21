@@ -17,7 +17,8 @@
   ("texmacs->markdown:flavour" "vanilla" ignore)
   ("texmacs->markdown:paragraph-width" 79 ignore)
   ("texmacs->markdown:show-menu" "off" ignore)
-  ("texmacs->markdown:numbered-sections" "on" ignore))
+  ("texmacs->markdown:numbered-sections" "on" ignore)
+  ("texmacs->markdown:auto-export" "on" ignore))
 
 (define-format markdown
   (:name "Markdown")

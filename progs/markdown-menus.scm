@@ -41,9 +41,17 @@
   ; Anything which is not a number will be #f => no limit
   (set-preference "texmacs->markdown:paragraph-width" (string->number w)))
 
+(define (markdown-export)
+  (lambda (u)
+    (set-init-env "markdown-auto-export" (url->string u))
+    ((buffer-exporter "markdown") u)))
+
 (menu-bind markdown-menu
-  ("Export..." 
-    (choose-file (buffer-exporter "markdown") "Export as Markdown" "markdown"))
+  ("Export..." (choose-file (markdown-export) "Export as Markdown" "markdown"))
+  (when (get-init-env "markdown-auto-export")
+    ((check "Export on save?" "v"
+            (get-preference "texmacs->markdown:auto-export"))
+     (toggle-preference "texmacs->markdown:auto-export")))
   ---
   (group "Preferences")
   (-> "Flavour"

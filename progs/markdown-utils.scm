@@ -175,3 +175,10 @@
 (tm-define (download-name)
   (:secure #t)
   (string-append (url-basename (current-buffer)) ".pdf"))
+
+(tm-define (save-buffer . l)
+  (:require (preference-on? "texmacs->markdown:auto-export"))
+  (apply save-buffer-main l)
+  (with s (get-init-env "markdown-auto-export")
+    (when s
+      ((buffer-exporter "markdown") (string->url s)))))
