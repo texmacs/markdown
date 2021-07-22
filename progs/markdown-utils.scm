@@ -176,9 +176,16 @@
   (:secure #t)
   (string-append (url-basename (current-buffer)) ".pdf"))
 
+(define (autoexport-on?)
+  (in? (get-preference "texmacs->markdown:auto-export")
+       '("relative" "absolute")))
+
 (tm-define (save-buffer . l)
-  (:require (preference-on? "texmacs->markdown:auto-export"))
+  (:require (autoexport-on?))
   (apply save-buffer-main l)
-  (with s (get-init-env "markdown-auto-export")
-    (when s
-      ((buffer-exporter "markdown") (string->url s)))))
+  (and-with s (get-init-env "markdown-auto-export")
+    (with u (string->url s)
+      (if (url-rooted? u)
+          ((buffer-exporter "markdown") u)
+          ((buffer-exporter "markdown")
+           (url-append (url-head (current-buffer)) u))))))
