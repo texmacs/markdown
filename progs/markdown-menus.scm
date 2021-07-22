@@ -49,6 +49,14 @@
   (:check-mark "v" markdown-test-auto-export?)
   (set-preference "texmacs->markdown:auto-export" value))
 
+(define (markdown-test-table-format? value)
+  (== (get-preference "texmacs->markdown:table-format") value))
+
+(tm-define (markdown-set-table-format value)
+  (:synopsis "How to export tables")
+  (:check-mark "v" markdown-test-table-format?)
+  (set-preference "texmacs->markdown:table-format" value))
+
 (define (markdown-export)
   (lambda (u)
     (let* ((pref (get-preference "texmacs->markdown:auto-export"))
@@ -69,11 +77,15 @@
   ("Export..." (choose-file (markdown-export) "Export as Markdown" "markdown"))
   ---
   (group "Preferences")
+  ("Paragraph width" (interactive markdown-set-paragraph-width))
+  ("Numbered sections?" (toggle-preference "texmacs->markdown:numbered-sections"))
   (-> "Flavour"
       ("Vanilla" (markdown-set-flavour "vanilla"))
       ("Hugo" (markdown-set-flavour "hugo")))
-  ("Paragraph width" (interactive markdown-set-paragraph-width))
-  ("Numbered sections?" (toggle-preference "texmacs->markdown:numbered-sections"))
+  (-> "Export tables as"
+      (when #f
+        ("Markdown" (markdown-set-table-format "none")))
+      ("HTML" (markdown-set-table-format "html")))
   (-> "Export on save?"
       ("No" (markdown-set-auto-export "off"))
       ("With relative path" (markdown-set-auto-export "relative"))
