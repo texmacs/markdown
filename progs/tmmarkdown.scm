@@ -320,7 +320,9 @@ first empty label"
 (define (parse-menu n)
   "Documentation tags *menu"
   (lambda (t)
-    `(tt ,(string-concatenate (list-intersperse (list-drop (cdr t) n) " -> ")))))
+    `(tt (concat
+           ,(list-intersperse
+              (map texmacs->markdown* (list-drop (cdr t) n)) " -> ")))))
 
 (define (make-header tag)
   (lambda (x)
