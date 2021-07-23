@@ -13,10 +13,10 @@
 (texmacs-module (markdownout)
   (:use (convert tools output) (markdown-utils)))
 
-; CAREFUL: srfi-19 overwrites some functions (e.g. current-time).
-; Things might break!!
-(use-modules (ice-9 regex) (srfi srfi-19))
-
+(use-modules ((ice-9 regex)
+              :select (string-match match:substring))
+             ((srfi srfi-19)
+              :select (string->date date->string)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Helper routines
@@ -120,7 +120,7 @@
         ((null? formats) (string-append "Failed to convert date: "
                                         (force-string date)))
         (else (catch #t
-                     (lambda () (date->string 
+                     (lambda () (date->string
                                  (string->date date (car formats))
                                  "~Y-~m-~d"))
                      (lambda _ (decode-date date (cdr formats)))))))
