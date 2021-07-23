@@ -355,8 +355,9 @@ first empty label"
            (list 'dfn (change-to 'strong))
            (list 'em keep)
            (list 'strike-through (change-to 'strike)) ; non-standard extension
-           (list 'underline keep)  ; TODO hugo extension, with html output enabled
+           (list 'underline keep)  ; TODO: html extension
            (list 'hrule hrule-hack)
+           (list 'name keep)  ; TODO: html extension
            (list 'tt keep)
            (list 'nbsp (change-to "&nbsp;"))
            (list 'samp (change-to 'tt))
