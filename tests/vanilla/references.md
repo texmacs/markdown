@@ -5,7 +5,7 @@ A label without context: <span id="first-label"></span>
 
 This section contains a numbered equation:
 
-<span id="some-label"></span>
+<span id="some-label" class="tm-eqlabel"></span>
 \begin{equation}
   f (x) \equiv c. \label{some-label}\tag{1}
 \end{equation}

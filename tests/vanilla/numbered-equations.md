@@ -1,6 +1,6 @@
 A numbered equation:
 
-<span id="some-label"></span>
+<span id="some-label" class="tm-eqlabel"></span>
 \begin{equation}
   f (x) \equiv c. \label{some-label}\tag{1}
 \end{equation}
@@ -13,7 +13,7 @@ An unnumbered equation:
 
 Another numbered equation:
 
-<span id="another-label"></span>
+<span id="another-label" class="tm-eqlabel"></span>
 \begin{equation}
   f (x) \equiv c. \label{another-label}\tag{2}
 \end{equation}
