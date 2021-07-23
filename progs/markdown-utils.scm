@@ -147,7 +147,7 @@
   "Outputs @s either quoted or justified to @cols if it's an integer"
   (if (and (number? cols) (> (string-length s) (- cols (string-length indent) 2)))
       (string-append ">\n" (adjust-width s cols indent indent))
-      (string-quote s)))
+      (string-append "\"" s "\"")))
   
 (define (indent-once indent)
   (string-append indent "  "))
