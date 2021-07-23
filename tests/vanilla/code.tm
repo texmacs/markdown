@@ -1,4 +1,4 @@
-<TeXmacs|1.99.20>
+<TeXmacs|2.1>
 
 <style|generic>
 
@@ -31,7 +31,27 @@
     more beer
   </shell-code>
 
-  More to do...
+  Cpp: <cpp|string magic_fun(string s);>
+
+  Cpp fence:
+
+  <\cpp-code>
+    string magic_fun(string s) {
+
+    \ \ \ \ \ return s;
+
+    \ \ \ \ \ }
+  </cpp-code>
+
+  Scheme: <scm|(use-modules ((ice-42 magic) :select (schtuff)))>
+
+  <\scm-code>
+    (use-modules ((ice-42 magic)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ :select (schtuff)
+
+    \ \ \ \ \ \ \ \ \ \ \ \ \ \ :renamer (<code|symbol-prefix-proc> 'foo:)))
+  </scm-code>
 
   \;
 </body>

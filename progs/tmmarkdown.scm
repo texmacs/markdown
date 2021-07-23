@@ -341,6 +341,9 @@ first empty label"
   ; TODO: handle different types tabular, tabular*, block*, etc.
   (cons 'table (tmtable-normalize (cons 'tformat (cdr x)))))
 
+(define (parse-verbatim x)
+  (cons 'tt (cdr x)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Dispatch
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -357,14 +360,14 @@ first empty label"
            (list 'tt keep)
            (list 'nbsp (change-to "&nbsp;"))
            (list 'samp (change-to 'tt))
-           (list 'python (change-to 'tt))
-           (list 'cpp (change-to 'tt))
-           (list 'scm (change-to 'tt))
-           (list 'mmx (change-to 'tt))
-           (list 'scilab (change-to 'tt))
-           (list 'shell (change-to 'tt))
-           (list 'verbatim (change-to 'tt))
-           (list 'code* (change-to 'tt))
+           (list 'python parse-verbatim)
+           (list 'cpp parse-verbatim)
+           (list 'scm parse-verbatim)
+           (list 'mmx parse-verbatim)
+           (list 'scilab parse-verbatim)
+           (list 'shell parse-verbatim)
+           (list 'verbatim parse-verbatim)
+           (list 'code* parse-verbatim)
            (list 'verbatim-code (code-block ""))
            (list 'code (code-block ""))
            (list 'scm-code (code-block "scheme"))

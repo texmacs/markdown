@@ -24,6 +24,22 @@ cd /pub
 more beer
 ```
 
-More to do…
+Cpp: `string magic_fun(string s);`
+
+Cpp fence:
+
+```c++
+string magic_fun(string s) {
+     return s;
+     }
+```
+
+Scheme: `(use-modules ((ice-42 magic) :select (schtuff)))`
+
+```scheme
+(use-modules ((ice-42 magic)
+              :select (schtuff)
+              :renamer (symbol-prefix-proc 'foo:)))
+```
 
 
