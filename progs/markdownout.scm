@@ -134,8 +134,9 @@
 (define (md-abstract x)
   (if (hugo-extensions?)
       (with-md-globals 'paragraph-width #f
-        (md-hugo-frontmatter 
-         `(hugo-front "summary" ,(serialize-markdown* (cdr x)))))
+        (with-md-globals 'disable-shortcodes #t
+          (md-hugo-frontmatter
+           `(hugo-front "summary" ,(serialize-markdown* (cdr x))))))
       (md-paragraph `(concat (strong "Abstract: ") (em ,(cdr x))))))
 
 (define (must-adjust? t)
@@ -467,7 +468,7 @@
   "")
 
 (define (md-hugo-shortcode x . inner)
-  (when (hugo-extensions?)
+  (when (and (hugo-extensions?) (not (md-get 'disable-shortcodes)))
     (letrec
         ((process-one
           (lambda (arg)
@@ -488,7 +489,8 @@
         (string-append
           (string-recompose-space
             `("{{<" ,shortcode ,@(map process-one arguments) ">}}"))
-          content)))))
+          content))))
+  "")
 
 (define (md-toc x)
   (if (hugo-extensions?)
@@ -658,6 +660,7 @@
       (num-line-breaks . 2)
       (paragraph-width . ,(get-preference "texmacs->markdown:paragraph-width"))
       (first-indent . "")
+      (disable-shortcodes . #f)
       (indent . "")
       (item . "* ")
       (postlude . "\n")
