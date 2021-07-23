@@ -97,11 +97,29 @@
    (map (cut tm-encoding->md-encoding <> (md-get 'file?))
         (string-split s #\newline))))
 
+(define md-no-first-chars (string->char-set ">-*123456789:"))
+
+(define (maybe-join match prev)
+  (with m (match:substring match 0)
+    (if (and (list>0? prev)
+             (> (string-length m) 0)
+             (string-every md-no-first-chars m 0 1))
+        (cons (string-append (car prev) " " m) (cdr prev))
+        (cons m prev))))
+
+(define (safe-split s)
+  "Splits words in @s except when a new word would start with a special char"
+  ; HACK: srfi chokes on cork chars, e.g. the backquote \x00 is interpreted
+  ; as #\nil, so we need to convert back and forth
+  (with s* (tm-encoding->md-encoding s #t)
+    (map (cut md-encoding->tm-encoding <> #t)
+         (reverse (fold-matches "[^ ]*" s* '() maybe-join)))))
+
 (define (adjust-width* s* cols prefix first-prefix)
   (if (not cols)  ; set width to #f to disable adjustment
       (string-append prefix s*)
       (let* ((s (string-append first-prefix s*))
-             (l (string-split s #\ )) ;split words
+             (l (safe-split s))
              (c (string-length prefix))
              (line-len 0)
              (proc (lambda (w acc)
