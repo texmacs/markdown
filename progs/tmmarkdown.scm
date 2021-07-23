@@ -315,7 +315,7 @@ first empty label"
   ; HACK: use special labels to indicate numbered equations
   ; Needed because math->latex ignores and drops any (eq-number) in eqnarrays
   (when (and (func? x 'equation) (not (stree-contains? x '(label))))
-    (set! x `(equation (document ,@(cdadr x) (label "TMINCREMENT")))))
+    (set! x `(equation (document (concat ,@(cdadr x) (label "TMINCREMENT"))))))
   (with newx (replace-fun-list x '(((eq-number) . (label "TMINCREMENT"))))
     `(,(car x) ,(md-math* (math->latex newx)))))
 

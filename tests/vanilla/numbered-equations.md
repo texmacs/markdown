@@ -11,11 +11,19 @@ An unnumbered equation:
 
 \\[ a = b. \\]
 
+A numbered equation without label:
+
+\begin{equation}
+  c (X) =\mathbb{P} (Y \mid X) . \tag{2}
+\end{equation}
+
 Another numbered equation:
 
 <span id="another-label" class="tm-eqlabel"></span>
 \begin{equation}
-  f (x) \equiv c. \label{another-label}\tag{2}
+  f (x) \equiv c. \label{another-label}\tag{3}
 \end{equation}
 
-This: [(2)](#another-label) should be equal to this: (2).
+This: [(3)](#another-label) should be equal to this: (3).
+
+

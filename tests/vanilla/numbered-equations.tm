@@ -1,4 +1,4 @@
-<TeXmacs|1.99.20>
+<TeXmacs|2.1>
 
 <style|generic>
 
@@ -17,13 +17,21 @@
     a=b.
   </equation*>
 
+  A numbered equation without label:
+
+  <\equation>
+    c<around*|(|X|)>=\<bbb-P\><around*|(|Y\<mid\>X|)>.
+  </equation>
+
   Another numbered equation:
 
   <\equation>
     f<around*|(|x|)>\<equiv\>c.<label|another-label>
   </equation>
 
-  This: <eqref|another-label> should be equal to this: (2).
+  This: <eqref|another-label> should be equal to this: (3).
+
+  \;
 </body>
 
 <\initial>
