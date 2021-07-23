@@ -468,29 +468,29 @@
   "")
 
 (define (md-hugo-shortcode x . inner)
-  (when (and (hugo-extensions?) (not (md-get 'disable-shortcodes)))
-    (letrec
-        ((process-one
-          (lambda (arg)
-            (cond ((list-2? arg)
-                    (string-append (process-one (first arg))
-                                   "=" (process-one (second arg))))
-                   ((list-1? arg) (string-quote (car arg)))
-                   ((symbol? arg) (symbol->string arg))
-                   ((string? arg) (string-quote arg))
-                   ((boolean? arg) (string-quote (if arg "true" "false")))
-                   (else ""))))
-          (shortcode (symbol->string (car x)))
-          (arguments (cdr x))
-          (content (if (null? inner) ""
-                       (string-append (serialize-markdown* inner)
-                                      "{{</" (symbol->string (car x)) ">}}"))))
-      (string-trim-both
+  (if (and (hugo-extensions?) (not (md-get 'disable-shortcodes)))
+      (letrec
+       ((process-one
+         (lambda (arg)
+           (cond ((list-2? arg)
+                  (string-append (process-one (first arg))
+                                 "=" (process-one (second arg))))
+                 ((list-1? arg) (string-quote (car arg)))
+                 ((symbol? arg) (symbol->string arg))
+                 ((string? arg) (string-quote arg))
+                 ((boolean? arg) (string-quote (if arg "true" "false")))
+                 (else ""))))
+        (shortcode (symbol->string (car x)))
+        (arguments (cdr x))
+        (content (if (null? inner) ""
+                     (string-append (serialize-markdown* inner)
+                                    "{{</" (symbol->string (car x)) ">}}"))))
+       (string-trim-both
         (string-append
-          (string-recompose-space
-            `("{{<" ,shortcode ,@(map process-one arguments) ">}}"))
-          content))))
-  "")
+         (string-recompose-space
+          `("{{<" ,shortcode ,@(map process-one arguments) ">}}"))
+          content)))
+      ""))
 
 (define (md-toc x)
   (if (hugo-extensions?)
