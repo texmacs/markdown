@@ -55,7 +55,7 @@
         ((string? x)
          (md-set 'postlude (string-append (md-get 'postlude) "\n" x)))
         (else 
-          (display* "postlude-add: bogus input " x "\n")
+          (debug-message "convert-error" "postlude-add: bogus input")
           (noop))))
 
 (define (postlude)
@@ -84,7 +84,9 @@
 (define (md-markdown x)
   (if (tm-is? x 'markdown)
       (serialize-markdown* (cdr x))
-      (begin (display "Invalid markdown tree representation") "")))
+      (begin 
+        (debug-message "convert-error" "Invalid markdown tree representation")
+        "")))
 
 (define (md-translate x)
   (cond ((null? x) "")
@@ -306,9 +308,6 @@
       (with-md-globals 'item c
         (with-md-globals 'indent (indent-increment (string-length c))
           (with-md-globals 'first-indent (indent-decrement (string-length c))
-;             (display* "indent = " (string-length (md-get 'indent))
-;                       ", first indent = " (string-length (md-get 'first-indent))
-;                       "\n\n")
             (serialize-markdown*
              (add-paragraphs-after-items
               (cadr x)
@@ -330,7 +329,6 @@
        (else "")))
 
 (define (md-style-inner st x)
-;   (display* "++++ inner: " x "\n")
   (let* ((style (md-style-text st))
          (content* (serialize-markdown* x))
          (left (if (string-starts? content* " ") " " ""))
@@ -460,7 +458,8 @@
 
 (define (md-hugo-frontmatter x)
   (if (odd? (length (cdr x)))
-      (display* "ERROR: frontmatter tag must have even number of entries")
+      (debug-message "convert-error"
+                     "ERROR: frontmatter tag must have even number of entries")
       (when (hugo-extensions?)
         (with set-pair! (lambda (kv)
                           (ahash-set! (md-get 'frontmatter) (car kv) (cdr kv)))
