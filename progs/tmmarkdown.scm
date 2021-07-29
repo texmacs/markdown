@@ -213,6 +213,10 @@ first empty label"
 (define (parse-named-alg x)
   (make-alg `(dummy ,(third x)) (texmacs->markdown* (second x))))
 
+(define (parse-specified-alg x)
+  (make-alg `(dummy (document ,(append (cdr (second x)) (cdr (third x)))))
+             (counter->string current-counter)))
+
 (define (parse-image x)
   (if (func? x 'md-alt-image)
       (parse-image (third x))
@@ -412,6 +416,7 @@ first empty label"
            (list 'algorithm (count parse-alg 'alg))
            (list 'algorithm* parse-alg*)
            (list 'named-algorithm (count parse-named-alg 'alg))
+           (list 'specified-algorithm (count parse-specified-alg 'alg))
            (list 'answer (count parse-plain-env 'env))
            (list 'answer* parse-plain-env*)
            (list 'axiom (count parse-env 'env))
