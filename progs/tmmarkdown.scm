@@ -197,11 +197,21 @@ first empty label"
 (define (parse-proof x)
   `(std-env* "Proof" ,(texmacs->markdown* (second x))))
 
+(define (make-alg x extra)
+  (when (nnull? extra)
+    (set! extra `(concat " " ,extra)))
+  `(document
+    (strong (concat (localize "Algorithm") ,extra ": "))
+    ,(texmacs->markdown* (second x))))
+
+(define (parse-alg x)
+  (make-alg x (counter->string current-counter)))
+
+(define (parse-alg* x)
+  (make-alg x '()))
+
 (define (parse-named-alg x)
-  `(std-env
-    "Algorithm"
-    ,(texmacs->markdown* (second x))
-    ,(texmacs->markdown* (third x))))
+  (make-alg `(dummy ,(third x)) (texmacs->markdown* (second x))))
 
 (define (parse-image x)
   (if (func? x 'md-alt-image)
@@ -397,10 +407,10 @@ first empty label"
            (list 'abstract keep)
            (list 'document keep)
            (list 'quotation keep)
-           (list 'algorithm (count parse-env 'alg))
-           (list 'algorithm* parse-env*)
            (list 'acknowledgments (count parse-plain-env 'env))
            (list 'acknowledgments* parse-plain-env*)
+           (list 'algorithm (count parse-alg 'alg))
+           (list 'algorithm* parse-alg*)
            (list 'named-algorithm (count parse-named-alg 'alg))
            (list 'answer (count parse-plain-env 'env))
            (list 'answer* parse-plain-env*)
