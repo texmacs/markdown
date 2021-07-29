@@ -12,35 +12,40 @@
 
 **Notation 7:** *A numbered notation.*
 
-**Convention 8:** *A numbered convention.*
+**Convention 8:** A numbered convention. This environment renders without 
+style.
 
-**Remark 9:** *A numbered remark.*
+**Remark 9:** A numbered remark. This environment renders without style.
 
-**Note 10:** *A numbered note.*
+**Note 10:** A numbered note. This environment renders without style.
 
-**Example 11:** *A numbered example.*
+**Example 11:** A numbered example. This environment renders without style.
 
-**Warning 12:** *A numbered warning.*
+**Warning 12:** A numbered warning. This environment renders without style.
 
-**Acknowledgments 13:** *A numbered acknowledgement.*
+**Acknowledgments 13:** A numbered acknowledgement. This environment renders 
+without style.
 
-**Exercise 14:** *A numbered exercise.*
+**Exercise 14:** A numbered exercise. This environment renders without style.
 
-**Problem 15:** *A numbered problem.*
+**Problem 15:** A numbered problem. This environment renders without style.
 
-**Question 16:** *A numbered question.*
+**Question 16:** A numbered question. This environment renders without style.
 
-**Solution 17:** *A numbered solution.*
+**Solution 17:** A numbered solution. This environment renders without style.
 
-**Answer 18:** *A numbered answer.*
+**Answer 18:** A numbered answer. This environment renders without style.
 
-**Algorithm 1:** *A numbered algorithm:*
+**Algorithm 1:**
 
-*Step 1*
+A numbered algorithm. This line is below the environment's title. This 
+environment renders without style.
 
-*Step 2*
+Step 1
 
-*Step 3*
+Step 2
+
+Step 3
 
 
 
@@ -64,49 +69,57 @@
 
 **Conjecture:** *An unnumbered conjecture.*
 
-**Proof:** *A proof*
+**Proof:** *A proof. This environment renders without style.*
 
 **Axiom:** *An unnumbered axiom.*
 
 **Notation:** *An unnumbered notation.*
 
-**Convention:** *An unnumbered convention.*
+**Convention:** An unnumbered convention. This environment renders without 
+style.
 
-**Remark:** *An unnumbered remark.*
+**Remark:** An unnumbered remark. This environment renders without style.
 
-**Note:** *An unnumbered note.*
+**Note:** An unnumbered note. This environment renders without style.
 
-**Example:** *An unnumbered example.*
+**Example:** An unnumbered example. This environment renders without style.
 
-**Warning:** *An unnumbered warning.*
+**Warning:** An unnumbered warning. This environment renders without style.
 
-**Acknowledgments:** *An unnumbered acknowledgement.*
+**Acknowledgments:** An unnumbered acknowledgement. This environment renders 
+without style.
 
-**Exercise:** *An unnumbered exercise.*
+**Exercise:** An unnumbered exercise. This environment renders without style.
 
-**Problem:** *An unnumbered problem.*
+**Problem:** An unnumbered problem. This environment renders without style.
 
-**Question:** *An unnumbered question.*
+**Question:** An unnumbered question. This environment renders without style.
 
-**Solution:** *An unnumbered solution.*
+**Solution:** An unnumbered solution. This environment renders without style.
 
-**Answer:** *An unnumbered answer.*
+**Answer:** An unnumbered answer. This environment renders without style.
 
-**Algorithm:** *An unnumbered algorithm:*
+**Algorithm:**
 
-*Step 1*
+An unnumbered and unnamed algorithm. This line is below the environment's 
+title. This environment renders without style.
 
-*Step 2*
+Step 1
 
-*Step 3*
+Step 2
 
-**Algorithm ABC:** *An algorithm named ABC*
+Step 3
 
-*Step 1*
+**Algorithm ABC:**
 
-*Step 2*
+An algorithm named ABC. This line is below the environment's title. This 
+environment renders without style.
 
-*Step 3*
+Step 1
+
+Step 2
+
+Step 3
 
 
 

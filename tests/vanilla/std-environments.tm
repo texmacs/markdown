@@ -32,51 +32,52 @@
   </notation>
 
   <\convention>
-    A numbered convention.
+    A numbered convention. This environment renders without style.
   </convention>
 
   <\remark>
-    A numbered remark.
+    A numbered remark. This environment renders without style.
   </remark>
 
   <\note>
-    A numbered note.
+    A numbered note. This environment renders without style.
   </note>
 
   <\example>
-    A numbered example.
+    A numbered example. This environment renders without style.
   </example>
 
   <\warning>
-    A numbered warning.
+    A numbered warning. This environment renders without style.
   </warning>
 
   <\acknowledgments>
-    A numbered acknowledgement.
+    A numbered acknowledgement. This environment renders without style.
   </acknowledgments>
 
   <\exercise>
-    A numbered exercise.
+    A numbered exercise. This environment renders without style.
   </exercise>
 
   <\problem>
-    A numbered problem.
+    A numbered problem. This environment renders without style.
   </problem>
 
   <\question>
-    A numbered question.
+    A numbered question. This environment renders without style.
   </question>
 
   <\solution>
-    A numbered solution.
+    A numbered solution. This environment renders without style.
   </solution>
 
   <\answer>
-    A numbered answer.
+    A numbered answer. This environment renders without style.
   </answer>
 
   <\algorithm>
-    A numbered algorithm:
+    A numbered algorithm. This line is below the environment's title. This
+    environment renders without style.
 
     Step 1
 
@@ -116,7 +117,7 @@
   </conjecture*>
 
   <\proof>
-    A proof
+    A proof. This environment renders without style.
   </proof>
 
   <\axiom*>
@@ -128,51 +129,52 @@
   </notation*>
 
   <\convention*>
-    An unnumbered convention.
+    An unnumbered convention. This environment renders without style.
   </convention*>
 
   <\remark*>
-    An unnumbered remark.
+    An unnumbered remark. This environment renders without style.
   </remark*>
 
   <\note*>
-    An unnumbered note.
+    An unnumbered note. This environment renders without style.
   </note*>
 
   <\example*>
-    An unnumbered example.
+    An unnumbered example. This environment renders without style.
   </example*>
 
   <\warning*>
-    An unnumbered warning.
+    An unnumbered warning. This environment renders without style.
   </warning*>
 
   <\acknowledgments*>
-    An unnumbered acknowledgement.
+    An unnumbered acknowledgement. This environment renders without style.
   </acknowledgments*>
 
   <\exercise*>
-    An unnumbered exercise.
+    An unnumbered exercise. This environment renders without style.
   </exercise*>
 
   <\problem*>
-    An unnumbered problem.
+    An unnumbered problem. This environment renders without style.
   </problem*>
 
   <\question*>
-    An unnumbered question.
+    An unnumbered question. This environment renders without style.
   </question*>
 
   <\solution*>
-    An unnumbered solution.
+    An unnumbered solution. This environment renders without style.
   </solution*>
 
   <\answer*>
-    An unnumbered answer.
+    An unnumbered answer. This environment renders without style.
   </answer*>
 
   <\algorithm*>
-    An unnumbered algorithm:
+    An unnumbered and unnamed algorithm. This line is below the environment's
+    title. This environment renders without style.
 
     Step 1
 
@@ -182,7 +184,8 @@
   </algorithm*>
 
   <\named-algorithm|ABC>
-    An algorithm named ABC
+    An algorithm named ABC. This line is below the environment's title. This
+    environment renders without style.
 
     Step 1
 
