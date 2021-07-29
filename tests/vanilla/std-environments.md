@@ -47,6 +47,17 @@ Step 2
 
 Step 3
 
+**Algorithm 2:**
+
+A specified and numbered algorithm. This line is below the environment's 
+title. This environment renders without style.
+
+Step 1
+
+Step 2
+
+Step 3
+
 
 
 ---
@@ -114,6 +125,17 @@ Step 3
 
 An algorithm named ABC. This line is below the environment's title. This 
 environment renders without style.
+
+Step 1
+
+Step 2
+
+Step 3
+
+**Algorithm:**
+
+A specified and unnumbered algorithm. This line is below the environment's 
+title. This environment renders without style.
 
 Step 1
 

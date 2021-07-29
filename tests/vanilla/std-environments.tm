@@ -86,6 +86,17 @@
     Step 3
   </algorithm>
 
+  <\specified-algorithm>
+    A specified and numbered algorithm. This line is below the environment's
+    title. This environment renders without style.
+  <|specified-algorithm>
+    Step 1
+
+    Step 2
+
+    Step 3
+  </specified-algorithm>
+
   <hrule>
 
   <\theorem*>
@@ -193,6 +204,17 @@
 
     Step 3
   </named-algorithm>
+
+  <\specified-algorithm*>
+    A specified and unnumbered algorithm. This line is below the
+    environment's title. This environment renders without style.
+  <|specified-algorithm*>
+    Step 1
+
+    Step 2
+
+    Step 3
+  </specified-algorithm*>
 
   <hrule>
 
