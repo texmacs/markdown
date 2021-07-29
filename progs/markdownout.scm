@@ -182,7 +182,7 @@
   "TeXmacs <paragraph> tag"
   (serialize-markdown* `(concat (strong ,@(cdr x)) " ")))
 
-(define (md-environment x)
+(define (md-environment x style)
   (let* ((txt (md-translate (second x)))
          (extra (if (and (string? (third x)) (string-null? (third x))) ""
                     `(concat " " ,(third x))))
@@ -190,12 +190,18 @@
          (tag `(strong (concat ,txt ,extra ":"))))
     (serialize-markdown*
      (if (list>1? content)
-         `(document (concat ,tag " " (em ,(car content)))
+         `(document (concat ,tag " " (,style ,(car content)))
                     (em (document ,@(cdr content))))
-         `(document (concat ,tag " " (em ,(car content))))))))
+         `(document (concat ,tag " " (,style ,(car content))))))))
 
-(define (md-environment* x)
-  (md-environment (list (first x) (second x) "" (third x))))
+(define (md-environment* x style)
+  (md-environment (list (first x) (second x) "" (third x)) style))
+
+(define (md-make-environment style)
+  (lambda (x) (md-environment x style)))
+
+(define (md-make-environment* style)
+  (lambda (x) (md-environment* x style)))
 
 (define (md-dueto x)
   (serialize-markdown*
@@ -582,7 +588,8 @@
 
 (define serialize-hash (make-ahash-table))
 (map (lambda (l) (apply (cut ahash-set! serialize-hash <> <>) l))
-     (list (list 'markdown md-markdown)
+     (list (list 'identity skip)
+           (list 'markdown md-markdown)
            (list 'localize md-translate)
            (list 'labels md-labels)
            (list 'strong md-style)
@@ -593,8 +600,10 @@
            (list 'block md-block)
            (list 'quotation md-quotation)
            (list 'document md-document)
-           (list 'std-env md-environment)
-           (list 'std-env* md-environment*)
+           (list 'std-env (md-make-environment 'em))
+           (list 'std-env* (md-make-environment* 'em))
+           (list 'plain-env (md-make-environment 'identity))
+           (list 'plain-env* (md-make-environment* 'identity))
            (list 'dueto md-dueto)
            (list 'math md-math)
            (list 'equation md-numbered-equation)
