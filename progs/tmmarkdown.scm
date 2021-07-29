@@ -202,7 +202,7 @@ first empty label"
     (set! extra `(concat " " ,extra)))
   `(document
     (strong (concat (localize "Algorithm") ,extra ": "))
-    ,(texmacs->markdown* (second x))))
+    ,@(map texmacs->markdown* (cdr (second x)))))
 
 (define (parse-alg x)
   (make-alg x (counter->string current-counter)))
