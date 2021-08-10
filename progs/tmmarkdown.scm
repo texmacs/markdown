@@ -101,9 +101,12 @@ first empty label"
   (and (func? x 'document)
        (== 1 (length (select x '(body))))))
 
+(define (md-map x)
+  (list-filter (map texmacs->markdown* x) nnull?))
+
 (define (keep x)
   "Recursively processes @x while leaving its func untouched."
-  (cons (car x) (map texmacs->markdown* (cdr x))))
+  (cons (car x) (md-map (cdr x))))
 
 (define keep-verbatim identity)
 
@@ -130,14 +133,14 @@ first empty label"
   "Returns a fun (a . b) -> `(,what ,(texmacs->markdown* b)), or -> what if not a symbol"
   (lambda (x)
     (if (symbol? what)
-        (cons what (map texmacs->markdown* (cdr x)))
+        (cons what (md-map (cdr x)))
         what)))
 
 (define (skip-to . n)
   "Recursively processes @x dropping some of it first"
   (with num (if (null? n) 1 (car n))
     (lambda (x)
-      (map texmacs->markdown* (list-drop x num)))))
+      (md-map (list-drop x num)))))
 
 (define (drop x)
   '())
@@ -202,7 +205,7 @@ first empty label"
     (set! extra `(concat " " ,extra)))
   `(document
     (strong (concat (localize "Algorithm") ,extra ": "))
-    ,@(map texmacs->markdown* (cdr (second x)))))
+    ,@(md-map (cdr (second x)))))
 
 (define (parse-alg x)
   (make-alg x (counter->string current-counter)))
@@ -351,17 +354,15 @@ first empty label"
 (define (parse-menu n)
   "Documentation tags *menu"
   (lambda (t)
-    `(tt (concat
-           ,(list-intersperse
-              (map texmacs->markdown* (list-drop (cdr t) n)) " -> ")))))
+    `(tt (concat ,(list-intersperse (md-map (list-drop (cdr t) n)) " -> ")))))
 
 (define (make-header tag)
   (lambda (x)
     (if (preference-on? "texmacs->markdown:numbered-sections")
         (with label-name (counter->string current-counter)
-                                        ; that space should be an nbsp
-          `(,tag (concat ,label-name " " ,(map texmacs->markdown* (cdr x)))))
-        `(,tag ,(map texmacs->markdown* (cdr x))))))
+                                      ; FIXME: that space should be an nbsp
+          `(,tag (concat ,label-name " " ,(md-map (cdr x)))))
+        `(,tag ,(md-map (cdr x))))))
 
 (define (parse-string s)
   (string-replace (string-replace s "_" "\\_") "*" "\\*"))
