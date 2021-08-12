@@ -253,8 +253,8 @@
 (define-public (md-marginal-style s)
   (ahash-ref marginal-styles-table s))
 
-(define-public (md-map fun x)
-  (list-filter (map fun x) nnull?))
+(define-public (md-map fun l)
+  (map fun (list-filter l nnull?)))
 
 (tm-define (download-name)
   (:secure #t)
