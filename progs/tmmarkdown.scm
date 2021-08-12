@@ -89,6 +89,7 @@ first empty label"
   (counter-new 'alg)
   (counter-new 'equation)
   (counter-new 'figure))
+  (counter-new 'table)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Helper functions for dispatching
@@ -234,48 +235,58 @@ first empty label"
   `(strong (concat (localize ,s) " "
     ,(counter-label current-counter) ". ")))
 
-(define (figure-name* s)
+(define (figure-name* x)
   "Name for unnumbered figures"
-  `(strong (concat ,s ". ")))
+  `(strong (concat ,(texmacs->markdown* x) ". ")))
+
+(define (figure-tag x)
+  (with s (symbol->string (car x))
+    (string->symbol (if (string-ends? s "*") (string-drop-right s 1) s))))
+
+(define (render-figure-tag x)
+  (string->symbol
+   (substring (symbol->string (car x)) (string-length "render-"))))
 
 (define (parse-figure-body x)
-    (if (tm-in? x '(image md-alt-image))
-        `(src . (,(tm-ref (parse-image x) 0)))
-        `(body . (,x))))
+  (if (tm-in? x '(image md-alt-image))
+      `(src . ,(tm-ref (parse-image x) 0))
+      (with body (texmacs->markdown* x)
+        (if (and (string? body) (string-null? body))
+            `(body . ())
+            `(body . ,body)))))
 
 (define (parse-render-figure x)
   "For named figures."
   ; (render-big-figure "" "Figure text" (image ...) (document "caption"))
-  (with args `((name . (,(figure-name* (tm-ref x 1))))
+  (with args `((name . ,(figure-name* (tm-ref x 1)))
                ,(parse-figure-body (tm-ref x 2))
-               (caption . (,(tm-ref x 3))))
-    (with tag (string->symbol 
-               (substring (symbol->string (car x))
-                          (string-length "render-")))
-      `(,tag ,@args))))
+               (caption . ,(texmacs->markdown* (tm-ref x 3))))
+      `(,(render-figure-tag x) ,@args)))
 
-(define (parse-figure-sub numbered?)
+(define (parse-figure-sub name numbered?)
   ; (big-figure (image ...) (document "caption"))
   (lambda (x)
     (let* ((namer (if numbered? figure-name figure-name*))
-           (args `((name . (,(namer "Figure")))
+           (args `((name . ,(namer name))
                  ,(parse-figure-body (tm-ref x 0))
-                 (caption . (,(tm-ref x 1))))))
-          `(,(car x) ,@args))))
+                 (caption . ,(texmacs->markdown* (tm-ref x 1))))))
+          `(,(figure-tag x) ,@args))))
 
-(define parse-figure (parse-figure-sub #t))
-(define parse-figure* (parse-figure-sub #f))
+(define parse-figure (parse-figure-sub "Figure" #t))
+(define parse-figure* (parse-figure-sub "Figure" #f))
+(define parse-table (parse-figure-sub "Table" #t))
+(define parse-table* (parse-figure-sub "Table" #f))
 
 (define (parse-marginal-figure-sub numbered?)
   "For marginal figures."
   ; (marginal-figure valign (image ...) (document "caption"))
   (lambda (x)
     (let* ((namer (if numbered? figure-name figure-name*))
-           (args `((name . (,(figure-name* "Figure")))
-                   (valign . (,(md-marginal-style (tm-ref x 0))))
+           (args `((name . ,(figure-name* "Figure"))
+                   (valign . ,(md-marginal-style (tm-ref x 0)))
                    ,(parse-figure-body (tm-ref x 1))
-                   (caption . (,(tm-ref x 2))))))
-    `(,(car x) ,@args))))
+                   (caption . ,(texmacs->markdown* (tm-ref x 2))))))
+    `(,(figure-tag x) ,@args))))
 
 (define parse-marginal-figure (parse-marginal-figure-sub #t))
 (define parse-marginal-figure* (parse-marginal-figure-sub #f))
@@ -385,9 +396,9 @@ first empty label"
 (define (parse-string s)
   (string-replace (string-replace s "_" "\\_") "*" "\\*"))
 
-(define (parse-table x)
+(define (parse-tabular x)
   ; TODO: handle different types tabular, tabular*, block*, etc.
-  (cons 'table (tmtable-normalize (cons 'tformat (cdr x)))))
+  (cons 'tabular (tmtable-normalize (cons 'tformat (cdr x)))))
 
 (define (parse-verbatim x)
   (cons 'tt (cdr x)))
@@ -528,15 +539,15 @@ first empty label"
            (list 'wide-figure* parse-figure*)
            (list 'marginal-figure (count parse-marginal-figure 'figure))
            (list 'marginal-figure* parse-marginal-figure*)
-           (list 'small-table (count parse-figure 'figure))
-           (list 'small-table* parse-figure*)
-           (list 'big-table (count parse-figure 'figure))
-           (list 'big-table* parse-figure*)
-           (list 'tabular parse-table)
-           (list 'tabular* parse-table) ; TODO: centered contents
-           (list 'block parse-table)
-           (list 'block* parse-table)  ; TODO: centered contents
-           (list 'wide-tabular parse-table)
+           (list 'small-table (count parse-table 'table))
+           (list 'small-table* parse-table*)
+           (list 'big-table (count parse-table 'table))
+           (list 'big-table* parse-table*)
+           (list 'tabular parse-tabular)
+           (list 'tabular* parse-tabular) ; TODO: centered contents
+           (list 'block parse-tabular)
+           (list 'block* parse-tabular)  ; TODO: centered contents
+           (list 'wide-tabular parse-tabular)
            (list 'footnote keep)
            (list 'marginal-note keep)
            (list 'marginal-note* keep)

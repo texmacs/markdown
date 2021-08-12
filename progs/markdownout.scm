@@ -560,10 +560,10 @@
 
 ; FIXME: either use tm-define everywhere or change these two:
 
-(tm-define (md-table x)
+(tm-define (md-tabular x)
   (serialize-markdown* `(document "Tables not implemented for raw markdown")))
 
-(tm-define (md-table x)
+(tm-define (md-tabular x)
   (:require (== "html" (get-preference "texmacs->markdown:table-format")))
   (let ((opts '(("texmacs->html:css" . "on")
                 ("texmacs->html:mathjax" . "on")
@@ -571,8 +571,6 @@
                 ("texmacs->html:images" . "on"))))
     (serialize-html (texmacs->html (maybe-rewrap-html-class (cdr x)) opts))))
 
-; TODO: use 'html-class in md-figure (will have to append, maybe use assoc for
-; the arguments so it's easier)
 (define (md-html-class x)
   (with-md-globals 'html-class (second x)
     (serialize-markdown* (third x))))
@@ -664,20 +662,14 @@
            (list 'image md-image)
            (list 'html-class md-html-class)
            (list 'small-figure (md-figure 'tmfigure '(class . "small-figure")))
-           (list 'small-figure* (md-figure 'tmfigure '(class . "small-figure")))
            (list 'big-figure
              (md-figure 'tmfigure
                         '(marginal-caption . #t) '(class . "big-figure")))
-           (list 'big-figure* 
-             (md-figure 'tmfigure
-                        '(marginal-caption . #t) '(class . "big-figure")))
            (list 'wide-figure (md-figure 'tmfigure '(class . "wide-figure")))
-           (list 'wide-figure* (md-figure 'tmfigure '(class . "wide-figure")))
            (list 'marginal-figure (md-figure 'sidefigure))
-           (list 'marginal-figure* (md-figure 'sidefigure))
            (list 'small-table (md-figure 'tmfigure))
            (list 'big-table (md-figure 'tmfigure ))
-           (list 'table md-table)
+           (list 'tabular md-tabular)
            (list 'hlink md-hlink)
            (list 'tags md-hugo-tags)  ; Hugo extension (DEPRECATED)
            (list 'hugo-short md-hugo-shortcode)  ; Hugo extension
