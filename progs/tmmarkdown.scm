@@ -11,7 +11,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (texmacs-module (tmmarkdown)
-  (:use (link ref-markup) (markdown-smart-ref) (markdown-utils)))
+  (:use (link ref-markup) (markdown-smart-ref) (markdown-utils)
+        (convert tools tmtable)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Counters
