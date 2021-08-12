@@ -231,37 +231,46 @@ first empty label"
             '(document "Cannot process embedded image")  ; TODO
             `(image ,src)))))
 
-(define (is-figure? x)
-  (and (member (car x)
-               (numbered-unnumbered-append (figure-tag-list)))
-       (not (string-contains? (symbol->string (car x)) "table"))))
+(define (figure-name s)
+  "Name for numbered figures"
+  `(strong (concat (localize ,s) " "
+    ,(counter-label current-counter) ". ")))
 
-(define (parse-figure-sub x)
-  ; Example input:
-  ; (big-figure (image "path-to.jpeg" "251px" "251px" "" "") 
-  ;             (document "caption"))
-  ; Or, when the "Figure num." in the figure is removed:
+(define (figure-name* s)
+  "Name for unnumbered figures"
+  `(strong (concat ,s ". ")))
+
+(define (parse-figure-body x)
+    (if (tm-in? x '(image md-alt-image))
+        `(src . (,(tm-ref (parse-image x) 0)))
+        `(body . (,x))))
+
+(define (parse-render-figure x)
+  "For named figures."
   ; (render-big-figure "" "Figure text" (image ...) (document "caption"))
-  ;
-  ; FIXME: We need to ignore the text until we write a Hugo shortcode
-  ; implementing Figure text as TeXmacs.
-  (let* ((offset (if (is-figure? x) 0 2))
-         (img (tm-ref x offset))
-         (caption `(concat (strong (concat (localize "Figure") " "
-                                          ,(counter-label current-counter) ". "))
-                           ,(texmacs->markdown* (tm-ref x (+ 1 offset)))))
-         (src (if (tm-in? img '(image md-alt-image))
-                  (tm-ref (parse-image img) 0)
-                  '(document "Wrong image src"))))
-    (list src caption)))
+  (with args `((name . (,(figure-name* (tm-ref x 1))))
+               ,(parse-figure-body (tm-ref x 2))
+               (caption . (,(tm-ref x 3))))
+    (with tag (string->symbol 
+               (substring (symbol->string (car x))
+                          (string-length "render-")))
+      `(,tag ,@args))))
 
 (define (parse-figure x)
-  `(,(car x) ,@(parse-figure-sub x)))
+  ; (big-figure (image ...) (document "caption"))
+  (with args `((name . (,(figure-name "Figure")))
+               ,(parse-figure-body (tm-ref x 0))
+               (caption . (,(tm-ref x 1))))
+    `(,(car x) ,@args)))
 
 (define (parse-marginal-figure x)
-  (let* ((vpos (first (cdr x)))
-         (args (parse-figure-sub `(small-figure ,@(cddr x)))))
-    `(,(car x) ,vpos ,@args)))
+  "For marginal figures."
+  ; (marginal-figure valign (image ...) (document "caption"))
+  (with args `((name . (,(figure-name* "Figure")))
+               (valign . (,(md-marginal-style (tm-ref x 0))))
+               ,(parse-figure-body (tm-ref x 1))
+               (caption . (,(tm-ref x 2))))
+    `(,(car x) ,@args)))
 
 (define (parse-with x)
   ; HACK: we end up calling ourselves with (with "stuff"), which
@@ -499,20 +508,25 @@ first empty label"
            (list 'smart-ref parse-smart-reference)
            (list 'make-eqref parse-make-eqref)
            (list 'image parse-image)
+           (list 'html-class keep)
            (list 'small-figure (count parse-figure 'figure))
            (list 'small-figure* parse-figure)
-           (list 'render-small-figure parse-figure)
+           (list 'render-small-figure parse-render-figure)
            (list 'big-figure (count parse-figure 'figure))
            (list 'big-figure* parse-figure)
-           (list 'render-big-figure parse-figure)
+           (list 'render-big-figure parse-render-figure)
            (list 'wide-figure (count parse-figure 'figure))
            (list 'wide-figure* parse-figure)
            (list 'marginal-figure (count parse-marginal-figure 'figure))
            (list 'marginal-figure* parse-marginal-figure)
+           (list 'small-table (count parse-figure 'figure))
+           (list 'small-table* parse-figure)
+           (list 'big-table (count parse-figure 'figure))
+           (list 'big-table* parse-figure)
            (list 'tabular parse-table)
-           (list 'tabular* parse-table) ; centered contents
+           (list 'tabular* parse-table) ; TODO: centered contents
            (list 'block parse-table)
-           (list 'block* parse-table)  ; centered contents
+           (list 'block* parse-table)  ; TODO: centered contents
            (list 'wide-tabular parse-table)
            (list 'footnote keep)
            (list 'marginal-note keep)

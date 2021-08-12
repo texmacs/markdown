@@ -412,32 +412,53 @@
          (alt (if (list-2? payload) (second payload) "")))
     (string-append "![" alt "](" (force-string src) ")")))
 
-; FIXME: clear this mess with figures, don't expect img as content, etc.
-(define (md-figure-sub payload)
-  (let* ((src (force-string (car payload)))
-         (title
-           (with-md-globals 'num-line-breaks 0 ; Don't break lines in 'document
-             (string-concatenate (map serialize-markdown* (cdr payload))))))
-    (list src title)))
+(define (assoc-update alist key val)
+  (with curr (assoc-ref alist key)
+    (assoc-set! alist key
+                (cond ((string-nnull? curr)
+                       (string-append curr " " val))
+                      ((list? curr)
+                       (append curr (list val)))
+                      (else (list curr val))))))
 
-(define (md-figure type . args)
+(define (assoc-default alist key default)
+  (with curr (assoc key alist)
+    (if (== #f curr) default
+        (cdr curr))))
+
+(tm-define (md-figure type . extra-args)
+  "Vanilla md figure -> image"
+  ;TODO: check all figure types.
   (lambda (x)
-    (with params (md-figure-sub (cdr x))
-      (if (hugo-extensions?)
-          (md-hugo-shortcode `(,type (src ,(car params)) ,@args) (cadr params))
-          (md-image (list 'image (car params) (cadr params)))))))
+    ; FIXME: assoc-update with the extra-args
+    (let* ((args (append (cdr x) extra-args))
+           (body (if (assoc 'src args)
+                     `(image ,(assoc-ref args 'src)
+                             ,(assoc-default args 'body ""))
+                     (assoc-default args 'body ""))))
+        (serialize-markdown*
+         `(document
+            ,body
+            ; FIXME: missing args are #f, which we can't seralize
+            (concat ,(assoc-default args 'name "")
+                    ,(assoc-default args 'caption "")))))))
 
-(define (md-marginal-figure type . args)
+(tm-define (md-figure type . extra-args)
+  (:require (hugo-extensions?))
   (lambda (x)
-    (let ((params (md-figure-sub (cddr x)))
-          (vpos (cadr x)))
-      (if (hugo-extensions?)
-          (md-hugo-shortcode `(,type (valign ,(marginal-style vpos))
-                                     (src ,(car params))
-                                     ,@args)
-                             (cadr params))
-          (md-image (list 'image (car params) (cadr params)))))))
-
+    ; FIXME: assoc-update with the extra-args
+    ; FIXME: convert body either in src parameter or whatever
+    (let* ((args (append (cdr x) extra-args))
+           (name (serialize-markdown* (assoc-default args 'name "")))
+           (caption (serialize-markdown* (assoc-default args 'caption "")))
+           (body (assoc-default args 'body ""))
+           (args* (assoc-update args 'class (md-get 'html-class)))
+           (args** (assoc-remove!
+                    (assoc-remove!
+                     (assoc-remove! args* 'body)
+                     'name)
+                    'caption)))
+      (md-hugo-shortcode `(,type ,@args**) body))))
 
 (define (md-footnote x)
   ; Input: (footnote (document [stuff here]))
@@ -472,28 +493,29 @@
           (map set-pair! (list->assoc (cdr x))))))
   "")
 
+(define (assoc->attr arg)
+  "Converts (a . b) into the string a=\"b\" "
+  (cond ((list-1? arg) (assoc->attr (car arg)))
+        ((pair? arg)
+         (string-append (assoc->attr (car arg))
+                        "=" (assoc->attr (cdr arg))))
+        ((symbol? arg) (symbol->string arg))
+        ((string? arg) (string-quote arg))
+        ((boolean? arg) 
+         (string-quote (if arg "true" "false")))
+        (else "")))
+
 (define (md-hugo-shortcode x . inner)
-  (if (and (hugo-extensions?) (not (md-get 'disable-shortcodes)))
-      (letrec
-       ((process-one
-         (lambda (arg)
-           (cond ((list-2? arg)
-                  (string-append (process-one (first arg))
-                                 "=" (process-one (second arg))))
-                 ((list-1? arg) (string-quote (car arg)))
-                 ((symbol? arg) (symbol->string arg))
-                 ((string? arg) (string-quote arg))
-                 ((boolean? arg) (string-quote (if arg "true" "false")))
-                 (else ""))))
-        (shortcode (symbol->string (car x)))
-        (arguments (cdr x))
-        (content (if (null? inner) ""
-                     (string-append (serialize-markdown* inner)
-                                    "{{</" (symbol->string (car x)) ">}}"))))
-       (string-trim-both
-        (string-append
-         (string-recompose-space
-          `("{{<" ,shortcode ,@(map process-one arguments) ">}}"))
+  (if (not (md-get 'disable-shortcodes))
+      (let ((shortcode (symbol->string (car x)))
+            (args (cdr x))
+            (content (if (null? inner) ""
+                         (string-append (serialize-markdown* inner)
+                                        "{{</" (symbol->string (car x)) ">}}"))))
+        (string-trim-both
+         (string-append
+          (string-recompose-space
+          `("{{<" ,shortcode ,@(map assoc->attr args) ">}}"))
           content)))
       ""))
 
@@ -507,20 +529,13 @@
       (md-hugo-shortcode '(references))
       (md-style '(strong "Bibliography not implemented for raw Markdown"))))
 
-(define marginal-styles-table
-  (list->ahash-table '(("b" . "bottom") ("c" . "center")
-                       ("t" . "top") ("normal" . "right"))))
-
-(define (marginal-style s)
-  (ahash-ref marginal-styles-table s))
-
 (define (md-sidenote-sub x numbered?)
   (if (hugo-extensions?)
       (let ((numbered (if numbered? '((numbered "numbered")) '()))
             (args (cdr x)))
         (md-hugo-shortcode
-         (append `(sidenote (halign ,(marginal-style (first args)))
-                            (valign ,(marginal-style (second args))))
+         (append `(sidenote (halign ,(md-marginal-style (first args)))
+                            (valign ,(md-marginal-style (second args))))
                  numbered)
          (third args)))
       (serialize-markdown* `(footnote ,(third (cdr x))))))
@@ -543,16 +558,31 @@
      `(concat "---\n" "(C) " ,(first args)
               " by " ,(string-recompose-comma (cdr args))))))
 
+; FIXME: either use tm-define everywhere or change these two:
+
 (tm-define (md-table x)
   (serialize-markdown* `(document "Tables not implemented for raw markdown")))
 
 (tm-define (md-table x)
   (:require (== "html" (get-preference "texmacs->markdown:table-format")))
-  (with opts '(("texmacs->html:css" . "on")
-               ("texmacs->html:mathjax" . "on")
-               ("texmacs->html:mathml" . "off")
-               ("texmacs->html:images" . "on"))
-    (serialize-html (texmacs->html (cdr x) opts))))
+  (let ((opts '(("texmacs->html:css" . "on")
+                ("texmacs->html:mathjax" . "on")
+                ("texmacs->html:mathml" . "off")
+                ("texmacs->html:images" . "on"))))
+    (serialize-html (texmacs->html (maybe-rewrap-html-class (cdr x)) opts))))
+
+; TODO: use 'html-class in md-figure (will have to append, maybe use assoc for
+; the arguments so it's easier)
+(define (md-html-class x)
+  (with-md-globals 'html-class (second x)
+    (serialize-markdown* (third x))))
+
+(define-macro (maybe-rewrap-html-class . body)
+  "Wraps in 'html-class tag if we saw one earlier and discarded it"
+  `(with cl (md-get 'html-class)
+     (if (string-nnull? cl) 
+         (list 'html-class cl ,@body)
+         ,@body)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; DEPRECATED
@@ -574,7 +604,7 @@
 ;; dispatch
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define (serialize-markdown* x)
+(define-public (serialize-markdown* x)
 ;   (display* "Serialize: " x "\n")
   (cond ((null? x) "")
         ((string? x) x)
@@ -584,7 +614,7 @@
          (with fun (ahash-ref serialize-hash (car x) skip)
            (fun x)))
         (else
-         (string-concatenate (map serialize-markdown* x)))))
+         (string-concatenate (list-filter (map serialize-markdown* x) nnull?)))))
 
 (define serialize-hash (make-ahash-table))
 (map (lambda (l) (apply (cut ahash-set! serialize-hash <> <>) l))
@@ -632,18 +662,21 @@
            (list 'footnote md-footnote)
            (list 'todo md-todo)
            (list 'image md-image)
-           (list 'small-figure (md-figure 'tmfigure))
-           (list 'small-figure* (md-figure 'tmfigure))
-           (list 'big-figure 
-                 (md-figure 'tmfigure '(marginal-caption "true") '(width "100%")))
+           (list 'html-class md-html-class)
+           (list 'small-figure (md-figure 'tmfigure '(class . "small-figure")))
+           (list 'small-figure* (md-figure 'tmfigure '(class . "small-figure")))
+           (list 'big-figure
+             (md-figure 'tmfigure
+                        '(marginal-caption . #t) '(class . "big-figure")))
            (list 'big-figure* 
-                 (md-figure 'tmfigure '(marginal-caption "true") '(width "100%")))
-           (list 'wide-figure
-                 (md-figure 'tmfigure '(class "wide-figure") '(width "100%")))
-           (list 'wide-figure*
-                 (md-figure 'tmfigure '(class "wide-figure") '(width "100%")))
-           (list 'marginal-figure (md-marginal-figure 'sidefigure))
-           (list 'marginal-figure* (md-marginal-figure 'sidefigure))
+             (md-figure 'tmfigure
+                        '(marginal-caption . #t) '(class . "big-figure")))
+           (list 'wide-figure (md-figure 'tmfigure '(class . "wide-figure")))
+           (list 'wide-figure* (md-figure 'tmfigure '(class . "wide-figure")))
+           (list 'marginal-figure (md-figure 'sidefigure))
+           (list 'marginal-figure* (md-figure 'sidefigure))
+           (list 'small-table (md-figure 'tmfigure))
+           (list 'big-table (md-figure 'tmfigure ))
            (list 'table md-table)
            (list 'hlink md-hlink)
            (list 'tags md-hugo-tags)  ; Hugo extension (DEPRECATED)
@@ -669,6 +702,7 @@
       (paragraph-width . ,(get-preference "texmacs->markdown:paragraph-width"))
       (first-indent . "")
       (disable-shortcodes . #f)
+      (html-class . "")
       (indent . "")
       (item . "* ")
       (postlude . "\n")

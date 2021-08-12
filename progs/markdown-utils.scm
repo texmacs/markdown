@@ -91,6 +91,10 @@
 (define-public (string-recompose-newline s)
   (string-recompose s "\n"))
 
+(define-public (string-nnull? s)
+  (and (string? s)
+       (not (string-null? s))))
+
 (define-public (md-string s)
   ;HACK: tm-encoding (Cork) does not have newlines, so we work around those
   (string-recompose-newline
@@ -189,6 +193,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Other
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define marginal-styles-table
+  (list->ahash-table '(("b" . "bottom") ("c" . "center")
+                       ("t" . "top") ("normal" . "right"))))
+
+(define-public (md-marginal-style s)
+  (ahash-ref marginal-styles-table s))
 
 (tm-define (download-name)
   (:secure #t)
