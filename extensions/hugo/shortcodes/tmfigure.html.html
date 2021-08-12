@@ -23,7 +23,8 @@
             {{ with (.Get "title") -}}
                 <h4>{{ . }}</h4>
             {{- end -}}
-            {{ with .Inner }}
+            {{ $caption := or (.Get "caption") .Inner }}
+            {{ with $caption }}
                 <p>{{ . | markdownify }}</p>
             {{ end }}
         </figcaption>
