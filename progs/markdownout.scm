@@ -50,7 +50,7 @@
            (string-concatenate
             `(,(md-get 'postlude)
                "\n[^" ,(number->string (md-get 'footnote-nr)) "]: "
-               ,@(map serialize-markdown* (cdr x))
+               ,@(md-map serialize-markdown* (cdr x))
                "\n"))))
         ((string? x)
          (md-set 'postlude (string-append (md-get 'postlude) "\n" x)))
@@ -76,10 +76,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define (keep x)
-  (cons (car x) (map serialize-markdown* (cdr x))))
+  (cons (car x) (md-map serialize-markdown* (cdr x))))
 
 (define (skip x)
-  (string-concatenate (map serialize-markdown* (cdr x))))
+  (string-concatenate (md-map serialize-markdown* (cdr x))))
 
 (define (md-markdown x)
   (if (tm-is? x 'markdown)
@@ -156,7 +156,7 @@
 
 (define (md-document x)
   (string-concatenate
-   (list-intersperse (map md-paragraph (cdr x))
+   (list-intersperse (md-map md-paragraph (cdr x))
                      (make-string (md-get 'num-line-breaks) #\newline))))
 
 (define (md-concat x)
@@ -169,14 +169,14 @@
            (tuple? (second x))
            (in? (car (second x)) '(h1 h2 h3)))
       (with-md-globals 'num-line-breaks 1
-        (md-document `(document ,@(cdr x))))
-      (string-concatenate (map serialize-markdown* (cdr x)))))
+        (serialize-markdown* `(document ,@(cdr x))))
+      (string-concatenate (md-map serialize-markdown* (cdr x)))))
 
 (define (md-header n)
   (lambda (x)
     (with-md-globals 'num-line-breaks 0
       (string-concatenate
-       `(,@(make-list n "#") " " ,@(map serialize-markdown* (cdr x)))))))
+       `(,@(make-list n "#") " " ,@(md-map serialize-markdown* (cdr x)))))))
 
 (define (md-para x)
   "TeXmacs <paragraph> tag"
@@ -479,7 +479,7 @@
       (string-concatenate
        `(,backquotes ,syntax
          "\n"
-         ,@(map serialize-markdown* (cddr x))
+         ,@(md-map serialize-markdown* (cddr x))
          "\n"
          ,backquotes)))))
 
@@ -550,7 +550,7 @@
   ; FIXME: this will break with nested macros (tt style will be interrupted)
   (md-style
    `(tt ,(string-append 
-          "<" (string-recompose (map serialize-markdown* (cdr x)) "|" ) ">"))))
+          "<" (string-recompose (md-map serialize-markdown* (cdr x)) "|" ) ">"))))
 
 (define (md-tmdoc-copyright x)
   (with args (cdr x)
@@ -604,7 +604,7 @@
 ;; dispatch
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define-public (serialize-markdown* x)
+(define (serialize-markdown* x)
 ;   (display* "Serialize: " x "\n")
   (cond ((null? x) "")
         ((string? x) x)
@@ -614,7 +614,7 @@
          (with fun (ahash-ref serialize-hash (car x) skip)
            (fun x)))
         (else
-         (string-concatenate (list-filter (map serialize-markdown* x) nnull?)))))
+         (string-concatenate (md-map serialize-markdown* x)))))
 
 (define serialize-hash (make-ahash-table))
 (map (lambda (l) (apply (cut ahash-set! serialize-hash <> <>) l))

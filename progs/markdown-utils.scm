@@ -201,6 +201,9 @@
 (define-public (md-marginal-style s)
   (ahash-ref marginal-styles-table s))
 
+(define-public (md-map fun x)
+  (list-filter (map fun x) nnull?))
+
 (tm-define (download-name)
   (:secure #t)
   (string-append (url-basename (current-buffer)) ".pdf"))
