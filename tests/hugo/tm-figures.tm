@@ -10,13 +10,13 @@
   </big-figure>
 
   <\big-figure|<md-alt-image|<image|some_path.eps|3cm|||>|<image|some_path_webformat.svg|3cm|||>>>
-    A numbered figure with just an image, using the md-alt-image tag
+    A numbered figure with just an image, using the md-alt-image tag.
   </big-figure>
 
   <\html-class|invertible>
-    <\big-figure|<image|some_path.eps|3cm|||>>
-      A numbered figure with just an image. The figure is wrapped in
-      html-class invertible.
+    <\big-figure|<md-alt-image|<image|some_path.eps|3cm|||>|<image|some_path_webformat.svg|3cm|||>>>
+      A numbered figure with just an image, using the md-alt-image tag. The
+      figure is wrapped in html-class invertible.
     </big-figure>
   </html-class>
 
@@ -27,7 +27,7 @@
   </big-figure*>
 
   <\big-figure*|<md-alt-image|<image|some_path.eps|3cm|||>|<image|some_path_webformat.svg|3cm|||>>>
-    An unnumbered figure with just an image, using the md-alt-image tag
+    An unnumbered figure with just an image, using the md-alt-image tag.
   </big-figure*>
 
   <\render-big-figure||Name with <math|a=b>
@@ -38,20 +38,20 @@
   <\render-big-figure|>
     Name with <math|a=b> math
   <|render-big-figure|<md-alt-image|<image|some_path.eps|3cm|||>|<image|some_path_webformat.svg|3cm|||>>>
-    A named figure with just an image, using the md-alt-image tag
+    A named figure with just an image, using the md-alt-image tag.
   </render-big-figure>
 
   <section|Small figures>
 
   <small-figure|<image|some_path.eps|2cm|||>|A small numbered figure with an
-  image>
+  image>.
 
   <html-class|invertible|<small-figure|<image|some_path.eps|2cm|||>|A small
   numbered figure with an image. The figure is wrapped in html-class
   invertible.>>
 
   <small-figure*|<image|some_path.eps|2cm|||>|A small unnumbered figure with
-  an image>
+  an image>.
 
   <html-class|invertible|<small-figure*|<image|some_path.eps|2cm|||>|A small
   unnumbered figure with an image. The figure is wrapped in html-class
@@ -60,31 +60,29 @@
   <section|Tables>
 
   <\big-table|<tabular|<tformat|<table|<row|<cell|a>|<cell|b>>>>>>
-    A large numbered table
+    A large numbered table.
   </big-table>
 
   <\big-table*|<tabular|<tformat|<table|<row|<cell|a>|<cell|b>>>>>>
-    A large unnumbered table
+    A large unnumbered table.
   </big-table*>
 
   <\render-big-figure||A table name with <math|a=b>
   math|<tabular|<tformat|<table|<row|<cell|a>|<cell|b>>>>>>
-    A large named table
+    A large named table.
   </render-big-figure>
 
   \;
 
   <small-table|<tabular|<tformat|<table|<row|<cell|a>|<cell|b>>>>>|A small
-  numbered table>
+  numbered table>.
 
   <small-table*|<tabular|<tformat|<table|<row|<cell|a>|<cell|b>>>>>|A small
-  unnumbered table>
+  unnumbered table>.
 
   <render-small-figure||A table name with <math|a=b>
   math|<tabular|<tformat|<table|<row|<cell|a>|<cell|b>>>>>|A small named
-  table>
-
-  <tabular|<tformat|<table|<row|<cell|a>|<cell|b>>>>>
+  table>.
 </body>
 
 <\initial>
