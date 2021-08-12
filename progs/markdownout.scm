@@ -145,14 +145,14 @@
   (tm-in? t '(strong em tt strike math concat cite cite-detail 
               eqref reference figure hlink)))
 
-(define (md-paragraph p)
+(define (md-paragraph x)
   ;; FIXME: arguments of Hugo shortcodes shouldn't be split
   (with adjust
       (cut adjust-width
            <> (md-get 'paragraph-width) (md-get 'indent) (md-get 'first-indent))
-     (cond ((string? p) (adjust p))
-           ((must-adjust? p) (adjust (serialize-markdown* p)))
-           (else (serialize-markdown* p)))))
+     (cond ((string? x) (adjust x))
+           ((must-adjust? x) (adjust (serialize-markdown* x)))
+           (else (serialize-markdown* x)))))
 
 (define (md-document x)
   (string-concatenate
@@ -464,7 +464,7 @@
       (let ((shortcode (symbol->string (car x)))
             (args (cdr x))
             (content (if (null? inner) ""
-                         (string-append (serialize-markdown* inner)
+                         (string-append (serialize-markdown* (car inner))
                                         "{{</" (symbol->string (car x)) ">}}"))))
         (string-trim-both
          (string-append
@@ -556,17 +556,16 @@
 ;; dispatch
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define (serialize-markdown* x)
+(define-public (serialize-markdown* x)
 ;   (display* "Serialize: " x "\n")
-  (cond ((null? x) "")
-        ((string? x) x)
+  (cond ((string? x) x)
         ((char? x) (char->string x))
         ((symbol? x) "")
-        ((symbol? (car x))
+        ((and (nnull? x) (symbol? (car x)))
          (with fun (ahash-ref serialize-hash (car x) skip)
            (fun x)))
         (else
-         (string-concatenate (md-map serialize-markdown* x)))))
+          (string-concatenate (md-map serialize-markdown* x)))))
 
 (define serialize-hash (make-ahash-table))
 (map (lambda (l) (apply (cut ahash-set! serialize-hash <> <>) l))
