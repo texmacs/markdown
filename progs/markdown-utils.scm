@@ -63,6 +63,58 @@
   (or (tm-in? st l)
       (nnull? (select st `(:* (:or ,@l))))))
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Helper functions for association lists
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(define-public (assoc-append alist key val)
+  "Appends @val to an existing @key creating a list of values, or inserts a pair"
+  (if (not (assoc key alist))
+      (assoc-set! alist key val)
+      (with curr (assoc-ref alist key)
+        (assoc-set! alist key
+                    (cond ((list? curr) (append curr (list val)))
+                          (else (list curr val)))))))
+
+(define-public (assoc-extend alist new)
+  "assoc-appends a list of (key . val) pairs to @alist"
+  (for-each (lambda (kv) (set! alist (assoc-append alist (car kv) (cdr kv)))) new)
+  alist)
+
+(define-public (assoc-append? alist key val)
+  "Appends only if val is non-empty string or list or otherwise evaluates to #t"
+  (if (cond ((string? val) (string-nnull? val))
+            ((list? val) (nnull? val))
+            (else val))
+      (assoc-append alist key val)
+      alist))
+
+(define-public (assoc-default alist key default)
+  "Retrieves the value for @key in @alist, defaulting to @default if not present"
+  (with curr (assoc key alist)
+    (if (== #f curr) default (cdr curr))))
+
+(define-public (assoc-remove-many alist keys)
+  "Removes all @keys from @alist"
+  (for-each (lambda (x) (set! alist (assoc-remove! alist x))) keys)
+  alist)
+
+(define (attr-val x)
+  (cond ((list? x) (string-recompose-space (md-map attr-val x)))
+        ((symbol? x) (symbol->string x))
+        ((number? x) (number->string x))
+        ((string? x) x)
+        ((boolean? x) (if x "true" "false"))
+        (else "")))
+
+(define-public (assoc->html-attr arg)
+  "Converts pairs (a . b) into html attribute strings \"a=\"b\". "
+  (let* ((key (symbol->string (car arg)))
+         (val (attr-val (cdr arg))))
+    (string-append key "=" (string-quote val))))
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Helper functions for string transformations
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

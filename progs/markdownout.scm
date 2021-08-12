@@ -218,26 +218,22 @@
          ltx))))
 
 (define (md-span content . args)
-  (with process-attr 
-      (lambda (x)
-        (if (not (pair? x)) x
-            (string-append (first x) "=" (string-quote (second x)))))
-    (string-append
-      "<span " 
-      (string-recompose-space (map process-attr args)) 
-      ">" 
-      (serialize-markdown* content)
-      "</span>")))
+  (string-append
+   "<span " 
+   (string-recompose-space (md-map assoc->html-attr args)) 
+   ">" 
+   (serialize-markdown* content)
+   "</span>"))
 
 (define (create-label-link label . extra-attrs)
   (with clean-label (sanitize-selector label)
-    (apply md-span "" (append `(("id" ,clean-label)) extra-attrs))))
+    (apply md-span "" (append `((id . ,clean-label)) extra-attrs))))
 
 (define (create-equation-link ltx)
   "Returns an empty anchor for every label in the latex line"
   (with matches (string-match "\\label\\{([^}]+)\\}" ltx)
     (if (not matches) ""
-      (create-label-link (match:substring matches 1) '("class" "tm-eqlabel")))))
+      (create-label-link (match:substring matches 1) '(class . "tm-eqlabel")))))
 
 (define (escape-md-symbols line)
   "Escapes special markdown chars at the beginning of lines"
@@ -342,7 +338,7 @@
          (content (string-trim-spaces content*)))
     (cond ((string-null? content) "")
           ((string-punctuation? content) content)
-          (else 
+          (else
             (string-concatenate
              (list left style content style right))))))
 
@@ -412,53 +408,23 @@
          (alt (if (list-2? payload) (second payload) "")))
     (string-append "![" alt "](" (force-string src) ")")))
 
-(define (assoc-update alist key val)
-  (with curr (assoc-ref alist key)
-    (assoc-set! alist key
-                (cond ((string-nnull? curr)
-                       (string-append curr " " val))
-                      ((list? curr)
-                       (append curr (list val)))
-                      (else (list curr val))))))
-
-(define (assoc-default alist key default)
-  (with curr (assoc key alist)
-    (if (== #f curr) default
-        (cdr curr))))
-
-(tm-define (md-figure type . extra-args)
-  "Vanilla md figure -> image"
-  ;TODO: check all figure types.
+(define (md-figure type . extra-args)
   (lambda (x)
-    ; FIXME: assoc-update with the extra-args
-    (let* ((args (append (cdr x) extra-args))
-           (body (if (assoc 'src args)
-                     `(image ,(assoc-ref args 'src)
-                             ,(assoc-default args 'body ""))
-                     (assoc-default args 'body ""))))
-        (serialize-markdown*
-         `(document
-            ,body
-            ; FIXME: missing args are #f, which we can't seralize
-            (concat ,(assoc-default args 'name "")
-                    ,(assoc-default args 'caption "")))))))
-
-(tm-define (md-figure type . extra-args)
-  (:require (hugo-extensions?))
-  (lambda (x)
-    ; FIXME: assoc-update with the extra-args
-    ; FIXME: convert body either in src parameter or whatever
-    (let* ((args (append (cdr x) extra-args))
-           (name (serialize-markdown* (assoc-default args 'name "")))
-           (caption (serialize-markdown* (assoc-default args 'caption "")))
-           (body (assoc-default args 'body ""))
-           (args* (assoc-update args 'class (md-get 'html-class)))
-           (args** (assoc-remove!
-                    (assoc-remove!
-                     (assoc-remove! args* 'body)
-                     'name)
-                    'caption)))
-      (md-hugo-shortcode `(,type ,@args**) body))))
+    (let* ((args (assoc-extend (cdr x) extra-args))
+           (name (assoc-default args 'name ""))
+           (caption (assoc-default args 'caption ""))
+           (body (assoc-default args 'body '())))
+      (if (hugo-extensions?)
+          (begin
+            (set! args (assoc-remove-many args '(body name caption)))
+            (set! args (assoc-append? args 'class (md-get 'html-class)))
+            (md-hugo-shortcode `(,type ,@args)
+                               `(document ,body (concat ,name ,caption))))
+          (with content (if (assoc 'src args)
+                            `(image ,(assoc-ref args 'src) ,body)
+                            body)
+            (serialize-markdown*
+             `(document ,body (concat ,name ,caption))))))))
 
 (define (md-footnote x)
   ; Input: (footnote (document [stuff here]))
@@ -470,7 +436,7 @@
         (string-append "[^" (number->string (md-get 'footnote-nr)) "]")))))
 
 (define (md-todo x)
-  (md-span (serialize-markdown* (cdr x)) `("class" "todo")))
+  (md-span (serialize-markdown* (cdr x)) `(class . "todo")))
 
 (define (md-block x)
   (with-md-globals 'num-line-breaks 1
@@ -493,18 +459,6 @@
           (map set-pair! (list->assoc (cdr x))))))
   "")
 
-(define (assoc->attr arg)
-  "Converts (a . b) into the string a=\"b\" "
-  (cond ((list-1? arg) (assoc->attr (car arg)))
-        ((pair? arg)
-         (string-append (assoc->attr (car arg))
-                        "=" (assoc->attr (cdr arg))))
-        ((symbol? arg) (symbol->string arg))
-        ((string? arg) (string-quote arg))
-        ((boolean? arg) 
-         (string-quote (if arg "true" "false")))
-        (else "")))
-
 (define (md-hugo-shortcode x . inner)
   (if (not (md-get 'disable-shortcodes))
       (let ((shortcode (symbol->string (car x)))
@@ -515,7 +469,7 @@
         (string-trim-both
          (string-append
           (string-recompose-space
-          `("{{<" ,shortcode ,@(map assoc->attr args) ">}}"))
+          `("{{<" ,shortcode ,@(map assoc->html-attr args) ">}}"))
           content)))
       ""))
 
