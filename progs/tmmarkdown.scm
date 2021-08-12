@@ -282,7 +282,7 @@ first empty label"
   ; (marginal-figure valign (image ...) (document "caption"))
   (lambda (x)
     (let* ((namer (if numbered? figure-name figure-name*))
-           (args `((name . ,(figure-name* "Figure"))
+           (args `((name . ,(namer "Figure"))
                    (valign . ,(md-marginal-style (tm-ref x 0)))
                    ,(parse-figure-body (tm-ref x 1))
                    (caption . ,(texmacs->markdown* (tm-ref x 2))))))
