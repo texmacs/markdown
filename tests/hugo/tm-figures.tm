@@ -20,6 +20,13 @@
     </big-figure>
   </html-class>
 
+  <\html-class|invertible>
+    <\big-figure|<md-alt-image|<image|some_path.eps|3cm|||>|<image|some_path_webformat.svg|3cm|||>><md-alt-image|<image|some_path.eps|3cm|||>|<image|some_path_webformat.svg|3cm|||>>>
+      A numbered figure with two images and md-alt-image tag, with html-class
+      invertible.
+    </big-figure>
+  </html-class>
+
   <section|Unnumbered and named figures>
 
   <\big-figure*|<image|some_path.eps|3cm|||>>
@@ -72,8 +79,6 @@
     A large named table.
   </render-big-figure>
 
-  \;
-
   <small-table|<tabular|<tformat|<table|<row|<cell|a>|<cell|b>>>>>|A small
   numbered table>.
 
@@ -94,22 +99,25 @@
 <\references>
   <\collection>
     <associate|auto-1|<tuple|1|?>>
-    <associate|auto-10|<tuple|3|?>>
-    <associate|auto-11|<tuple|4|?>>
+    <associate|auto-10|<tuple|2|?>>
+    <associate|auto-11|<tuple|3|?>>
     <associate|auto-12|<tuple|5|?>>
-    <associate|auto-13|<tuple|5|?>>
-    <associate|auto-14|<tuple|5|?>>
-    <associate|auto-15|<tuple|4|?>>
-    <associate|auto-16|<tuple|1|?>>
+    <associate|auto-13|<tuple|6|?>>
+    <associate|auto-14|<tuple|6|?>>
+    <associate|auto-15|<tuple|6|?>>
+    <associate|auto-16|<tuple|4|?>>
     <associate|auto-17|<tuple|1|?>>
     <associate|auto-18|<tuple|1|?>>
-    <associate|auto-19|<tuple|2|?>>
+    <associate|auto-19|<tuple|1|?>>
     <associate|auto-2|<tuple|1|?>>
     <associate|auto-20|<tuple|2|?>>
     <associate|auto-21|<tuple|2|?>>
+    <associate|auto-22|<tuple|2|?>>
+    <associate|auto-23|<tuple|2|?>>
+    <associate|auto-24|<tuple|2|?>>
     <associate|auto-3|<tuple|2|?>>
     <associate|auto-4|<tuple|3|?>>
-    <associate|auto-5|<tuple|2|?>>
+    <associate|auto-5|<tuple|4|?>>
     <associate|auto-6|<tuple|2|?>>
     <associate|auto-7|<tuple|2|?>>
     <associate|auto-8|<tuple|2|?>>
