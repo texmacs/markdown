@@ -137,7 +137,8 @@
       (begin (display* "Labels must be strings. Received: " s "\n") "")))
 
 (define-public (string-punctuation? s)
-  (not (string-match "\\w+" s)))
+  (with s* (tm-encoding->md-encoding s #t)
+    (not (string-match "\\w+" s*))))
 
 (define-public (string-recompose-space s)
   (string-recompose s " "))

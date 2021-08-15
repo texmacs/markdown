@@ -502,7 +502,7 @@
 (define (md-explain-macro x)
   ; FIXME: this will break with nested macros (tt style will be interrupted)
   (md-style
-   `(tt ,(string-append 
+   `(tt ,(string-append
           "<" (string-recompose (md-map serialize-markdown* (cdr x)) "|" ) ">"))))
 
 (define (md-tmdoc-copyright x)
