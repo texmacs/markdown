@@ -1,11 +1,14 @@
+Forward references: one [(1)](#eq-one), three [(3)](#eq-three), triangle 
+[($\triangle$)](#eq-triangle).
+
 A numbered equation:
 
-<span id="some-label" class="tm-eqlabel"></span>
+<span id="eq-one" class="tm-eqlabel"></span>
 \begin{equation}
-  f (x) \equiv c. \label{some-label}\tag{1}
+  f (x) \equiv c. \label{eq-one}\tag{1}
 \end{equation}
 
-This reference will have a link to Equation [(1)](#some-label).
+A reference to it: [(1)](#eq-one).
 
 An unnumbered equation:
 
@@ -19,11 +22,19 @@ A numbered equation without label:
 
 Another numbered equation:
 
-<span id="another-label" class="tm-eqlabel"></span>
+<span id="eq-three" class="tm-eqlabel"></span>
 \begin{equation}
-  f (x) \equiv c. \label{another-label}\tag{3}
+  f (x) \equiv c. \label{eq-three}\tag{3}
 \end{equation}
 
-This: [(3)](#another-label) should be equal to this: (3).
+This reference to it: [(3)](#eq-three) should render as: (3).
 
+A custom label for an equation using `equation-lab`:
 
+<span id="eq-triangle"></span>
+\begin{equation}
+  a = b \label{eq-triangle}\tag{$\triangle$}
+\end{equation}
+
+All references, again: one [(1)](#eq-one), three [(3)](#eq-three), triangle 
+[($\triangle$)](#eq-triangle).
