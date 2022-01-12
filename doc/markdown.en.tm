@@ -64,6 +64,26 @@
 
   <section|Features>
 
+  <subsection|Additional <TeXmacs> macros>
+
+  Use the style package <tt|markdown.ts> with <menu|Document|Style|Add
+  package|Markdown|markdown> to enable:
+
+  <\itemize>
+    <item>Support for alternate image formats between <TeXmacs> and markdown
+    via <explain-macro|md-alt-image|tm-image|md-image>. This is useful e.g.
+    to provide SVG and EPS/PDF versions of images for print and web
+    respectively.
+
+    <item>Macros for labels in equation arrays. Using positioning tricks with
+    <explain-macro|htab> results in <LaTeX> code that <name|MathJax> does not
+    support, namely <tt|\\hfill>. For this reason, we provide two macros
+    <explain-macro|eqnarray-lab|lab> and <explain-macro|eqnarray-lab*|lab>
+    which allow positioning of equation labels to the right in equation
+    arrays. The first one also adds a <explain-macro|label|eq:lab> to be used
+    in the document.
+  </itemize>
+
   <subsection|Extensions to vanilla markdown>
 
   Besides standard Markdown, this plugin supports the following:
@@ -90,22 +110,25 @@
   converted from <TeXmacs>, including setting frontmatter values and
   extensions like footnotes and <strike-through|striked through text>.
 
-  Setting values for the frontmatter is suported via a dedicated macro
-  defined in the style package <code*|hugo.ts>. To use it go to
-  <menu|Document|Style|Add package|Markdown|hugo> or use the icon in the
-  focus bar.
+  Use the style package <tt|hugo.ts> with <menu|Document|Style|Add
+  package|Markdown|hugo> to enable:
 
-  Now you can use the macro <explain-macro|hugo-front> to input any number of
-  <verbatim|key\|value> pairs as arguments, one argument each. That is:
-  insert the tag <explain-macro|hugo-front>, then use structured insert right
-  to add two arguments and use the first for the key and the second for the
-  value. Repeat as needed. It is possible to use strings, booleans
-  (<verbatim|true>, <verbatim|false>) or dates (insert with
-  <explain-macro|date>). Additionally, the macro <explain-macro|pdf-name>
-  inserts the name of the file with <verbatim|.pdf> appended. To enter a
-  list, input <explain-macro|tuple> as the value and use structured insert
-  right to add items. To input a dictionary, use <explain-macro|dict> and
-  again use structured insert to create tuples of <verbatim|key\|value>.
+  <\itemize>
+    <item>All of the markdown extensions above
+
+    <item>Setting of values for the frontmatter. With
+    <explain-macro|hugo-front> one can input any number of
+    <verbatim|key\|value> pairs as arguments, one argument each. That is:
+    insert the tag <explain-macro|hugo-front>, then use structured insert
+    right to add two arguments and use the first for the key and the second
+    for the value. Repeat as needed. It is possible to use strings, booleans
+    (<verbatim|true>, <verbatim|false>) or dates (insert with
+    <explain-macro|date>). Additionally, the macro <explain-macro|pdf-name>
+    inserts the name of the file with <verbatim|.pdf> appended. To enter a
+    list, input <explain-macro|tuple> as the value and use structured insert
+    right to add items. To input a dictionary, use <explain-macro|dict> and
+    again use structured insert to create tuples of <verbatim|key\|value>.
+  </itemize>
 
   <subsubsection|Supported shortcodes>
 
@@ -144,8 +167,9 @@
     see stack traces and such in case you are running into problems.
 
     <item>EPS and PDF images are not supported by browsers. As a workaround
-    allowing to have both, use <explain-macro|md-alt-image>. The first
-    argument is for <TeXmacs> and the second one for the markdown export.
+    allowing to have both, use <explain-macro|md-alt-image> in package
+    <tt|markdown.ts> as explained above. The first argument is for <TeXmacs>
+    and the second one for the markdown export.
 
     <item>The converter supports only one style. For instance all
     environments have emphasized bodies and bold names,
