@@ -4,13 +4,13 @@
 
 <\body>
   <active*|<\src-title>
-    <src-package|hugo|0.3>
+    <src-package|markdown|0.2>
 
     <\src-purpose>
-      Helper macros for the Hugo extensions to the markdown plugin
+      Helper macros for the markdown plugin
     </src-purpose>
 
-    <src-copyright|2021|Miguel de Benito Delgado>
+    <src-copyright|2022|Miguel de Benito Delgado>
 
     <\src-license>
       This software falls under the <hlink|GNU general public license,
@@ -20,21 +20,21 @@
     </src-license>
   </src-title>>
 
-  <use-package|markdown>
+  -- Alternate images for markdown and <TeXmacs> (first arg is used in
+  markdown)
+
+  <assign|md-alt-image|<macro|img|alt-img|<arg|img>>>
 
   <\active*>
     <\src-comment>
-      Frontmatter utilities
+      Labels for equation arrays. Use on the rightmost column to add just
+      text or text and labels to refer to.
     </src-comment>
   </active*>
 
-  <assign|hugo-front|<xmacro|args|<flag|frontmatter parameters|orange>>>
+  <assign|eqnarray-lab|<macro|lab|<htab|5mm><set-binding|<arg|lab>><around*|(|<arg|lab>|)><label|<merge|eq:|<arg|lab>>><flag|<merge|eq:|<arg|lab>>|blue>>>
 
-  <assign|dict|<xmacro|kvs|dict (to do: display keys and values)>>
-
-  <assign|pdf-name|<macro|<use-module|(markdown-utils)><extern|download-name>>>
-
-  \;
+  <assign|eqnarray-lab*|<macro|lab|<htab|5mm><around*|(|<arg|lab>|)>>>
 </body>
 
 <\initial>

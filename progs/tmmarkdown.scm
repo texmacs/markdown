@@ -282,7 +282,7 @@ first empty label"
   ; (marginal-figure valign (image ...) (document "caption"))
   (lambda (x)
     (let* ((namer (if numbered? figure-name figure-name*))
-           (args `((name . ,(figure-name* "Figure"))
+           (args `((name . ,(namer "Figure"))
                    (valign . ,(md-marginal-style (tm-ref x 0)))
                    ,(parse-figure-body (tm-ref x 1))
                    (caption . ,(texmacs->markdown* (tm-ref x 2))))))
@@ -364,6 +364,18 @@ first empty label"
      ((}) . (rbrace))
      ((left\{) . (left\lbrace))
      ((right\}) . (right\rbrace))
+     ; plugin extension: eqnarray-lab* and eqnarray-lab are used in equation
+     ; arrays to add right-aligned labels. The prefix eq: is automatically added
+     ; (see the style file markdown.ts)
+     (,(cut func? <> 'eqnarraylabstar) .
+       ,(lambda (x)
+        `(tag ,(cadadr x))))
+     (,(cut func? <> 'eqnarraylab) .
+       ,(lambda (x)
+         (let ((label (sanitize-selector (string-append "eq:" (cadadr x))))
+               (tag (cadadr x)))
+           (ahash-set! labels label tag)
+           `(!concat (label ,label) (tag ,tag)))))
      (,(cut func? <> 'ensuremath) . ,cadr)
      (,(cut func? <> '!sub) .
        ,(lambda (x) (cons "\\_" (md-math* (cdr x)))))

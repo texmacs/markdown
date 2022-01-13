@@ -386,11 +386,10 @@
   "Custom hugo {{<cite>}} shortcode"
   (if (not (hugo-extensions?)) ""
       (with citations 
-          (map force-string
-               (filter (lambda (x) (and (string? x) (not (string-null? x))))
-                       (cdr x)))
+          (filter (lambda (x) (and (string? x) (not (string-null? x)))) (cdr x))
         (md-set 'refs (append (md-get 'refs) citations))
-        (md-hugo-shortcode (cons 'cite citations)))))
+        (md-hugo-shortcode 
+         (cons 'cite (map (lambda (s) `(#f . ,s)) citations))))))
 
 (define (md-cite-detail x)
   (if (not (hugo-extensions?)) ""
@@ -485,11 +484,11 @@
 
 (define (md-sidenote-sub x numbered?)
   (if (hugo-extensions?)
-      (let ((numbered (if numbered? '((numbered "numbered")) '()))
+      (let ((numbered (if numbered? '((numbered . "numbered")) '()))
             (args (cdr x)))
         (md-hugo-shortcode
-         (append `(sidenote (halign ,(md-marginal-style (first args)))
-                            (valign ,(md-marginal-style (second args))))
+         (append `(sidenote (halign . ,(md-marginal-style (first args)))
+                            (valign . ,(md-marginal-style (second args))))
                  numbered)
          (third args)))
       (serialize-markdown* `(footnote ,(third (cdr x))))))
@@ -503,7 +502,7 @@
 (define (md-explain-macro x)
   ; FIXME: this will break with nested macros (tt style will be interrupted)
   (md-style
-   `(tt ,(string-append 
+   `(tt ,(string-append
           "<" (string-recompose (md-map serialize-markdown* (cdr x)) "|" ) ">"))))
 
 (define (md-tmdoc-copyright x)

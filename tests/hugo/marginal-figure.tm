@@ -1,4 +1,4 @@
-<TeXmacs|1.99.20>
+<TeXmacs|2.1>
 
 <style|<tuple|generic|aai-tfl>>
 
@@ -7,9 +7,12 @@
   regular measure spaces? Recently, there has been much interest in the
   computation of partially empty arrows. In [14], the authors address the
   surjectivity<marginal-figure|t|<image|NaiveMCShapley1000itersBoston.png|50mm|||>|This
-  is a numbered margin figure with caption> of unconditionally regular
+  is a numbered marginal figure with caption> of unconditionally regular
   functors.
 </body>
 
-<initial|<\collection>
-</collection>>
+<\initial>
+  <\collection>
+    <associate|preamble|false>
+  </collection>
+</initial>

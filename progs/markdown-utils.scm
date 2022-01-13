@@ -109,10 +109,12 @@
         (else "")))
 
 (define-public (assoc->html-attr arg)
-  "Converts pairs (a . b) into html attribute strings \"a=\"b\". "
-  (let* ((key (symbol->string (car arg)))
+  "Converts pairs (a . b) into html attribute strings \"a=\"b\". Set a to #f to only output \"b\"."
+  (let* ((key (and (symbol? (car arg)) (symbol->string (car arg))))
          (val (attr-val (cdr arg))))
-    (string-append key "=" (string-quote val))))
+    (if key
+        (string-append key "=" (string-quote val))
+        (string-quote val))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -135,7 +137,8 @@
       (begin (display* "Labels must be strings. Received: " s "\n") "")))
 
 (define-public (string-punctuation? s)
-  (not (string-match "\\w+" s)))
+  (with s* (tm-encoding->md-encoding s #t)
+    (not (string-match "\\w+" s*))))
 
 (define-public (string-recompose-space s)
   (string-recompose s " "))

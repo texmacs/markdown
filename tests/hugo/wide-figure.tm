@@ -1,13 +1,12 @@
-<TeXmacs|1.99.20>
+<TeXmacs|2.1>
 
 <style|<tuple|generic|aai-tfl>>
 
 <\body>
-  Some text and a wide figure
+  <wide-figure|This is the body|This is the caption>
 
-  <wide-figure|This is the image|The image has a caption>
-
-  \;
+  <wide-figure|<image|some_image.eps||||>|This figure has an image. This is
+  the caption>
 </body>
 
 <\initial>
