@@ -61,7 +61,11 @@ package -> Markdown -> markdown` to enable:
   `\hfill`. For this reason, we provide two macros 
   `<eqnarray-lab|lab>` and `<eqnarray-lab\*|lab>` which allow 
   positioning of equation labels to the right in equation arrays. The first one 
-  also adds a `<label|eq:lab>` to be used in the document.
+  also adds a `<label|eq:lab>` to be used in the document as 
+  `<reference|eq:lab>`, note the prefix `eq:`.
+
+  Symbols (e.g. $\Delta$ or $\star$) are not supported for these labels as of 
+  v0.6.1 of the plugin.
 
 ## Extensions to vanilla markdown
 

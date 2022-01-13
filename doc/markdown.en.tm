@@ -81,7 +81,11 @@
     <explain-macro|eqnarray-lab|lab> and <explain-macro|eqnarray-lab*|lab>
     which allow positioning of equation labels to the right in equation
     arrays. The first one also adds a <explain-macro|label|eq:lab> to be used
-    in the document.
+    in the document as <explain-macro|reference|eq:lab>, note the prefix
+    <tt|eq:>.
+
+    Symbols (e.g. <math|\<Delta\>> or <math|\<star\>>) are not supported for
+    these labels as of v0.6.1 of the plugin.
   </itemize>
 
   <subsection|Extensions to vanilla markdown>
