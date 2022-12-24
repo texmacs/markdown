@@ -167,6 +167,7 @@
   ; in the document. So we split concats in two lines
   (if (and (>= (length x) 3)
            (tuple? (second x))
+           (>= (length (second x)) 2)
            (in? (car (second x)) '(h1 h2 h3)))
       (with-md-globals 'num-line-breaks 1
         (serialize-markdown* `(document ,@(cdr x))))
