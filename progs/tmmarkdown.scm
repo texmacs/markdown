@@ -591,6 +591,11 @@ first empty label"
            (list 'tmdoc-title (count (change-to 'h1) 'h1))
            (list 'tmdoc-copyright keep)
            (list 'tmdoc-license (change-to 'em))
+           
+           (list 'page-break drop)
+           (list 'page-break* drop)
+           (list 'no-break-here drop)
+           (list 'no-break-here* drop)
            ))
 
 ;; Copy from smart ref table
