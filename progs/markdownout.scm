@@ -208,15 +208,25 @@
   (serialize-markdown*
    `(concat " " (strong (concat "(" ,(cadr x) ")")) " ")))
 
+(define (escape-md-symbols line)
+  "Escapes special markdown chars at the beginning of lines"
+  (with matches (string-match "^( *)([-+*>]|\\d\\.)(.*)$" line)
+    (if (not matches) line
+        (string-append (match:substring matches 1)
+                       "\\"
+                       (match:substring matches 2)
+                       (match:substring matches 3)))))
+
 (define (md-math x . leave-newlines?)
  "Takes a latex stree @x, and returns a valid MathJax-compatible LaTeX string"
  ; Set line length for latex output
  (with save (output-set-line-length (or (md-get 'paragraph-width) 9999))
-   (with ltx (serialize-latex (second x))
+   (with ltx (map escape-md-symbols 
+                  (string-split (serialize-latex (second x)) #\newline))
      (output-set-line-length save)
-     (if (null? leave-newlines?)
-         (string-replace ltx "\n" " ")
-         ltx))))
+     (if leave-newlines? 
+         (string-join ltx "\n")
+         (string-join ltx " ")))))
 
 (define (md-span content . args)
   (string-append
@@ -236,21 +246,12 @@
     (if (not matches) ""
       (create-label-link (match:substring matches 1) '(class . "tm-eqlabel")))))
 
-(define (escape-md-symbols line)
-  "Escapes special markdown chars at the beginning of lines"
-  (with matches (string-match "^( *)([-+*>]|\\d\\.)(.*)$" line)
-    (if (not matches) line
-        (string-append (match:substring matches 1)
-                       "\\"
-                       (match:substring matches 2)
-                       (match:substring matches 3)))))
-
 (define (md-equation x)
   (let*  ((s (md-math x (number? (md-get 'paragraph-width))))
           (s1 (string-replace s "\\[" "\\\\["))
           (s2 (string-replace s1 "\\]" "\\\\]"))
-          (s3 (string-split s2 #\newline))
-          (s4 (map escape-md-symbols s3))
+          (s4 (string-split s2 #\newline))
+          ;(s4 (map escape-md-symbols s3))
           (anchors (string-concatenate (map create-equation-link s4)))
           (lines (if (string-null? anchors) s4 (cons anchors s4))))
      (with-md-globals 'num-line-breaks 1
