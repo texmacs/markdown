@@ -357,9 +357,7 @@ first empty label"
 (define (md-math* t)
   (replace-fun-list t
    `((mathbbm . mathbb)
-     ("-" . "\\-")
      ("*" . "\\*")
-     (":" . "\\:")
      (({) . (lbrace))
      ((}) . (rbrace))
      ((left\{) . (left\lbrace))

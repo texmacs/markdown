@@ -210,23 +210,25 @@
 
 (define (escape-md-symbols line)
   "Escapes special markdown chars at the beginning of lines"
-  (with matches (string-match "^( *)([-+*>]|\\d\\.)(.*)$" line)
+  ; This is used for equations since they are rendered as `document,
+  ; which is not processed by adjust-width, where these symbols are
+  ; taken into account when splitting words
+  (with matches (regexp-exec md-special-line-start-regex line)
     (if (not matches) line
         (string-append (match:substring matches 1)
                        "\\"
                        (match:substring matches 2)
                        (match:substring matches 3)))))
 
-(define (md-math x . leave-newlines?)
+(define (md-math x . paragraph-width)
  "Takes a latex stree @x, and returns a valid MathJax-compatible LaTeX string"
- ; Set line length for latex output
- (with save (output-set-line-length (or (md-get 'paragraph-width) 9999))
-   (with ltx (map escape-md-symbols 
-                  (string-split (serialize-latex (second x)) #\newline))
+ ; Set line length for latex output. Used for display math only (equations):
+ ; inline math is rendered as concat which is adjusted later.
+ (with save (output-set-line-length
+             (if (nnull? paragraph-width) (car paragraph-width) 9999))
+   (with ltx (serialize-latex (second x))
      (output-set-line-length save)
-     (if leave-newlines? 
-         (string-join ltx "\n")
-         (string-join ltx " ")))))
+     (if (nnull? paragraph-width) ltx (string-replace ltx "\n" " ")))))
 
 (define (md-span content . args)
   (string-append
@@ -247,13 +249,13 @@
       (create-label-link (match:substring matches 1) '(class . "tm-eqlabel")))))
 
 (define (md-equation x)
-  (let*  ((s (md-math x (number? (md-get 'paragraph-width))))
-          (s1 (string-replace s "\\[" "\\\\["))
-          (s2 (string-replace s1 "\\]" "\\\\]"))
-          (s4 (string-split s2 #\newline))
-          ;(s4 (map escape-md-symbols s3))
-          (anchors (string-concatenate (map create-equation-link s4)))
-          (lines (if (string-null? anchors) s4 (cons anchors s4))))
+  (let*  ((s1 (md-math x (md-get 'paragraph-width)))
+          (s2 (string-replace s1 "\\[" "\\\\["))
+          (s3 (string-replace s2 "\\]" "\\\\]"))
+          (s4 (string-split s3 #\newline))
+          (s5 (map escape-md-symbols s4))
+          (anchors (string-concatenate (map create-equation-link s5)))
+          (lines (if (string-null? anchors) s5 (cons anchors s5))))
      (with-md-globals 'num-line-breaks 1
        (serialize-markdown* `(document ,@lines)))))
 
