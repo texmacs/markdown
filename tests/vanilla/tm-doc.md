@@ -13,7 +13,8 @@ This is a `tag`.
 
 This is an explained macro `<name|argument1|argument2>`.
 
-Note that nested explained macros will break.
+These are two nested explained macros 
+`<name|argument1|<name|argument1|argument2>>`.
 
 Done with TeXmacs.
 

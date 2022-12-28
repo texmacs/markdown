@@ -19,7 +19,7 @@
 
   This is an explained macro <explain-macro|name|argument1|argument2>.
 
-  Note that nested explained macros will break.
+  These are two nested explained macros <explain-macro|name|argument1|<explain-macro|name|argument1|argument2>>.
 
   Done with <TeXmacs>.
 

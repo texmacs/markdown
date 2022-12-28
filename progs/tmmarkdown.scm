@@ -357,9 +357,7 @@ first empty label"
 (define (md-math* t)
   (replace-fun-list t
    `((mathbbm . mathbb)
-     ("-" . "\\-")
      ("*" . "\\*")
-     (":" . "\\:")
      (({) . (lbrace))
      ((}) . (rbrace))
      ((left\{) . (left\lbrace))
@@ -517,7 +515,9 @@ first empty label"
            (list 'subsubsection (count (make-header 'h3) 'h3))
            (list 'subsubsection* (count-not (change-to 'h3) 'h3))
            (list 'paragraph (change-to 'para))
+           (list 'paragraph* (change-to 'para))
            (list 'subparagraph (change-to 'para))
+           (list 'subparagraph* (change-to 'para))
            (list 'with parse-with)
            (list 'itemize keep)
            (list 'itemize-minus (change-to 'itemize))
@@ -591,6 +591,11 @@ first empty label"
            (list 'tmdoc-title (count (change-to 'h1) 'h1))
            (list 'tmdoc-copyright keep)
            (list 'tmdoc-license (change-to 'em))
+           
+           (list 'page-break drop)
+           (list 'page-break* drop)
+           (list 'no-break-here drop)
+           (list 'no-break-here* drop)
            ))
 
 ;; Copy from smart ref table

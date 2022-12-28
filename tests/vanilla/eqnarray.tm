@@ -1,6 +1,6 @@
 <TeXmacs|2.1>
 
-<style|generic>
+<style|<tuple|generic|markdown>>
 
 <\body>
   This is an equation array with three rows.\ 
@@ -13,11 +13,15 @@
 
   This is a reference to the first equation in the array: <eqref|eq:one>. And
   this is a reference to the last one: <eqref|eq:three>.
-</body>
 
-<\initial>
-  <\collection>
-    <associate|page-medium|paper>
-    <associate|save-aux|false>
-  </collection>
-</initial>
+  This is an equation array with three rows and custom labels using
+  <tt|eqnarray-lab> and <tt|eqnarray-lab*>, from the Markdown package
+
+  <\eqnarray*>
+    <tformat|<table|<row|<cell|x<rsup|\<star\>>>|<cell|=>|<cell|<below|argmin|x\<in\><wide|\<Omega\>|\<bar\>>>
+    f<around*|(|x|)><eq-number><label|eq:problem-opt>>>|<row|<cell|>|<cell|<text|s.t.>>|<cell|x\<geqslant\>0,<eqnarray-lab*|LO>>>|<row|<cell|>|<cell|and>|<cell|x\<leqslant\>\<delta\>.<eqnarray-lab|UP>>>>>
+  </eqnarray*>
+
+  We can reference the second condition as <eqref|eq:UP>. Note that symbols
+  are not allowed as of version 0.6.1.
+</body>
