@@ -378,11 +378,13 @@
 (define (md-style x)
   (let* ((st (car x))
          (content (cadr x)))
-    (cond ((tm-in? content md-stylable-tag-list)
-           (with styled (add-style-to st content)
-             (serialize-markdown* styled)))
+    (cond ((md-get 'disable-styles)
+           (serialize-markdown* content))
           ((tm-in? content md-style-drop-tag-list)
            (serialize-markdown* content))
+          ((tm-in? content md-stylable-tag-list)
+           (with styled (add-style-to st content)
+             (serialize-markdown* styled)))
           (else
             (md-style-inner st content)))))
 
@@ -504,10 +506,10 @@
   (md-sidenote-sub x #f))
 
 (define (md-explain-macro x)
-  ; FIXME: this will break with nested macros (tt style will be interrupted)
-  (md-style
-   `(tt ,(string-append
-          "<" (string-recompose (md-map serialize-markdown* (cdr x)) "|" ) ">"))))
+  (let ((inner (with-md-globals 'disable-styles #t 
+                 (md-map serialize-markdown* (cdr x)))))
+    (md-style
+      `(tt ,(string-append "<" (string-recompose inner "|") ">")))))
 
 (define (md-tmdoc-copyright x)
   (with args (cdr x)
@@ -650,6 +652,7 @@
       (paragraph-width . ,(get-preference "texmacs->markdown:paragraph-width"))
       (first-indent . "")
       (disable-shortcodes . #f)
+      (disable-styles . #f)
       (html-class . "")
       (indent . "")
       (item . "* ")
