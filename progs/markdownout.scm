@@ -167,6 +167,7 @@
   ; in the document. So we split concats in two lines
   (if (and (>= (length x) 3)
            (tuple? (second x))
+           (>= (length (second x)) 2)
            (in? (car (second x)) '(h1 h2 h3)))
       (with-md-globals 'num-line-breaks 1
         (serialize-markdown* `(document ,@(cdr x))))
@@ -207,15 +208,27 @@
   (serialize-markdown*
    `(concat " " (strong (concat "(" ,(cadr x) ")")) " ")))
 
-(define (md-math x . leave-newlines?)
+(define (escape-md-symbols line)
+  "Escapes special markdown chars at the beginning of lines"
+  ; This is used for equations since they are rendered as `document,
+  ; which is not processed by adjust-width, where these symbols are
+  ; taken into account when splitting words
+  (with matches (regexp-exec md-special-line-start-regex line)
+    (if (not matches) line
+        (string-append (match:substring matches 1)
+                       "\\"
+                       (match:substring matches 2)
+                       (match:substring matches 3)))))
+
+(define (md-math x . paragraph-width)
  "Takes a latex stree @x, and returns a valid MathJax-compatible LaTeX string"
- ; Set line length for latex output
- (with save (output-set-line-length (or (md-get 'paragraph-width) 9999))
+ ; Set line length for latex output. Used for display math only (equations):
+ ; inline math is rendered as concat which is adjusted later.
+ (with save (output-set-line-length
+             (if (nnull? paragraph-width) (car paragraph-width) 9999))
    (with ltx (serialize-latex (second x))
      (output-set-line-length save)
-     (if (null? leave-newlines?)
-         (string-replace ltx "\n" " ")
-         ltx))))
+     (if (nnull? paragraph-width) ltx (string-replace ltx "\n" " ")))))
 
 (define (md-span content . args)
   (string-append
@@ -235,23 +248,14 @@
     (if (not matches) ""
       (create-label-link (match:substring matches 1) '(class . "tm-eqlabel")))))
 
-(define (escape-md-symbols line)
-  "Escapes special markdown chars at the beginning of lines"
-  (with matches (string-match "^( *)([-+*>]|\\d\\.)(.*)$" line)
-    (if (not matches) line
-        (string-append (match:substring matches 1)
-                       "\\"
-                       (match:substring matches 2)
-                       (match:substring matches 3)))))
-
 (define (md-equation x)
-  (let*  ((s (md-math x (number? (md-get 'paragraph-width))))
-          (s1 (string-replace s "\\[" "\\\\["))
-          (s2 (string-replace s1 "\\]" "\\\\]"))
-          (s3 (string-split s2 #\newline))
-          (s4 (map escape-md-symbols s3))
-          (anchors (string-concatenate (map create-equation-link s4)))
-          (lines (if (string-null? anchors) s4 (cons anchors s4))))
+  (let*  ((s1 (md-math x (md-get 'paragraph-width)))
+          (s2 (string-replace s1 "\\[" "\\\\["))
+          (s3 (string-replace s2 "\\]" "\\\\]"))
+          (s4 (string-split s3 #\newline))
+          (s5 (map escape-md-symbols s4))
+          (anchors (string-concatenate (map create-equation-link s5)))
+          (lines (if (string-null? anchors) s5 (cons anchors s5))))
      (with-md-globals 'num-line-breaks 1
        (serialize-markdown* `(document ,@lines)))))
 
@@ -374,11 +378,13 @@
 (define (md-style x)
   (let* ((st (car x))
          (content (cadr x)))
-    (cond ((tm-in? content md-stylable-tag-list)
-           (with styled (add-style-to st content)
-             (serialize-markdown* styled)))
+    (cond ((md-get 'disable-styles)
+           (serialize-markdown* content))
           ((tm-in? content md-style-drop-tag-list)
            (serialize-markdown* content))
+          ((tm-in? content md-stylable-tag-list)
+           (with styled (add-style-to st content)
+             (serialize-markdown* styled)))
           (else
             (md-style-inner st content)))))
 
@@ -500,10 +506,10 @@
   (md-sidenote-sub x #f))
 
 (define (md-explain-macro x)
-  ; FIXME: this will break with nested macros (tt style will be interrupted)
-  (md-style
-   `(tt ,(string-append 
-          "<" (string-recompose (md-map serialize-markdown* (cdr x)) "|" ) ">"))))
+  (let ((inner (with-md-globals 'disable-styles #t 
+                 (md-map serialize-markdown* (cdr x)))))
+    (md-style
+      `(tt ,(string-append "<" (string-recompose inner "|") ">")))))
 
 (define (md-tmdoc-copyright x)
   (with args (cdr x)
@@ -646,6 +652,7 @@
       (paragraph-width . ,(get-preference "texmacs->markdown:paragraph-width"))
       (first-indent . "")
       (disable-shortcodes . #f)
+      (disable-styles . #f)
       (html-class . "")
       (indent . "")
       (item . "* ")

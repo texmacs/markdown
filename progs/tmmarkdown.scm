@@ -357,13 +357,23 @@ first empty label"
 (define (md-math* t)
   (replace-fun-list t
    `((mathbbm . mathbb)
-     ("-" . "\\-")
      ("*" . "\\*")
-     (":" . "\\:")
      (({) . (lbrace))
      ((}) . (rbrace))
      ((left\{) . (left\lbrace))
      ((right\}) . (right\rbrace))
+     ; plugin extension: eqnarray-lab* and eqnarray-lab are used in equation
+     ; arrays to add right-aligned labels. The prefix eq: is automatically added
+     ; (see the style file markdown.ts)
+     (,(cut func? <> 'eqnarraylabstar) .
+       ,(lambda (x)
+        `(tag ,(cadadr x))))
+     (,(cut func? <> 'eqnarraylab) .
+       ,(lambda (x)
+         (let ((label (sanitize-selector (string-append "eq:" (cadadr x))))
+               (tag (cadadr x)))
+           (ahash-set! labels label tag)
+           `(!concat (label ,label) (tag ,tag)))))
      (,(cut func? <> 'ensuremath) . ,cadr)
      (,(cut func? <> '!sub) .
        ,(lambda (x) (cons "\\_" (md-math* (cdr x)))))
@@ -505,7 +515,9 @@ first empty label"
            (list 'subsubsection (count (make-header 'h3) 'h3))
            (list 'subsubsection* (count-not (change-to 'h3) 'h3))
            (list 'paragraph (change-to 'para))
+           (list 'paragraph* (change-to 'para))
            (list 'subparagraph (change-to 'para))
+           (list 'subparagraph* (change-to 'para))
            (list 'with parse-with)
            (list 'itemize keep)
            (list 'itemize-minus (change-to 'itemize))
@@ -579,6 +591,11 @@ first empty label"
            (list 'tmdoc-title (count (change-to 'h1) 'h1))
            (list 'tmdoc-copyright keep)
            (list 'tmdoc-license (change-to 'em))
+           
+           (list 'page-break drop)
+           (list 'page-break* drop)
+           (list 'no-break-here drop)
+           (list 'no-break-here* drop)
            ))
 
 ;; Copy from smart ref table

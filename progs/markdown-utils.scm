@@ -137,7 +137,8 @@
       (begin (display* "Labels must be strings. Received: " s "\n") "")))
 
 (define-public (string-punctuation? s)
-  (not (string-match "\\w+" s)))
+  (with s* (tm-encoding->md-encoding s #t)
+    (not (string-match "\\w+" s*))))
 
 (define-public (string-recompose-space s)
   (string-recompose s " "))
@@ -155,18 +156,22 @@
    (map (cut tm-encoding->md-encoding <> (md-get 'file?))
         (string-split s #\newline))))
 
-(define md-no-first-chars (string->char-set ">-*123456789:"))
+(define-public md-special-line-start-regex
+  (make-regexp "^( *)([-+*>:]|[0123456789]\\.)(.*)$"))
+
+(define (md-special-line-start? s)
+  (with matches (regexp-exec md-special-line-start-regex s)
+    (not (not matches))))  ; HACK: convert to bool
 
 (define (maybe-join match prev)
+  "Whether to join @match to @prev words to avoid lines splitting at @match"
   (with m (match:substring match 0)
-    (if (and (list>0? prev)
-             (> (string-length m) 0)
-             (string-every md-no-first-chars m 0 1))
+    (if (and (list>0? prev) (md-special-line-start? m))
         (cons (string-append (car prev) " " m) (cdr prev))
         (cons m prev))))
 
 (define (safe-split s)
-  "Splits words in @s except when a new word would start with a special char"
+  "Splits @s byw words except when a new word would start with special chars"
   ; HACK: srfi chokes on cork chars, e.g. the backquote \x00 is interpreted
   ; as #\nil, so we need to convert back and forth
   (with s* (tm-encoding->md-encoding s #t)
