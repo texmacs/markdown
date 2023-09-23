@@ -413,6 +413,17 @@ first empty label"
 (define (parse-verbatim x)
   (cons 'tt (cdr x)))
 
+(define (parse-specific x)
+  (let* ((medium (tm->string (tm-ref x 0)))
+         (content (tm-ref x 1)))
+    (cond ((== medium "texmacs") (drop content))
+          ((== medium "latex") (drop content))
+          ((== medium "html") (drop content))
+          ((== medium "markdown") (texmacs->markdown* content))
+          ((== medium "screen") (drop content))
+          ((== medium "printer") (drop content))
+          (else (error "Invalid medium for specific tag: " medium)))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Dispatch
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -556,6 +567,7 @@ first empty label"
       (list 'smart-ref parse-smart-reference)
       (list 'solution (count parse-plain-env 'env))
       (list 'solution* parse-plain-env*)
+      (list 'specific parse-specific)
       (list 'specified-algorithm (count parse-specified-alg 'alg))
       (list 'specified-algorithm* parse-specified-alg*)
       (list 'src-var (skip-to))
