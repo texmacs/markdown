@@ -15,11 +15,11 @@ There might still be some code very specific to those sites, YMMV.
 
 ## Setup
 
-Clone this repository into your `~/.TeXmacs/plugins` directory as `markdown`. 
-For Linux / OSX this is:
+Clone this repository into your `~/.TeXmacs/plugins` directory as `markdown`
+and checkout the `master` branch. For Linux / OSX this is:
 
 ```shell
-git clone https://github.com/texmacs/markdown.git ~/.TeXmacs/plugins/markdown
+git clone -b master https://github.com/texmacs/markdown.git ~/.TeXmacs/plugins/markdown
 ```
 
 For Windows, the path (usually?) is
@@ -56,6 +56,8 @@ package -> Markdown -> markdown` to enable:
 * Support for alternate image formats between TeXmacs and markdown via 
   `<md-alt-image|tm-image|md-image>`. This is useful e.g. to provide 
   SVG and EPS/PDF versions of images for print and web respectively.
+  The same effect can be achieved with `<specific|markdown|...>` and 
+  `<specific|texmacs|...>`.
 * Macros for labels in equation arrays. Using positioning tricks with 
   `<htab>` results in LaTeX code that MathJax does not support, namely 
   `\hfill`. For this reason, we provide two macros 
