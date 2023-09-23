@@ -1,4 +1,4 @@
-<TeXmacs|2.1>
+<TeXmacs|2.1.2>
 
 <style|source>
 
@@ -27,6 +27,8 @@
       Frontmatter utilities
     </src-comment>
   </active*>
+
+  <assign|hugo-short|<xmacro|args|<flag|<merge|hugo-|<arg|args|0>>|green>>>
 
   <assign|hugo-front|<xmacro|args|<flag|frontmatter parameters|orange>>>
 
