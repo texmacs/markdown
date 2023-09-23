@@ -1,4 +1,4 @@
-<TeXmacs|2.1>
+<TeXmacs|2.1.2>
 
 <style|tmdoc>
 
@@ -24,10 +24,11 @@
   <subsection|Setup>
 
   Clone this repository into your <shell|~/.TeXmacs/plugins> directory as
-  <shell|markdown>. For Linux / OSX this is:
+  <shell|markdown> and checkout the <shell|master> branch. For Linux / OSX
+  this is:
 
   <\shell-code>
-    git clone https://github.com/texmacs/markdown.git
+    git clone -b master https://github.com/texmacs/markdown.git
     ~/.TeXmacs/plugins/markdown
   </shell-code>
 
@@ -73,7 +74,9 @@
     <item>Support for alternate image formats between <TeXmacs> and markdown
     via <explain-macro|md-alt-image|tm-image|md-image>. This is useful e.g.
     to provide SVG and EPS/PDF versions of images for print and web
-    respectively.
+    respectively. The same effect can be achieved with
+    <explain-macro|specific|markdown|<text-dots>> and
+    <explain-macro|specific|texmacs|<text-dots>>.
 
     <item>Macros for labels in equation arrays. Using positioning tricks with
     <explain-macro|htab> results in <LaTeX> code that <name|MathJax> does not

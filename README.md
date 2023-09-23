@@ -55,9 +55,9 @@ package -> Markdown -> markdown` to enable:
 
 * Support for alternate image formats between TeXmacs and markdown via 
   `<md-alt-image|tm-image|md-image>`. This is useful e.g. to provide 
-  SVG and EPS/PDF versions of images for print and web respectively.
-  The same effect can be achieved with `<specific|markdown|...>` and 
-  `<specific|texmacs|...>`.
+  SVG and EPS/PDF versions of images for print and web respectively. The same 
+  effect can be achieved with `<specific|markdown|…>` and 
+  `<specific|texmacs|…>`.
 * Macros for labels in equation arrays. Using positioning tricks with 
   `<htab>` results in LaTeX code that MathJax does not support, namely 
   `\hfill`. For this reason, we provide two macros 
