@@ -42,7 +42,7 @@ First you want to add whatever tag it is that you are interested, say `mytag`
 to the top of the document, then you read it into scheme with:
 
 ```scheme
-(select (current-buffer) '(:* mytag))
+(select (buffer-get-body (current-buffer)) '(:* mytag))
 ```
 
 This will return a list of trees with the tag `mytag`. You can then pick any
