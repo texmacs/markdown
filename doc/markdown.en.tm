@@ -16,7 +16,7 @@
 
   The plugin has been developed for its use in two specific websites,
   <hlink|Paperwhy|https://paperwhy.8027.org/> and appliedAI's
-  <hlink|TransferLab|https://transferlab.appliedai.de/>, and can use multiple
+  <hlink|TransferLab|https://transferlab.ai/>, and can use multiple
   extensions specific to the static website generator
   <hlink|Hugo|https://gohugo.io/>. There might still be some code very
   specific to those sites, YMMV.

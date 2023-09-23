@@ -1,3 +1,5 @@
+# Markdown plug-in
+
 # TeXmacs markdown plugin
 
 This plugin is a (for now one-way) converter to markdown format for 
@@ -9,17 +11,18 @@ possibility of exporting them as html into the markdown file.
 
 The plugin has been developed for its use in two specific websites, 
 [Paperwhy](https://paperwhy.8027.org/) and appliedAI's 
-[TransferLab](https://transferlab.appliedai.de/), and can use multiple 
-extensions specific to the static website generator [Hugo](https://gohugo.io/). 
-There might still be some code very specific to those sites, YMMV.
+[TransferLab](https://transferlab.ai/), and can use multiple extensions 
+specific to the static website generator [Hugo](https://gohugo.io/). There 
+might still be some code very specific to those sites, YMMV.
 
 ## Setup
 
-Clone this repository into your `~/.TeXmacs/plugins` directory as `markdown`
+Clone this repository into your `~/.TeXmacs/plugins` directory as `markdown` 
 and checkout the `master` branch. For Linux / OSX this is:
 
 ```shell
-git clone -b master https://github.com/texmacs/markdown.git ~/.TeXmacs/plugins/markdown
+git clone -b master https://github.com/texmacs/markdown.git 
+~/.TeXmacs/plugins/markdown
 ```
 
 For Windows, the path (usually?) is
