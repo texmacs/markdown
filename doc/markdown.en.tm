@@ -1,9 +1,9 @@
-<TeXmacs|2.1>
+<TeXmacs|2.1.2>
 
 <style|tmdoc>
 
 <\body>
-  <tmdoc-title|Markdown plug-in>
+  <specific|texmacs|<tmdoc-title|Markdown plug-in>>
 
   <section|<TeXmacs> markdown plugin>
 
@@ -16,7 +16,7 @@
 
   The plugin has been developed for its use in two specific websites,
   <hlink|Paperwhy|https://paperwhy.8027.org/> and appliedAI's
-  <hlink|TransferLab|https://transferlab.appliedai.de/>, and can use multiple
+  <hlink|TransferLab|https://transferlab.ai/>, and can use multiple
   extensions specific to the static website generator
   <hlink|Hugo|https://gohugo.io/>. There might still be some code very
   specific to those sites, YMMV.
@@ -24,10 +24,11 @@
   <subsection|Setup>
 
   Clone this repository into your <shell|~/.TeXmacs/plugins> directory as
-  <shell|markdown>. For Linux / OSX this is:
+  <shell|markdown> and checkout the <shell|master> branch. For Linux / OSX
+  this is:
 
   <\shell-code>
-    git clone https://github.com/texmacs/markdown.git
+    git clone -b master https://github.com/texmacs/markdown.git
     ~/.TeXmacs/plugins/markdown
   </shell-code>
 
@@ -73,7 +74,9 @@
     <item>Support for alternate image formats between <TeXmacs> and markdown
     via <explain-macro|md-alt-image|tm-image|md-image>. This is useful e.g.
     to provide SVG and EPS/PDF versions of images for print and web
-    respectively.
+    respectively. The same effect can be achieved with
+    <explain-macro|specific|markdown|<text-dots>> and
+    <explain-macro|specific|texmacs|<text-dots>>.
 
     <item>Macros for labels in equation arrays. Using positioning tricks with
     <explain-macro|htab> results in <LaTeX> code that <name|MathJax> does not
@@ -143,7 +146,10 @@
     \<gtr\>}}>.
 
     <item>For arbitrary shortcodes, use <explain-macro|hugo-short>, e.g.
-    <explain-macro|hugo-short|toc> for <code*|{{\<less\> toc \<gtr\>}}>.
+    <explain-macro|hugo-short|toc> for <code*|{{\<less\> toc \<gtr\>}}>. In
+    order to pass named arguments, use <explain-macro|hugo-short|shortcode-name|argname1|argvalue1|<text-dots>>.
+    For positional arguments, replace the argument names by <tt|#f> as in
+    <explain-macro|hugo-short|shortcode-name|#f|posvalue1|#f|posvalue2|<text-dots>>.
 
     <item>Citations using <explain-macro|cite> and
     <explain-macro|cite-detail> (of any arity) are automatically detected and

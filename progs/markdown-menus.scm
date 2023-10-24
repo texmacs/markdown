@@ -102,3 +102,8 @@
 (menu-bind texmacs-extra-menu
   (if (and (supports-markdown?) (markdown-menu-show?))
        (=> "Markdown" (link markdown-menu))))
+
+(menu-bind specific-menu
+  (when (not (selection-active-large?))
+    (former)
+    ("Markdown" (make-specific "markdown"))))

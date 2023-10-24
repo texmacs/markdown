@@ -136,10 +136,9 @@
 (define (md-abstract x)
   (if (hugo-extensions?)
       (with-md-globals 'paragraph-width #f
-        (with-md-globals 'disable-shortcodes #t
-          (md-hugo-frontmatter
+        (md-hugo-frontmatter
            `(hugo-front "summary" ,(serialize-markdown* (cdr x))))))
-      (md-paragraph `(concat (strong "Abstract: ") (em ,(cdr x))))))
+      (md-paragraph `(concat (strong "Abstract: ") (em ,(cdr x)))))
 
 (define (must-adjust? t)
   (tm-in? t '(strong em tt strike math concat cite cite-detail 
@@ -394,7 +393,7 @@
       (with citations 
           (filter (lambda (x) (and (string? x) (not (string-null? x)))) (cdr x))
         (md-set 'refs (append (md-get 'refs) citations))
-        (md-hugo-shortcode 
+        (md-hugo-shortcode* 
          (cons 'cite (map (lambda (s) `(#f . ,s)) citations))))))
 
 (define (md-cite-detail x)
@@ -423,8 +422,8 @@
           (begin
             (set! args (assoc-remove-many args '(body name caption)))
             (set! args (assoc-append? args 'class (md-get 'html-class)))
-            (md-hugo-shortcode `(,type ,@args)
-                               `(document ,body (concat ,name ,caption))))
+            (md-hugo-shortcode* `(,type ,@args)
+                                `(document ,body (concat ,name ,caption))))
           (with content (if (assoc 'src args)
                             `(image ,(assoc-ref args 'src) ,body)
                             body)
@@ -464,7 +463,12 @@
           (map set-pair! (list->assoc (cdr x))))))
   "")
 
-(define (md-hugo-shortcode x . inner)
+(define (md-hugo-shortcode x)
+  "Processes '(hugo-short shortcode-name (args)) where args is a list of tuples (name val). For unnamed arguments, use (#f val)"
+  (md-hugo-shortcode* (cdr x)))
+
+(define (md-hugo-shortcode* x . inner)
+  "Inner processing of shortcodes"
   (if (not (md-get 'disable-shortcodes))
       (let ((shortcode (symbol->string (car x)))
             (args (cdr x))
@@ -485,14 +489,14 @@
 
 (define (md-bibliography x)
   (if (hugo-extensions?) 
-      (md-hugo-shortcode '(references))
+      (md-hugo-shortcode* '(references))
       (md-style '(strong "Bibliography not implemented for raw Markdown"))))
 
 (define (md-sidenote-sub x numbered?)
   (if (hugo-extensions?)
       (let ((numbered (if numbered? '((numbered . "numbered")) '()))
             (args (cdr x)))
-        (md-hugo-shortcode
+        (md-hugo-shortcode*
          (append `(sidenote (halign . ,(md-marginal-style (first args)))
                             (valign . ,(md-marginal-style (second args))))
                  numbered)
@@ -574,71 +578,71 @@
 
 (define serialize-hash (make-ahash-table))
 (map (lambda (l) (apply (cut ahash-set! serialize-hash <> <>) l))
-     (list (list 'identity skip)
-           (list 'markdown md-markdown)
-           (list 'localize md-translate)
-           (list 'labels md-labels)
-           (list 'strong md-style)
-           (list 'em md-style)
-           (list 'tt md-style)
-           (list 'strike md-style)
-           (list 'underline md-style)
-           (list 'block md-block)
-           (list 'quotation md-quotation)
-           (list 'document md-document)
-           (list 'std-env (md-make-environment 'em))
-           (list 'std-env* (md-make-environment* 'em))
-           (list 'plain-env (md-make-environment 'identity))
-           (list 'plain-env* (md-make-environment* 'identity))
-           (list 'dueto md-dueto)
-           (list 'math md-math)
-           (list 'equation md-numbered-equation)
-           (list 'equation* md-equation)
-           (list 'eqnarray md-numbered-equation)
-           (list 'eqnarray* md-equation)
-           (list 'concat md-concat)
-           (list 'item md-item)
-           (list 'itemize md-list)
-           (list 'enumerate md-list)
-           (list 'h1 (md-header 1))
-           (list 'h2 (md-header 2))
-           (list 'h3 (md-header 3))
-           (list 'para md-para)
-           (list 'doc-date md-doc-date)
-           (list 'doc-title md-doc-title)
-           (list 'doc-subtitle md-doc-subtitle)
-           (list 'doc-author md-doc-author)
-           (list 'abstract md-abstract)
-           (list 'paper-author-name paper-author-add)  ; Paperwhy extension
-           (list 'cite md-cite)
-           (list 'cite-detail md-cite-detail)
-           (list 'eqref md-eqref)
-           (list 'label md-label)
-           (list 'reference md-reference)
-           (list 'footnote md-footnote)
-           (list 'todo md-todo)
-           (list 'image md-image)
-           (list 'html-class md-html-class)
-           (list 'small-figure (md-figure 'tmfigure '(class . "small-figure")))
-           (list 'big-figure
-             (md-figure 'tmfigure
-                        '(marginal-caption . #t) '(class . "big-figure")))
-           (list 'wide-figure (md-figure 'tmfigure '(class . "wide-figure")))
-           (list 'marginal-figure (md-figure 'sidefigure))
-           (list 'small-table (md-figure 'tmfigure))
-           (list 'big-table (md-figure 'tmfigure ))
-           (list 'tabular md-tabular)
-           (list 'hlink md-hlink)
-           (list 'tags md-hugo-tags)  ; Hugo extension (DEPRECATED)
-           (list 'hugo-short md-hugo-shortcode)  ; Hugo extension
-           (list 'hugo-front md-hugo-frontmatter)  ; Hugo extension
-           (list 'table-of-contents md-toc) ; Hugo extension
-           (list 'bibliography md-bibliography)  ; TfL extension
-           (list 'marginal-note md-sidenote) ; TfL extension
-           (list 'marginal-note* md-sidenote*) ; TfL extension
-           (list 'explain-macro md-explain-macro)
-           (list 'tmdoc-copyright md-tmdoc-copyright)
-           ))
+     (list
+      (list 'abstract md-abstract)
+      (list 'bibliography md-bibliography)  ; TfL extension
+      (list 'big-figure
+        (md-figure 'tmfigure '(marginal-caption . #t) '(class . "big-figure")))
+      (list 'big-table (md-figure 'tmfigure ))
+      (list 'block md-block)
+      (list 'cite-detail md-cite-detail)
+      (list 'cite md-cite)
+      (list 'concat md-concat)
+      (list 'doc-author md-doc-author)
+      (list 'doc-date md-doc-date)
+      (list 'doc-subtitle md-doc-subtitle)
+      (list 'doc-title md-doc-title)
+      (list 'document md-document)
+      (list 'dueto md-dueto)
+      (list 'em md-style)
+      (list 'enumerate md-list)
+      (list 'eqnarray* md-equation)
+      (list 'eqnarray md-numbered-equation)
+      (list 'eqref md-eqref)
+      (list 'equation* md-equation)
+      (list 'equation md-numbered-equation)
+      (list 'explain-macro md-explain-macro)
+      (list 'footnote md-footnote)
+      (list 'h1 (md-header 1))
+      (list 'h2 (md-header 2))
+      (list 'h3 (md-header 3))
+      (list 'hlink md-hlink)
+      (list 'html-class md-html-class)
+      (list 'hugo-front md-hugo-frontmatter)  ; Hugo extension
+      (list 'hugo-short md-hugo-shortcode)  ; Hugo extension
+      (list 'identity skip)
+      (list 'image md-image)
+      (list 'itemize md-list)
+      (list 'item md-item)
+      (list 'label md-label)
+      (list 'labels md-labels)
+      (list 'localize md-translate)
+      (list 'marginal-figure (md-figure 'sidefigure))
+      (list 'marginal-note md-sidenote) ; TfL extension
+      (list 'marginal-note* md-sidenote*) ; TfL extension
+      (list 'markdown md-markdown)
+      (list 'math md-math)
+      (list 'paper-author-name paper-author-add)  ; Paperwhy extension
+      (list 'para md-para)
+      (list 'plain-env (md-make-environment 'identity))
+      (list 'plain-env* (md-make-environment* 'identity))
+      (list 'quotation md-quotation)
+      (list 'reference md-reference)
+      (list 'small-figure (md-figure 'tmfigure '(class . "small-figure")))
+      (list 'small-table (md-figure 'tmfigure))
+      (list 'std-env (md-make-environment 'em))
+      (list 'std-env* (md-make-environment* 'em))
+      (list 'strike md-style)
+      (list 'strong md-style)
+      (list 'table-of-contents md-toc) ; Hugo extension
+      (list 'tabular md-tabular)
+      (list 'tags md-hugo-tags)  ; Hugo extension (DEPRECATED)
+      (list 'tmdoc-copyright md-tmdoc-copyright)
+      (list 'todo md-todo)
+      (list 'tt md-style)
+      (list 'underline md-style)
+      (list 'wide-figure (md-figure 'tmfigure '(class . "wide-figure")))
+    ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public interface

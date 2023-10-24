@@ -9,17 +9,18 @@ possibility of exporting them as html into the markdown file.
 
 The plugin has been developed for its use in two specific websites, 
 [Paperwhy](https://paperwhy.8027.org/) and appliedAI's 
-[TransferLab](https://transferlab.appliedai.de/), and can use multiple 
-extensions specific to the static website generator [Hugo](https://gohugo.io/). 
-There might still be some code very specific to those sites, YMMV.
+[TransferLab](https://transferlab.ai/), and can use multiple extensions 
+specific to the static website generator [Hugo](https://gohugo.io/). There 
+might still be some code very specific to those sites, YMMV.
 
 ## Setup
 
-Clone this repository into your `~/.TeXmacs/plugins` directory as `markdown`. 
-For Linux / OSX this is:
+Clone this repository into your `~/.TeXmacs/plugins` directory as `markdown` 
+and checkout the `master` branch. For Linux / OSX this is:
 
 ```shell
-git clone https://github.com/texmacs/markdown.git ~/.TeXmacs/plugins/markdown
+git clone -b master https://github.com/texmacs/markdown.git 
+~/.TeXmacs/plugins/markdown
 ```
 
 For Windows, the path (usually?) is
@@ -55,7 +56,9 @@ package -> Markdown -> markdown` to enable:
 
 * Support for alternate image formats between TeXmacs and markdown via 
   `<md-alt-image|tm-image|md-image>`. This is useful e.g. to provide 
-  SVG and EPS/PDF versions of images for print and web respectively.
+  SVG and EPS/PDF versions of images for print and web respectively. The same 
+  effect can be achieved with `<specific|markdown|…>` and 
+  `<specific|texmacs|…>`.
 * Macros for labels in equation arrays. Using positioning tricks with 
   `<htab>` results in LaTeX code that MathJax does not support, namely 
   `\hfill`. For this reason, we provide two macros 
@@ -107,7 +110,11 @@ All custom shortcodes are in `extensions/hugo/`.
 
 * Figures are converted to `{{< figure  >}}`.
 * For arbitrary shortcodes, use `<hugo-short>`, e.g. 
-  `<hugo-short|toc>` for `{{< toc >}}`.
+  `<hugo-short|toc>` for `{{< toc >}}`. In order to pass 
+  named arguments, use 
+  `<hugo-short|shortcode-name|argname1|argvalue1|…>`. For 
+  positional arguments, replace the argument names by `#f` as in 
+  `<hugo-short|shortcode-name|#f|posvalue1|#f|posvalue2|…>`.
 * Citations using `<cite>` and `<cite-detail>` (of any arity) 
   are automatically detected and converted to `{{< cite ref >}}`, and 
   all of them are gathered in the frontmatter as well, for indization by Hugo's 
