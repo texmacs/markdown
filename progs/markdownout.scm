@@ -136,10 +136,9 @@
 (define (md-abstract x)
   (if (hugo-extensions?)
       (with-md-globals 'paragraph-width #f
-        (with-md-globals 'disable-shortcodes #t
-          (md-hugo-frontmatter
+        (md-hugo-frontmatter
            `(hugo-front "summary" ,(serialize-markdown* (cdr x))))))
-      (md-paragraph `(concat (strong "Abstract: ") (em ,(cdr x))))))
+      (md-paragraph `(concat (strong "Abstract: ") (em ,(cdr x)))))
 
 (define (must-adjust? t)
   (tm-in? t '(strong em tt strike math concat cite cite-detail 
@@ -394,7 +393,7 @@
       (with citations 
           (filter (lambda (x) (and (string? x) (not (string-null? x)))) (cdr x))
         (md-set 'refs (append (md-get 'refs) citations))
-        (md-hugo-shortcode 
+        (md-hugo-shortcode* 
          (cons 'cite (map (lambda (s) `(#f . ,s)) citations))))))
 
 (define (md-cite-detail x)
@@ -423,8 +422,8 @@
           (begin
             (set! args (assoc-remove-many args '(body name caption)))
             (set! args (assoc-append? args 'class (md-get 'html-class)))
-            (md-hugo-shortcode `(,type ,@args)
-                               `(document ,body (concat ,name ,caption))))
+            (md-hugo-shortcode* `(,type ,@args)
+                                `(document ,body (concat ,name ,caption))))
           (with content (if (assoc 'src args)
                             `(image ,(assoc-ref args 'src) ,body)
                             body)
@@ -464,7 +463,12 @@
           (map set-pair! (list->assoc (cdr x))))))
   "")
 
-(define (md-hugo-shortcode x . inner)
+(define (md-hugo-shortcode x)
+  "Processes '(hugo-short shortcode-name (args)) where args is a list of tuples (name val). For unnamed arguments, use (#f val)"
+  (md-hugo-shortcode* (cdr x)))
+
+(define (md-hugo-shortcode* x . inner)
+  "Inner processing of shortcodes"
   (if (not (md-get 'disable-shortcodes))
       (let ((shortcode (symbol->string (car x)))
             (args (cdr x))
@@ -485,14 +489,14 @@
 
 (define (md-bibliography x)
   (if (hugo-extensions?) 
-      (md-hugo-shortcode '(references))
+      (md-hugo-shortcode* '(references))
       (md-style '(strong "Bibliography not implemented for raw Markdown"))))
 
 (define (md-sidenote-sub x numbered?)
   (if (hugo-extensions?)
       (let ((numbered (if numbered? '((numbered . "numbered")) '()))
             (args (cdr x)))
-        (md-hugo-shortcode
+        (md-hugo-shortcode*
          (append `(sidenote (halign . ,(md-marginal-style (first args)))
                             (valign . ,(md-marginal-style (second args))))
                  numbered)

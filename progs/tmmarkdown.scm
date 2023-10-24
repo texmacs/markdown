@@ -425,9 +425,8 @@ first empty label"
           (else (error "Invalid medium for specific tag: " medium)))))
 
 (define (parse-hugo-short x)
- `(hugo-short ,(string->symbol (tm->string (second x)))
-              ,(md-map texmacs->markdown* (cddr x))))
-
+  `(hugo-short ,(string->symbol (tm->string (second x)))
+               ,(md-map texmacs->markdown* (cddr x))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Dispatch
@@ -435,7 +434,7 @@ first empty label"
 
 (define conversion-hash (make-ahash-table))
 (map (lambda (l) (apply (cut ahash-set! conversion-hash <> <>) l)) 
-     (list 
+     (list
       (list 'abstract keep)
       (list 'acknowledgments (count parse-plain-env 'env))
       (list 'acknowledgments* parse-plain-env*)
