@@ -3,7 +3,7 @@
 <style|tmdoc>
 
 <\body>
-  <tmdoc-title|Markdown plug-in>
+  <specific|texmacs|<tmdoc-title|Markdown plug-in>>
 
   <section|<TeXmacs> markdown plugin>
 
@@ -146,7 +146,10 @@
     \<gtr\>}}>.
 
     <item>For arbitrary shortcodes, use <explain-macro|hugo-short>, e.g.
-    <explain-macro|hugo-short|toc> for <code*|{{\<less\> toc \<gtr\>}}>.
+    <explain-macro|hugo-short|toc> for <code*|{{\<less\> toc \<gtr\>}}>. In
+    order to pass named arguments, use <explain-macro|hugo-short|shortcode-name|argname1|argvalue1|<text-dots>>.
+    For positional arguments, replace the argument names by <tt|#f> as in
+    <explain-macro|hugo-short|shortcode-name|#f|posvalue1|#f|posvalue2|<text-dots>>.
 
     <item>Citations using <explain-macro|cite> and
     <explain-macro|cite-detail> (of any arity) are automatically detected and

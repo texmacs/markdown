@@ -1,5 +1,3 @@
-# Markdown plug-in
-
 # TeXmacs markdown plugin
 
 This plugin is a (for now one-way) converter to markdown format for 
@@ -112,7 +110,11 @@ All custom shortcodes are in `extensions/hugo/`.
 
 * Figures are converted to `{{< figure  >}}`.
 * For arbitrary shortcodes, use `<hugo-short>`, e.g. 
-  `<hugo-short|toc>` for `{{< toc >}}`.
+  `<hugo-short|toc>` for `{{< toc >}}`. In order to pass 
+  named arguments, use 
+  `<hugo-short|shortcode-name|argname1|argvalue1|…>`. For 
+  positional arguments, replace the argument names by `#f` as in 
+  `<hugo-short|shortcode-name|#f|posvalue1|#f|posvalue2|…>`.
 * Citations using `<cite>` and `<cite-detail>` (of any arity) 
   are automatically detected and converted to `{{< cite ref >}}`, and 
   all of them are gathered in the frontmatter as well, for indization by Hugo's 
