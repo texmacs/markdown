@@ -424,6 +424,11 @@ first empty label"
           ((== medium "printer") (drop content))
           (else (error "Invalid medium for specific tag: " medium)))))
 
+(define (parse-hugo-short x)
+ `(hugo-short ,(string->symbol (tm->string (second x)))
+              ,(md-map texmacs->markdown* (cddr x))))
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Dispatch
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -438,6 +443,7 @@ first empty label"
       (list 'algorithm* parse-alg*)
       (list 'answer (count parse-plain-env 'env))
       (list 'answer* parse-plain-env*)
+      (list 'assign drop)
       (list 'author-data keep)
       (list 'author-email drop)
       (list 'author-name keep)
@@ -498,7 +504,7 @@ first empty label"
       (list 'hrule hrule-hack)
       (list 'html-class keep)
       (list 'hugo-front identity)  ; Hugo extension (frontmatter)
-      (list 'hugo-short keep)  ; Hugo extension (arbitrary shortcodes)
+      (list 'hugo-short parse-hugo-short)  ; Hugo extension (arbitrary shortcodes)
       (list 'image parse-image)
       (list 'itemize-arrow (change-to 'itemize))
       (list 'itemize-dot (change-to 'itemize))
