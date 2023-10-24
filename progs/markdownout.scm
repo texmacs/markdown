@@ -137,8 +137,8 @@
   (if (hugo-extensions?)
       (with-md-globals 'paragraph-width #f
         (md-hugo-frontmatter
-           `(hugo-front "summary" ,(serialize-markdown* (cdr x))))))
-      (md-paragraph `(concat (strong "Abstract: ") (em ,(cdr x)))))
+           `(hugo-front "summary" ,(serialize-markdown* (cdr x)))))
+      (md-paragraph `(concat (strong "Abstract: ") (em ,(cdr x))))))
 
 (define (must-adjust? t)
   (tm-in? t '(strong em tt strike math concat cite cite-detail 
